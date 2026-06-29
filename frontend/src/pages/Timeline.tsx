@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import type { HouseholdEvent } from '../lib/types';
+import { Modal } from '../components/Modal';
+import { EventForm } from '../components/EventForm';
 
 type Accent = 'amber' | 'emerald' | 'rose';
 
@@ -31,6 +33,7 @@ export default function Timeline() {
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const fetchEvents = (all: boolean) => {
     setLoading(true);
@@ -43,6 +46,11 @@ export default function Timeline() {
   };
 
   useEffect(() => { fetchEvents(showAll); }, [showAll]);
+
+  const handleCreated = () => {
+    setShowForm(false);
+    fetchEvents(showAll);
+  };
 
   const toggleComplete = async (evt: HouseholdEvent) => {
     try {
@@ -76,6 +84,12 @@ export default function Timeline() {
       {!loading && !error && events.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
           <p className="text-sm text-zinc-500">No events yet.</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
+          >
+            Add your first event
+          </button>
         </div>
       )}
 
@@ -136,6 +150,21 @@ export default function Timeline() {
           })}
         </section>
       )}
+
+      {/* Floating add button — sits above the fixed bottom nav. */}
+      <button
+        onClick={() => setShowForm(true)}
+        aria-label="Add event"
+        className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
+      >
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </button>
+
+      <Modal open={showForm} title="New event" onClose={() => setShowForm(false)}>
+        <EventForm onCreated={handleCreated} onCancel={() => setShowForm(false)} />
+      </Modal>
     </div>
   );
 }
