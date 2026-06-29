@@ -67,10 +67,16 @@ export async function setSetting(key: string, value: string): Promise<void> {
 }
 
 /**
- * Fetch the JWT signing secret, generating and persisting one on first use so
- * sessions survive restarts without requiring the operator to set an env var.
+ * Fetch the JWT signing secret. If JWT_SECRET is set in the environment it is
+ * authoritative (upserted every boot) so sessions survive a wiped settings
+ * table or fresh volume. Otherwise a random secret is generated and persisted
+ * once, so zero-config deployments still keep sessions across restarts.
  */
 export async function getOrCreateAuthSecret(): Promise<string> {
+  if (config.jwtSecret) {
+    await setSetting('auth_secret', config.jwtSecret);
+    return config.jwtSecret;
+  }
   const secret = randomBytes(48).toString('hex');
   await query(
     `INSERT INTO app_settings (key, value) VALUES ('auth_secret', $1)
@@ -81,4 +87,14 @@ export async function getOrCreateAuthSecret(): Promise<string> {
     `SELECT value FROM app_settings WHERE key = 'auth_secret'`,
   );
   return rows[0].value;
+}
+
+/**
+ * Seed notification settings from the environment when provided. NTFY_URL and
+ * LEAD_DAYS are upserted on boot so they survive a wiped settings table. When
+ * unset, the UI-managed values are left untouched.
+ */
+export async function seedSettingsFromEnv(): Promise<void> {
+  if (config.ntfyUrl) await setSetting('ntfy_url', config.ntfyUrl);
+  if (config.leadDays) await setSetting('notify_lead_days', config.leadDays);
 }

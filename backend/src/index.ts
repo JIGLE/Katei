@@ -11,11 +11,12 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
-import { verifyConnection, migrate, getOrCreateAuthSecret } from './db.js';
+import { verifyConnection, migrate, getOrCreateAuthSecret, seedSettingsFromEnv } from './db.js';
 import { apiRoutes } from './routes/index.js';
 import { authRoutes } from './routes/auth.js';
 import { settingsRoutes } from './routes/settings.js';
 import { startScheduler } from './lib/notifications.js';
+import { startBackupScheduler } from './lib/backups.js';
 
 const app = Fastify({
   logger: true,
@@ -26,8 +27,10 @@ await app.register(cors, {
   credentials: true,
 });
 
-// Apply schema migrations and load the persistent JWT secret before wiring auth.
+// Apply schema migrations, seed any env-provided settings, and load the
+// persistent JWT secret before wiring auth.
 await migrate();
+await seedSettingsFromEnv();
 const authSecret = await getOrCreateAuthSecret();
 
 await app.register(cookie);
@@ -97,8 +100,10 @@ const start = async () => {
 
   try {
     await app.listen({ port: config.port, host: config.host });
-    // Begin the hourly due-soon reminder sweep.
+    // Begin the hourly sweep (recurring-event generation + due-soon reminders)
+    // and the daily database backup.
     startScheduler(app.log);
+    startBackupScheduler(app.log);
   } catch (err) {
     app.log.error(err);
     process.exit(1);

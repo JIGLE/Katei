@@ -89,10 +89,60 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
   return sent;
 }
 
-/** Start the hourly reminder scheduler. Runs once shortly after boot. */
+/**
+ * Ensure every recurring money stream has a future incomplete event so the user
+ * doesn't have to add "Rent due" by hand each month. For each monthly/yearly
+ * stream with no upcoming linked event, create one dated at the start of the
+ * next period. Returns the count created.
+ */
+export async function generateRecurringEvents(log?: FastifyBaseLogger): Promise<number> {
+  const { rows: streams } = await query<{ id: number; name: string; frequency: string }>(
+    `SELECT id, name, frequency
+       FROM money_streams
+      WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')`,
+  );
+
+  let created = 0;
+  for (const s of streams) {
+    // First of next month, or Jan 1 of next year. Both inlined (no params) since
+    // they are fixed SQL expressions, not user input.
+    const nextDate =
+      s.frequency === 'monthly'
+        ? `date_trunc('month', CURRENT_DATE + interval '1 month')::date`
+        : `date_trunc('year', CURRENT_DATE + interval '1 year')::date`;
+
+    const { rows: existing } = await query<{ count: string }>(
+      `SELECT count(*) AS count FROM household_events
+        WHERE money_stream_id = $1 AND target_date >= CURRENT_DATE AND is_completed = FALSE`,
+      [s.id],
+    );
+    if (Number(existing[0].count) > 0) continue;
+
+    await query(
+      `INSERT INTO household_events (title, event_type, target_date, money_stream_id)
+       VALUES ($1, 'payment', ${nextDate}, $2)`,
+      [`${s.name} due`, s.id],
+    );
+    created += 1;
+    log?.info(`Generated recurring event for stream "${s.name}"`);
+  }
+  if (created && log) log.info(`Generated ${created} recurring event(s).`);
+  return created;
+}
+
+/**
+ * Start the hourly background sweep: generate any missing recurring events,
+ * then push reminders for events due within the lead window. Runs once shortly
+ * after boot.
+ */
 export function startScheduler(log: FastifyBaseLogger): void {
-  const run = () => {
-    checkAndNotify(log).catch((err) => log.error({ err }, 'Reminder check failed'));
+  const run = async () => {
+    try {
+      await generateRecurringEvents(log);
+      await checkAndNotify(log);
+    } catch (err) {
+      log.error({ err }, 'Scheduler sweep failed');
+    }
   };
   setTimeout(run, 10_000); // initial run after startup settles
   setInterval(run, CHECK_INTERVAL_MS);

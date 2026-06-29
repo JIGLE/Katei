@@ -24,7 +24,7 @@ function daysUntil(dateStr: string): number {
 }
 
 function urgencyLabel(days: number): string {
-  if (days < 0) return 'overdue';
+  if (days < 0) return days === -1 ? '1 day ago' : `${-days} days ago`;
   if (days === 0) return 'today';
   if (days === 1) return 'tomorrow';
   return `in ${days} days`;
@@ -37,6 +37,29 @@ function formatAmount(streams: MoneyStream[]): string {
   return monthly.toLocaleString('en-US', { minimumFractionDigits: 2 });
 }
 
+// A timeline row. Overdue items are tinted rose; far-out items are dimmed.
+function EventRow({ evt, days, tone }: { evt: HouseholdEvent; days: number; tone: 'overdue' | 'week' | 'later' }) {
+  const accent = accentMap[eventAccent[evt.event_type]];
+  const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
+  const title =
+    tone === 'overdue' ? 'text-rose-300' : tone === 'later' ? 'text-zinc-400' : 'text-zinc-200';
+  const pill =
+    tone === 'overdue'
+      ? 'bg-rose-500/20 text-rose-400'
+      : tone === 'later'
+        ? 'bg-zinc-800 text-zinc-500'
+        : accent.pill;
+  return (
+    <li className="flex items-center gap-3">
+      <span className={`h-2 w-2 flex-shrink-0 rounded-full ${dot}`} />
+      <span className={`flex-1 text-sm ${title}`}>{evt.title}</span>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
+        {urgencyLabel(days)}
+      </span>
+    </li>
+  );
+}
+
 export default function Overview() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
@@ -45,16 +68,24 @@ export default function Overview() {
 
   useEffect(() => {
     Promise.all([
-      api.get<HouseholdEvent[]>('/events?upcoming=true'),
+      api.get<HouseholdEvent[]>('/events'),
       api.get<MoneyStream[]>('/money-streams'),
     ])
       .then(([evts, strs]) => {
-        setEvents(evts.slice(0, 5));
+        setEvents(evts.filter((e) => !e.is_completed));
         setStreams(strs);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Bucket open events by urgency. Each list stays sorted by date ascending.
+  const dated = events
+    .map((evt) => ({ evt, days: daysUntil(evt.target_date) }))
+    .sort((a, b) => a.days - b.days);
+  const overdue = dated.filter((d) => d.days < 0);
+  const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
+  const later = dated.filter((d) => d.days > 7);
 
   return (
     <div className="space-y-6">
@@ -64,7 +95,7 @@ export default function Overview() {
       </header>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
           <p className="text-xs text-zinc-500">Monthly outflow</p>
           <p className="mt-1 text-xl font-light text-emerald-500">
@@ -72,9 +103,15 @@ export default function Overview() {
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">Upcoming events</p>
+          <p className="text-xs text-zinc-500">Overdue</p>
+          <p className="mt-1 text-xl font-light text-rose-500">
+            {loading ? '—' : overdue.length}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+          <p className="text-xs text-zinc-500">This week</p>
           <p className="mt-1 text-xl font-light text-amber-500">
-            {loading ? '—' : events.length}
+            {loading ? '—' : thisWeek.length}
           </p>
         </div>
       </div>
@@ -85,32 +122,51 @@ export default function Overview() {
           Needs attention
         </p>
 
-        {loading && (
-          <p className="text-sm text-zinc-500">Loading…</p>
-        )}
-        {error && (
-          <p className="text-sm text-rose-400">{error}</p>
-        )}
-        {!loading && !error && events.length === 0 && (
+        {loading && <p className="text-sm text-zinc-500">Loading…</p>}
+        {error && <p className="text-sm text-rose-400">{error}</p>}
+        {!loading && !error && dated.length === 0 && (
           <p className="text-sm text-zinc-500">Nothing coming up — all clear.</p>
         )}
-        {!loading && !error && events.length > 0 && (
-          <ul className="space-y-3">
-            {events.map((evt) => {
-              const accent = eventAccent[evt.event_type];
-              const styles = accentMap[accent];
-              const days = daysUntil(evt.target_date);
-              return (
-                <li key={evt.id} className="flex items-center gap-3">
-                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${styles.dot}`} />
-                  <span className="flex-1 text-sm text-zinc-200">{evt.title}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles.pill}`}>
-                    {urgencyLabel(days)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+
+        {!loading && !error && dated.length > 0 && (
+          <div className="space-y-5">
+            {overdue.length > 0 && (
+              <div>
+                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-rose-500/80">
+                  Overdue
+                </p>
+                <ul className="space-y-3">
+                  {overdue.map(({ evt, days }) => (
+                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" />
+                  ))}
+                </ul>
+              </div>
+            )}
+            {thisWeek.length > 0 && (
+              <div>
+                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-500">
+                  This week
+                </p>
+                <ul className="space-y-3">
+                  {thisWeek.map(({ evt, days }) => (
+                    <EventRow key={evt.id} evt={evt} days={days} tone="week" />
+                  ))}
+                </ul>
+              </div>
+            )}
+            {later.length > 0 && (
+              <div>
+                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-600">
+                  Later
+                </p>
+                <ul className="space-y-3">
+                  {later.map(({ evt, days }) => (
+                    <EventRow key={evt.id} evt={evt} days={days} tone="later" />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </section>
     </div>

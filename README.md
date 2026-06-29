@@ -71,6 +71,7 @@ Images are built and pushed to GHCR automatically by GitHub Actions on every pus
 | Image Tag | `latest` |
 | Env `POSTGRES_PASSWORD` | your strong password |
 | Env `NODE_ENV` | `production` |
+| Env `JWT_SECRET` *(optional, recommended)* | a long random string |
 | Host Port | `8080` → Container Port `3000` |
 | Volume host path | `/mnt/HDD/app-data/databases/katei` |
 | Volume mount path | `/var/lib/postgresql/data` |
@@ -78,6 +79,29 @@ Images are built and pushed to GHCR automatically by GitHub Actions on every pus
 > Create the `/mnt/HDD/app-data/databases/katei` dataset in TrueNAS before deploying.
 
 On first start, the container initialises PostgreSQL, creates the `katei` user/database, and loads `schema.sql` automatically. Subsequent restarts skip the init step.
+
+### Settings that survive a DB reset
+
+The session secret and notification settings live in the database. Set these
+optional env vars to make them authoritative on every boot, so a wiped volume
+self-heals instead of logging everyone out or silently stopping reminders:
+
+| Env var | Effect |
+|---|---|
+| `JWT_SECRET` | Pins the session-signing secret. Set this so logins survive redeploys and DB resets. If unset, a random secret is generated once and reused. |
+| `NTFY_URL` | Seeds the ntfy topic URL (otherwise managed in the UI). |
+| `LEAD_DAYS` | Seeds how many days ahead reminders fire (default `3`). |
+
+### Backups
+
+A `pg_dump` runs daily and is written to `katei_backups/` **inside the data
+volume**, keeping the most recent 7 (configurable via `BACKUP_RETENTION`). Since
+it lives in the mounted volume, backups persist across restarts and redeploys.
+To restore: `psql --dbname "$DATABASE_URL" -f katei_YYYY-MM-DD.sql`.
+
+The app also auto-generates events for recurring money streams — a "monthly"
+stream named *Rent* spawns a *Rent due* event for the first of next month, so
+recurring obligations show up on the timeline without manual entry.
 
 Point a Cloudflare Tunnel (or reverse proxy) at `<truenas-ip>:8080`.
 
