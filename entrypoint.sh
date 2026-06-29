@@ -9,8 +9,8 @@ PGPASSWORD="${POSTGRES_PASSWORD:-katei}"
 # First boot: initialise the cluster, create user/db, and load schema.
 if [ ! -f "$PGDATA/PG_VERSION" ]; then
   echo "[katei] First boot — initialising PostgreSQL..."
-  mkdir -p "$PGDATA"
-  chown postgres:postgres "$PGDATA"
+  mkdir -p "$PGDATA" /run/postgresql
+  chown postgres:postgres "$PGDATA" /run/postgresql
 
   su postgres -c "initdb -D $PGDATA --auth=trust --username=postgres"
   su postgres -c "pg_ctl -D $PGDATA start -w -o '-c listen_addresses=localhost'"
@@ -22,6 +22,10 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
 
   su postgres -c "pg_ctl -D $PGDATA stop -w"
 fi
+
+# Ensure the Unix socket directory exists (needed on every boot).
+mkdir -p /run/postgresql
+chown postgres:postgres /run/postgresql
 
 # Start postgres in the background.
 echo "[katei] Starting PostgreSQL..."
