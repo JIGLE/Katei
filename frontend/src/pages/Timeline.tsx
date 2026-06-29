@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { HouseholdEvent } from '../lib/types';
+import type { AssignmentDetail, HouseholdEvent } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
+import { AssigneeStack } from '../components/Avatar';
 
 type Accent = 'amber' | 'emerald' | 'rose';
 
@@ -30,6 +31,7 @@ function formatDate(dateStr: string): string {
 
 export default function Timeline() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,20 @@ export default function Timeline() {
   };
 
   useEffect(() => { fetchEvents(showAll); }, [showAll]);
+
+  // Assignments are independent of the upcoming/all toggle — load once.
+  useEffect(() => {
+    api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
+  }, []);
+
+  // Index assignments by event so each row can show who's responsible.
+  const membersByEvent = new Map<number, AssignmentDetail[]>();
+  for (const a of assignments) {
+    if (a.event_id == null) continue;
+    const list = membersByEvent.get(a.event_id) ?? [];
+    list.push(a);
+    membersByEvent.set(a.event_id, list);
+  }
 
   const handleSaved = () => {
     setShowForm(false);
@@ -133,6 +149,9 @@ export default function Timeline() {
                     <p className="mt-0.5 truncate text-xs text-zinc-500">{evt.description}</p>
                   )}
                 </button>
+
+                {/* Responsible members */}
+                <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
 
                 {/* Type badge */}
                 <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles.badge}`}>

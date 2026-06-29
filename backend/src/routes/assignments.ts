@@ -16,7 +16,8 @@ export const assignmentsRoutes: FastifyPluginAsync = async (app) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const { rows } = await query(
-      `SELECT a.id, a.user_id, a.event_id, a.money_stream_id, a.role, u.name AS user_name
+      `SELECT a.id, a.user_id, a.event_id, a.money_stream_id, a.role,
+              u.name AS user_name, u.avatar_url AS user_avatar
        FROM assignments a
        LEFT JOIN users u ON u.id = a.user_id
        ${where}
@@ -29,7 +30,8 @@ export const assignmentsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/assignments/:id
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
     const { rows } = await query(
-      `SELECT a.id, a.user_id, a.event_id, a.money_stream_id, a.role, u.name AS user_name
+      `SELECT a.id, a.user_id, a.event_id, a.money_stream_id, a.role,
+              u.name AS user_name, u.avatar_url AS user_avatar
        FROM assignments a
        LEFT JOIN users u ON u.id = a.user_id
        WHERE a.id = $1`,

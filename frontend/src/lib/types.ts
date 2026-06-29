@@ -37,7 +37,8 @@ export interface Assignment {
   role: string;
 }
 
-// Extended assignment row joined with user name for display.
+// Extended assignment row joined with user name + avatar for display.
 export interface AssignmentDetail extends Assignment {
   user_name: string;
+  user_avatar: string | null;
 }

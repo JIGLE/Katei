@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { HouseholdEvent, MoneyStream } from '../lib/types';
+import { AssigneeStack } from '../components/Avatar';
+import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald';
 
@@ -38,7 +39,18 @@ function formatAmount(streams: MoneyStream[]): string {
 }
 
 // A timeline row. Overdue items are tinted rose; far-out items are dimmed.
-function EventRow({ evt, days, tone }: { evt: HouseholdEvent; days: number; tone: 'overdue' | 'week' | 'later' }) {
+// Assigned members appear as a compact avatar stack before the urgency pill.
+function EventRow({
+  evt,
+  days,
+  tone,
+  members,
+}: {
+  evt: HouseholdEvent;
+  days: number;
+  tone: 'overdue' | 'week' | 'later';
+  members: AssignmentDetail[];
+}) {
   const accent = accentMap[eventAccent[evt.event_type]];
   const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
   const title =
@@ -52,7 +64,8 @@ function EventRow({ evt, days, tone }: { evt: HouseholdEvent; days: number; tone
   return (
     <li className="flex items-center gap-3">
       <span className={`h-2 w-2 flex-shrink-0 rounded-full ${dot}`} />
-      <span className={`flex-1 text-sm ${title}`}>{evt.title}</span>
+      <span className={`flex-1 truncate text-sm ${title}`}>{evt.title}</span>
+      <AssigneeStack members={members} size="xs" />
       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
         {urgencyLabel(days)}
       </span>
@@ -63,6 +76,7 @@ function EventRow({ evt, days, tone }: { evt: HouseholdEvent; days: number; tone
 export default function Overview() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,14 +84,25 @@ export default function Overview() {
     Promise.all([
       api.get<HouseholdEvent[]>('/events'),
       api.get<MoneyStream[]>('/money-streams'),
+      api.get<AssignmentDetail[]>('/assignments'),
     ])
-      .then(([evts, strs]) => {
+      .then(([evts, strs, asgs]) => {
         setEvents(evts.filter((e) => !e.is_completed));
         setStreams(strs);
+        setAssignments(asgs);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Index assignments by event so each row can show who's responsible.
+  const membersByEvent = new Map<number, AssignmentDetail[]>();
+  for (const a of assignments) {
+    if (a.event_id == null) continue;
+    const list = membersByEvent.get(a.event_id) ?? [];
+    list.push(a);
+    membersByEvent.set(a.event_id, list);
+  }
 
   // Bucket open events by urgency. Each list stays sorted by date ascending.
   const dated = events
@@ -137,7 +162,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {overdue.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} />
                   ))}
                 </ul>
               </div>
@@ -149,7 +174,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {thisWeek.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="week" />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} />
                   ))}
                 </ul>
               </div>
@@ -161,7 +186,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {later.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="later" />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} />
                   ))}
                 </ul>
               </div>
