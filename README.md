@@ -7,13 +7,11 @@ A premium, Japandi-inspired household obligation awareness system. Self-hosted v
 | Layer | Technology |
 |---|---|
 | App | Fastify + TypeScript serving REST API **and** the built SPA (node:alpine) |
-| Database | PostgreSQL 16 |
+| Database | PostgreSQL 16 (bundled inside the app image) |
 | DB access | Raw SQL via node-postgres (`pg`) |
 | Frontend | React + TypeScript + Tailwind CSS v3 (Vite) |
 
-The frontend is compiled and bundled into the backend image, so a single
-application container serves both the SPA and the `/api` routes. Only
-PostgreSQL runs as a separate container.
+Everything runs in **one container**. PostgreSQL starts via `entrypoint.sh`, the schema is applied on first boot, then Fastify serves the SPA and API. One volume mount persists the database.
 
 ## Quick Start
 
@@ -27,16 +25,15 @@ docker compose up --build
 - App (SPA + API): http://localhost:8080
 - Health: http://localhost:8080/health
 
-On the first run the `postgres` container auto-initialises from `schema.sql`.
-
 ## Project Structure
 
 ```
 katei/
-├── Dockerfile              # single-image build (frontend + backend)
-├── docker-compose.yml      # app + postgres
-├── .env.example
+├── Dockerfile              # 3-stage build: frontend → backend → runtime + postgres
+├── entrypoint.sh           # init postgres on first boot, then start node
+├── docker-compose.yml      # single katei service
 ├── schema.sql              # DDL — users, money_streams, household_events, assignments
+├── .env.example
 ├── backend/                # Fastify REST API (also serves the bundled SPA)
 │   └── src/
 │       ├── index.ts        # Bootstrap, /health, static SPA serving
@@ -60,51 +57,31 @@ cd backend && npm install && npm run dev
 cd frontend && npm install && npm run dev
 ```
 
-## Deploying to TrueNAS SCALE (Custom App)
+A local postgres instance is required for dev. The `DATABASE_URL` env var must be set.
 
-Images are built and pushed to GHCR automatically by GitHub Actions on every
-push to `main`. To deploy:
+## Deploying to TrueNAS SCALE (Custom App GUI)
 
-1. **Apps → Discover Apps → Custom App**
-2. Paste a compose spec using the prebuilt image:
+Images are built and pushed to GHCR automatically by GitHub Actions on every push to `main`.
 
-   ```yaml
-   services:
-     postgres:
-       image: postgres:16-alpine
-       restart: unless-stopped
-       environment:
-         POSTGRES_USER: katei
-         POSTGRES_PASSWORD: your_strong_password
-         POSTGRES_DB: katei
-       volumes:
-         - /mnt/tank/katei-pgdata:/var/lib/postgresql/data
-       healthcheck:
-         test: ["CMD-SHELL", "pg_isready -U katei -d katei"]
-         interval: 5s
-         timeout: 5s
-         retries: 10
+**Apps → Discover Apps → Custom App** — fill in the form:
 
-     app:
-       image: ghcr.io/jigle/katei:latest
-       restart: unless-stopped
-       environment:
-         DATABASE_URL: postgresql://katei:your_strong_password@postgres:5432/katei
-         NODE_ENV: production
-       ports:
-         - "8080:3000"
-       depends_on:
-         postgres:
-           condition: service_healthy
-   ```
+| Field | Value |
+|---|---|
+| Image Repository | `ghcr.io/jigle/katei` |
+| Image Tag | `latest` |
+| Env `POSTGRES_PASSWORD` | your strong password |
+| Env `NODE_ENV` | `production` |
+| Host Port | `8080` → Container Port `3000` |
+| Volume host path | `/mnt/HDD/app-data/databases/katei` |
+| Volume mount path | `/var/lib/postgresql/data` |
 
-   > Create the `/mnt/tank/katei-pgdata` dataset first; the schema is baked
-   > into the image and auto-loads on first boot.
+> Create the `/mnt/HDD/app-data/databases/katei` dataset in TrueNAS before deploying.
 
-3. Point a Cloudflare Tunnel (or reverse proxy) at `<truenas-ip>:8080`.
+On first start, the container initialises PostgreSQL, creates the `katei` user/database, and loads `schema.sql` automatically. Subsequent restarts skip the init step.
 
-Future deploys are just `git push` — Actions rebuilds `ghcr.io/jigle/katei:latest`,
-then hit **Update** on the app in TrueNAS.
+Point a Cloudflare Tunnel (or reverse proxy) at `<truenas-ip>:8080`.
+
+Future deploys: `git push` → Actions rebuilds `ghcr.io/jigle/katei:latest` → hit **Update** in TrueNAS.
 
 ## Domains
 
