@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import type { MoneyStream } from '../lib/types';
+import { Modal } from '../components/Modal';
+import { StreamForm } from '../components/StreamForm';
 
 const freqLabel: Record<string, string> = {
   monthly: 'Monthly',
@@ -29,14 +31,23 @@ export default function MoneyFlow() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
+  const fetchStreams = () => {
+    setLoading(true);
     api
       .get<MoneyStream[]>('/money-streams')
       .then(setStreams)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchStreams(); }, []);
+
+  const handleCreated = () => {
+    setShowForm(false);
+    fetchStreams();
+  };
 
   const categories = Array.from(new Set(streams.map((s) => s.category ?? 'Uncategorised')));
 
@@ -69,6 +80,12 @@ export default function MoneyFlow() {
       {!loading && !error && streams.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
           <p className="text-sm text-zinc-500">No money streams yet.</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
+          >
+            Add your first stream
+          </button>
         </div>
       )}
 
@@ -102,6 +119,21 @@ export default function MoneyFlow() {
           </section>
         );
       })}
+
+      {/* Floating add button — sits above the fixed bottom nav. */}
+      <button
+        onClick={() => setShowForm(true)}
+        aria-label="Add money stream"
+        className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
+      >
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </button>
+
+      <Modal open={showForm} title="New money stream" onClose={() => setShowForm(false)}>
+        <StreamForm onCreated={handleCreated} onCancel={() => setShowForm(false)} />
+      </Modal>
     </div>
   );
 }
