@@ -5,6 +5,7 @@ const BASE = '/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
+    credentials: 'include', // send the session cookie
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   });
@@ -12,6 +13,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`${res.status} ${text}`);
   }
+  // 204 No Content (e.g. DELETE) has no body to parse.
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 

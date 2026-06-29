@@ -4,13 +4,16 @@
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import cookie from '@fastify/cookie';
+import jwt from '@fastify/jwt';
 import fastifyStatic from '@fastify/static';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
-import { verifyConnection } from './db.js';
+import { verifyConnection, migrate, getOrCreateAuthSecret } from './db.js';
 import { apiRoutes } from './routes/index.js';
+import { authRoutes } from './routes/auth.js';
 
 const app = Fastify({
   logger: true,
@@ -18,6 +21,26 @@ const app = Fastify({
 
 await app.register(cors, {
   origin: true,
+  credentials: true,
+});
+
+// Apply schema migrations and load the persistent JWT secret before wiring auth.
+await migrate();
+const authSecret = await getOrCreateAuthSecret();
+
+await app.register(cookie);
+await app.register(jwt, {
+  secret: authSecret,
+  cookie: { cookieName: 'katei_session', signed: false },
+});
+
+// Guard used to require a valid session on protected routes.
+app.decorate('authenticate', async (req, reply) => {
+  try {
+    await req.jwtVerify();
+  } catch {
+    reply.code(401).send({ error: 'Unauthorized' });
+  }
 });
 
 // Liveness + database connectivity probe.
@@ -32,8 +55,14 @@ app.get('/health', async () => {
   return { status: 'ok', db };
 });
 
-// All domain routers live under /api.
-await app.register(apiRoutes, { prefix: '/api' });
+// Public auth endpoints (login, register, logout, me, status).
+await app.register(authRoutes, { prefix: '/api/auth' });
+
+// All domain routers live under /api and require an authenticated session.
+await app.register(async (instance) => {
+  instance.addHook('onRequest', app.authenticate);
+  await instance.register(apiRoutes, { prefix: '/api' });
+});
 
 // Serve the bundled SPA when present (production single-image build).
 // In local dev the Vite dev server serves the frontend instead, so this
