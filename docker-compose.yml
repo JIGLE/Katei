@@ -1,5 +1,5 @@
-# Katei — multi-container orchestration
-# Postgres (data) + backend (Fastify API) + frontend (nginx-served SPA).
+# Katei — single-app orchestration.
+# One application container (Fastify API + bundled SPA) plus PostgreSQL.
 # Designed to run self-hosted on TrueNAS SCALE.
 
 services:
@@ -23,32 +23,23 @@ services:
     networks:
       - katei-net
 
-  backend:
+  app:
+    # Builds locally from the root Dockerfile, or pull the prebuilt image:
+    #   image: ghcr.io/jigle/katei:latest
     build:
-      context: ./backend
-    container_name: katei-backend
+      context: .
+    image: ghcr.io/jigle/katei:latest
+    container_name: katei-app
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      BACKEND_PORT: ${BACKEND_PORT}
       NODE_ENV: production
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      # Host APP_PORT (default 8080) -> container 3000.
+      - "${APP_PORT:-8080}:3000"
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - katei-net
-
-  frontend:
-    build:
-      context: ./frontend
-    container_name: katei-frontend
-    restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT}:80"
-    depends_on:
-      - backend
     networks:
       - katei-net
 
