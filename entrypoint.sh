@@ -12,7 +12,7 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
   mkdir -p "$PGDATA"
   chown postgres:postgres "$PGDATA"
 
-  su postgres -c "initdb -D $PGDATA --auth=md5 --username=postgres"
+  su postgres -c "initdb -D $PGDATA --auth=trust --username=postgres"
   su postgres -c "pg_ctl -D $PGDATA start -w -o '-c listen_addresses=localhost'"
 
   su postgres -c "psql -c \"CREATE USER $PGUSER WITH PASSWORD '$PGPASSWORD';\""
