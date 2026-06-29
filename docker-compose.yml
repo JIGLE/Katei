@@ -1,51 +1,20 @@
-# Katei — single-app orchestration.
-# One application container (Fastify API + bundled SPA) plus PostgreSQL.
-# Designed to run self-hosted on TrueNAS SCALE.
+# Katei — single-container deployment.
+# PostgreSQL runs inside the same container as the app.
+# One volume mount persists the database across restarts.
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: katei-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - katei-db-data:/var/lib/postgresql/data
-      # Auto-runs on first boot when the data volume is empty.
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - katei-net
-
-  app:
-    # Builds locally from the root Dockerfile, or pull the prebuilt image:
-    #   image: ghcr.io/jigle/katei:latest
-    build:
-      context: .
+  katei:
+    build: .
     image: ghcr.io/jigle/katei:latest
-    container_name: katei-app
+    container_name: katei
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       NODE_ENV: production
+    volumes:
+      - ${PGDATA_PATH:-katei-pgdata}:/var/lib/postgresql/data
     ports:
-      # Host APP_PORT (default 8080) -> container 3000.
       - "${APP_PORT:-8080}:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - katei-net
 
 volumes:
-  katei-db-data:
-
-networks:
-  katei-net:
-    driver: bridge
+  katei-pgdata:
