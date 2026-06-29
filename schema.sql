@@ -1,0 +1,41 @@
+-- Katei (家庭) — relational schema
+-- Loaded automatically by the postgres container on first boot
+-- (mounted into /docker-entrypoint-initdb.d/).
+-- Tables are declared in dependency order so foreign keys resolve.
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    avatar_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE money_streams (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    is_recurring BOOLEAN DEFAULT TRUE,
+    frequency VARCHAR(50) DEFAULT 'monthly', -- 'monthly', 'yearly', 'one-off'
+    category VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE household_events (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    event_type VARCHAR(50) NOT NULL, -- 'deadline', 'payment', 'appointment'
+    target_date DATE NOT NULL,
+    is_completed BOOLEAN DEFAULT FALSE,
+    money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE assignments (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    event_id INT REFERENCES household_events(id) ON DELETE CASCADE,
+    money_stream_id INT REFERENCES money_streams(id) ON DELETE CASCADE,
+    role VARCHAR(50) DEFAULT 'owner'
+);
