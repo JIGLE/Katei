@@ -27,3 +27,8 @@ yarn-error.log*
 
 # Docker volumes (if ever bind-mounted locally)
 pgdata/
+
+# Graphify working files (temp, generated)
+.graphify_*.json
+.graphify_uncached.txt
+graphify-out/
