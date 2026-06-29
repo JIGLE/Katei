@@ -6,6 +6,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - "Dockerfile"
 
 permissions:
   contents: read
@@ -13,17 +14,8 @@ permissions:
 
 jobs:
   build:
-    name: Build ${{ matrix.service }}
+    name: Build single image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - service: backend
-            context: ./backend
-            image: ghcr.io/jigle/katei-backend
-          - service: frontend
-            context: ./frontend
-            image: ghcr.io/jigle/katei-frontend
 
     steps:
       - name: Checkout
@@ -43,7 +35,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.image }}
+          images: ghcr.io/jigle/katei
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-,format=short
@@ -51,9 +43,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
