@@ -32,6 +32,7 @@ export default function MoneyFlow() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<MoneyStream | null>(null);
 
   const fetchStreams = () => {
     setLoading(true);
@@ -44,8 +45,14 @@ export default function MoneyFlow() {
 
   useEffect(() => { fetchStreams(); }, []);
 
-  const handleCreated = () => {
+  const handleSaved = () => {
     setShowForm(false);
+    setEditing(null);
+    fetchStreams();
+  };
+
+  const handleDeleted = () => {
+    setEditing(null);
     fetchStreams();
   };
 
@@ -96,9 +103,11 @@ export default function MoneyFlow() {
           <section key={cat} className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{cat}</p>
             {group.map((s) => (
-              <div
+              <button
                 key={s.id}
-                className="flex items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4"
+                type="button"
+                onClick={() => setEditing(s)}
+                className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-zinc-100">{s.name}</p>
@@ -114,7 +123,7 @@ export default function MoneyFlow() {
                 <p className="flex-shrink-0 text-sm font-medium text-emerald-500">
                   ${parseFloat(s.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
-              </div>
+              </button>
             ))}
           </section>
         );
@@ -132,7 +141,18 @@ export default function MoneyFlow() {
       </button>
 
       <Modal open={showForm} title="New money stream" onClose={() => setShowForm(false)}>
-        <StreamForm onCreated={handleCreated} onCancel={() => setShowForm(false)} />
+        <StreamForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+      </Modal>
+
+      <Modal open={!!editing} title="Edit money stream" onClose={() => setEditing(null)}>
+        {editing && (
+          <StreamForm
+            initial={editing}
+            onSaved={handleSaved}
+            onCancel={() => setEditing(null)}
+            onDeleted={handleDeleted}
+          />
+        )}
       </Modal>
     </div>
   );

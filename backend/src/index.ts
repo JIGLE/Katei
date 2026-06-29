@@ -14,6 +14,8 @@ import { config } from './config.js';
 import { verifyConnection, migrate, getOrCreateAuthSecret } from './db.js';
 import { apiRoutes } from './routes/index.js';
 import { authRoutes } from './routes/auth.js';
+import { settingsRoutes } from './routes/settings.js';
+import { startScheduler } from './lib/notifications.js';
 
 const app = Fastify({
   logger: true,
@@ -62,6 +64,7 @@ await app.register(authRoutes, { prefix: '/api/auth' });
 await app.register(async (instance) => {
   instance.addHook('onRequest', app.authenticate);
   await instance.register(apiRoutes, { prefix: '/api' });
+  await instance.register(settingsRoutes, { prefix: '/api/settings' });
 });
 
 // Serve the bundled SPA when present (production single-image build).
@@ -94,6 +97,8 @@ const start = async () => {
 
   try {
     await app.listen({ port: config.port, host: config.host });
+    // Begin the hourly due-soon reminder sweep.
+    startScheduler(app.log);
   } catch (err) {
     app.log.error(err);
     process.exit(1);

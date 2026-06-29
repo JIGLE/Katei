@@ -44,6 +44,26 @@ export async function migrate(): Promise<void> {
        value TEXT NOT NULL
      )`,
   );
+  // Timestamp a reminder was sent for an event, so we don't notify twice.
+  await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP`);
+}
+
+/** Read a single app setting, or null if unset. */
+export async function getSetting(key: string): Promise<string | null> {
+  const { rows } = await query<{ value: string }>(
+    `SELECT value FROM app_settings WHERE key = $1`,
+    [key],
+  );
+  return rows[0]?.value ?? null;
+}
+
+/** Upsert a single app setting. */
+export async function setSetting(key: string, value: string): Promise<void> {
+  await query(
+    `INSERT INTO app_settings (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+    [key, value],
+  );
 }
 
 /**

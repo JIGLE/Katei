@@ -34,6 +34,7 @@ export default function Timeline() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<HouseholdEvent | null>(null);
 
   const fetchEvents = (all: boolean) => {
     setLoading(true);
@@ -47,8 +48,14 @@ export default function Timeline() {
 
   useEffect(() => { fetchEvents(showAll); }, [showAll]);
 
-  const handleCreated = () => {
+  const handleSaved = () => {
     setShowForm(false);
+    setEditing(null);
+    fetchEvents(showAll);
+  };
+
+  const handleDeleted = () => {
+    setEditing(null);
     fetchEvents(showAll);
   };
 
@@ -113,15 +120,19 @@ export default function Timeline() {
                   {formatDate(evt.target_date)}
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
+                {/* Content — tap to edit */}
+                <button
+                  type="button"
+                  onClick={() => setEditing(evt)}
+                  className="flex-1 min-w-0 text-left"
+                >
                   <p className={`text-sm ${evt.is_completed ? 'line-through text-zinc-500' : 'text-zinc-100'}`}>
                     {evt.title}
                   </p>
                   {evt.description && (
                     <p className="mt-0.5 truncate text-xs text-zinc-500">{evt.description}</p>
                   )}
-                </div>
+                </button>
 
                 {/* Type badge */}
                 <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles.badge}`}>
@@ -163,7 +174,18 @@ export default function Timeline() {
       </button>
 
       <Modal open={showForm} title="New event" onClose={() => setShowForm(false)}>
-        <EventForm onCreated={handleCreated} onCancel={() => setShowForm(false)} />
+        <EventForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+      </Modal>
+
+      <Modal open={!!editing} title="Edit event" onClose={() => setEditing(null)}>
+        {editing && (
+          <EventForm
+            initial={editing}
+            onSaved={handleSaved}
+            onCancel={() => setEditing(null)}
+            onDeleted={handleDeleted}
+          />
+        )}
       </Modal>
     </div>
   );

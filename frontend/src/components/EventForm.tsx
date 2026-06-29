@@ -3,8 +3,10 @@ import { api } from '../lib/api';
 import type { HouseholdEvent, MoneyStream } from '../lib/types';
 
 interface EventFormProps {
-  onCreated: (event: HouseholdEvent) => void;
+  initial?: HouseholdEvent;
+  onSaved: (event: HouseholdEvent) => void;
   onCancel: () => void;
+  onDeleted?: (id: number) => void;
 }
 
 type EventType = HouseholdEvent['event_type'];
@@ -20,16 +22,20 @@ const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
-export function EventForm({ onCreated, onCancel }: EventFormProps) {
-  const [title, setTitle] = useState('');
-  const [eventType, setEventType] = useState<EventType>('deadline');
-  const [targetDate, setTargetDate] = useState('');
-  const [description, setDescription] = useState('');
-  const [moneyStreamId, setMoneyStreamId] = useState<string>('');
+export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormProps) {
+  const isEdit = Boolean(initial);
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [eventType, setEventType] = useState<EventType>(initial?.event_type ?? 'deadline');
+  const [targetDate, setTargetDate] = useState(initial?.target_date?.slice(0, 10) ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [moneyStreamId, setMoneyStreamId] = useState<string>(
+    initial?.money_stream_id ? String(initial.money_stream_id) : '',
+  );
 
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Money streams are optional links — fetch them so a payment can point
   // at the recurring cost it settles.
@@ -50,14 +56,27 @@ export function EventForm({ onCreated, onCancel }: EventFormProps) {
         title: title.trim(),
         event_type: eventType,
         target_date: targetDate,
+        money_stream_id: moneyStreamId ? Number(moneyStreamId) : null,
+        description: description.trim() || null,
       };
-      if (description.trim()) body.description = description.trim();
-      if (moneyStreamId) body.money_stream_id = Number(moneyStreamId);
-
-      const created = await api.post<HouseholdEvent>('/events', body);
-      onCreated(created);
+      const saved = isEdit
+        ? await api.patch<HouseholdEvent>(`/events/${initial!.id}`, body)
+        : await api.post<HouseholdEvent>('/events', body);
+      onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create event.');
+      setError(err instanceof Error ? err.message : 'Failed to save event.');
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initial || !onDeleted) return;
+    setSubmitting(true);
+    try {
+      await api.delete(`/events/${initial.id}`);
+      onDeleted(initial.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete event.');
       setSubmitting(false);
     }
   };
@@ -153,9 +172,20 @@ export function EventForm({ onCreated, onCancel }: EventFormProps) {
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Saving…' : 'Add event'}
+          {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Add event'}
         </button>
       </div>
+
+      {isEdit && onDeleted && (
+        <button
+          type="button"
+          onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+          disabled={submitting}
+          className="w-full pt-1 text-center text-xs text-rose-500/80 transition-colors hover:text-rose-400 disabled:opacity-50"
+        >
+          {confirmDelete ? 'Tap again to confirm delete' : 'Delete event'}
+        </button>
+      )}
     </form>
   );
 }
