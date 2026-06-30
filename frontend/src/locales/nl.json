@@ -79,7 +79,8 @@
   "eventType": {
     "deadline": "Deadline",
     "payment": "Betaling",
-    "appointment": "Afspraak"
+    "appointment": "Afspraak",
+    "income": "Inkomen"
   },
   "money": {
     "eyebrow": "Financiën",
@@ -93,7 +94,14 @@
     "addFirstStream": "Voeg je eerste geldstroom toe",
     "addStreamAria": "Geldstroom toevoegen",
     "newStream": "Nieuwe geldstroom",
-    "editStream": "Geldstroom bewerken"
+    "editStream": "Geldstroom bewerken",
+    "income": "Inkomsten",
+    "expense": "Uitgave",
+    "expenses": "Uitgaven",
+    "savings": "Sparen",
+    "net": "Netto",
+    "savingsRate": "Spaarquote",
+    "savingsGoal": "Spaardoel"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -193,6 +201,7 @@
     "backupsIntro": "Er wordt dagelijks een back-up opgeslagen in het datavolume. Download er een om hem extern te bewaren; herstellen met /app/restore.sh.",
     "noBackups": "Nog geen back-ups.",
     "download": "Downloaden",
-    "language": "Weergavetaal"
+    "language": "Weergavetaal",
+    "savingsGoal": "Maandelijks spaardoel"
   }
 }

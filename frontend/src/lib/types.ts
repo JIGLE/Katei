@@ -8,6 +8,9 @@ export interface User {
   created_at: string;
 }
 
+export type StreamType = 'income' | 'expense' | 'savings';
+export type DueShift = 'none' | 'prev' | 'next';
+
 export interface MoneyStream {
   id: number;
   name: string;
@@ -16,6 +19,9 @@ export interface MoneyStream {
   is_recurring: boolean;
   frequency: 'monthly' | 'yearly' | 'one-off';
   category: string | null;
+  stream_type: StreamType;
+  due_day: number;
+  due_shift: DueShift;
   created_at: string;
 }
 
@@ -23,7 +29,7 @@ export interface HouseholdEvent {
   id: number;
   title: string;
   description: string | null;
-  event_type: 'deadline' | 'payment' | 'appointment';
+  event_type: 'deadline' | 'payment' | 'appointment' | 'income';
   target_date: string; // ISO date string
   is_completed: boolean;
   money_stream_id: number | null;

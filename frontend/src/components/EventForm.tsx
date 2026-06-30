@@ -16,6 +16,7 @@ const typeOptions: { value: EventType; labelKey: string; active: string }[] = [
   { value: 'deadline', labelKey: 'eventType.deadline', active: 'bg-rose-500/15 text-rose-400 border-rose-500/40' },
   { value: 'payment', labelKey: 'eventType.payment', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
   { value: 'appointment', labelKey: 'eventType.appointment', active: 'bg-amber-500/15 text-amber-400 border-amber-500/40' },
+  { value: 'income', labelKey: 'eventType.income', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
 ];
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';

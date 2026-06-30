@@ -58,7 +58,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: 'string' },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment'] },
+            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income'] },
             target_date: { type: 'string', format: 'date' },
             money_stream_id: { type: 'integer' },
           },
@@ -102,7 +102,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: 'string' },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment'] },
+            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income'] },
             target_date: { type: 'string', format: 'date' },
             is_completed: { type: 'boolean' },
             money_stream_id: { type: ['integer', 'null'] },

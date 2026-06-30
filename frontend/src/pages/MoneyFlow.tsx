@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream } from '../lib/types';
+import type { MoneyStream, StreamType } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { useTranslation } from 'react-i18next';
@@ -13,41 +13,31 @@ const freqKey: Record<string, string> = {
   'one-off': 'freq.oneOff',
 };
 
-function totalMonthly(streams: MoneyStream[]): number {
-  return streams
-    .filter((s) => s.is_recurring && s.frequency === 'monthly')
-    .reduce((sum, s) => sum + parseFloat(s.amount), 0);
+// Monthly-equivalent of a recurring stream (monthly as-is, yearly ÷12, one-off excluded).
+function monthlyEquiv(s: MoneyStream): number {
+  if (!s.is_recurring) return 0;
+  const a = parseFloat(s.amount);
+  return s.frequency === 'monthly' ? a : s.frequency === 'yearly' ? a / 12 : 0;
 }
 
-function totalYearly(streams: MoneyStream[]): number {
-  const yearly = streams
-    .filter((s) => s.is_recurring && s.frequency === 'yearly')
-    .reduce((sum, s) => sum + parseFloat(s.amount) / 12, 0);
-  return totalMonthly(streams) + yearly;
+function sumType(streams: MoneyStream[], type: StreamType): number {
+  return streams.filter((s) => s.stream_type === type).reduce((t, s) => t + monthlyEquiv(s), 0);
 }
 
-// Monthly-equivalent spend per category (monthly as-is, yearly ÷ 12, one-offs
-// excluded), sorted largest first with each slice's share of the total.
 interface CategorySlice {
   category: string;
   monthly: number;
   pct: number;
 }
 
-function monthlyEquivByCategory(streams: MoneyStream[]): CategorySlice[] {
+// Expense breakdown by category (the streams passed in are already expenses).
+function byCategory(streams: MoneyStream[]): CategorySlice[] {
   const map = new Map<string, number>();
   for (const s of streams) {
-    if (!s.is_recurring) continue;
-    const monthly =
-      s.frequency === 'monthly'
-        ? parseFloat(s.amount)
-        : s.frequency === 'yearly'
-          ? parseFloat(s.amount) / 12
-          : 0;
-    if (monthly <= 0) continue;
-    // Treat null *or* empty/whitespace category as uncategorised.
+    const m = monthlyEquiv(s);
+    if (m <= 0) continue;
     const cat = s.category?.trim() || 'Uncategorised';
-    map.set(cat, (map.get(cat) ?? 0) + monthly);
+    map.set(cat, (map.get(cat) ?? 0) + m);
   }
   const total = Array.from(map.values()).reduce((a, b) => a + b, 0);
   return Array.from(map.entries())
@@ -55,24 +45,33 @@ function monthlyEquivByCategory(streams: MoneyStream[]): CategorySlice[] {
     .sort((a, b) => b.monthly - a.monthly);
 }
 
-// Money is always green (BRAND §5); categories are distinguished by shade only.
+// Category bar shades stay within the money family.
 const SEGMENT_BG = [
-  'bg-emerald-500',
-  'bg-emerald-400',
-  'bg-emerald-600',
-  'bg-teal-400',
-  'bg-emerald-300',
-  'bg-teal-600',
-  'bg-zinc-600',
+  'bg-emerald-500', 'bg-emerald-400', 'bg-emerald-600', 'bg-teal-400', 'bg-emerald-300', 'bg-teal-600', 'bg-zinc-600',
 ];
+
+// Per-type accent for stream amounts & section labels.
+const TYPE_AMOUNT: Record<StreamType, string> = {
+  income: 'text-emerald-500',
+  expense: 'text-zinc-200',
+  savings: 'text-teal-300',
+};
+const TYPE_ORDER: StreamType[] = ['income', 'expense', 'savings'];
+const TYPE_HEADER_KEY: Record<StreamType, string> = {
+  income: 'money.income',
+  expense: 'money.expenses',
+  savings: 'money.savings',
+};
 
 export default function MoneyFlow() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [newType, setNewType] = useState<StreamType>('expense');
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
-  const { currency, locale } = usePreferences();
+  const { currency, locale, savings_goal } = usePreferences();
   const { t } = useTranslation();
 
   const fetchStreams = () => {
@@ -86,23 +85,23 @@ export default function MoneyFlow() {
 
   useEffect(() => { fetchStreams(); }, []);
 
-  const handleSaved = () => {
-    setShowForm(false);
-    setEditing(null);
-    fetchStreams();
-  };
+  const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
+  const handleDeleted = () => { setEditing(null); fetchStreams(); };
 
-  const handleDeleted = () => {
-    setEditing(null);
-    fetchStreams();
-  };
+  const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
 
-  const categories = Array.from(new Set(streams.map((s) => s.category?.trim() || 'Uncategorised')));
-  const slices = monthlyEquivByCategory(streams);
-  const monthlyEquiv = totalYearly(streams); // monthly burn incl. amortized yearly
-  // The "Uncategorised" fallback is generated in code, so localize it on display;
-  // real user categories pass through untouched.
+  const income = sumType(streams, 'income');
+  const expenses = sumType(streams, 'expense');
+  const savings = sumType(streams, 'savings');
+  const net = income - expenses - savings;
+  const savingsRate = income > 0 ? (savings / income) * 100 : 0;
+  const goalPct = savings_goal > 0 ? Math.min(100, (savings / savings_goal) * 100) : 0;
+
+  const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
+  const slices = byCategory(expenseStreams);
   const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
+
+  const fmt = (n: number) => formatMoney(n, currency, locale);
 
   return (
     <div className="space-y-6">
@@ -111,49 +110,65 @@ export default function MoneyFlow() {
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('money.title')}</h1>
       </header>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Income / Expenses / Savings */}
+      <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-          <p className="text-xs text-zinc-500">{t('money.monthlyEquivalent')}</p>
-          <p className="mt-1 text-lg font-light text-emerald-500">
-            {loading ? '—' : formatMoney(monthlyEquiv, currency, locale)}
-          </p>
+          <p className="text-xs text-zinc-500">{t('money.income')}</p>
+          <p className="mt-1 text-base font-light text-emerald-500">{loading ? '—' : fmt(income)}</p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('money.yearlyTotal')}</p>
-          <p className="mt-1 text-lg font-light text-zinc-300">
-            {loading ? '—' : formatMoney(monthlyEquiv * 12, currency, locale)}
-          </p>
+          <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
+          <p className="mt-1 text-base font-light text-zinc-200">{loading ? '—' : fmt(expenses)}</p>
+        </div>
+        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4">
+          <p className="text-xs text-zinc-500">{t('money.savings')}</p>
+          <p className="mt-1 text-base font-light text-teal-300">{loading ? '—' : fmt(savings)}</p>
         </div>
       </div>
 
-      {/* Spending breakdown — proportion bar + per-category share */}
+      {/* Net + savings rate */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+          <p className="text-xs text-zinc-500">{t('money.net')}</p>
+          <p className={`mt-1 text-lg font-light ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            {loading ? '—' : fmt(net)}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+          <p className="text-xs text-zinc-500">{t('money.savingsRate')}</p>
+          <p className="mt-1 text-lg font-light text-zinc-300">{loading ? '—' : `${savingsRate.toFixed(0)}%`}</p>
+        </div>
+      </div>
+
+      {/* Savings goal progress */}
+      {!loading && savings_goal > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <div className="mb-2 flex items-baseline justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsGoal')}</p>
+            <p className="text-xs tabular-nums text-zinc-500">{fmt(savings)} / {fmt(savings_goal)}</p>
+          </div>
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="h-full rounded-full bg-teal-400" style={{ width: `${goalPct}%` }} />
+          </div>
+        </section>
+      )}
+
+      {/* Expense breakdown */}
       {!loading && !error && slices.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('money.whereItGoes')}
-          </p>
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.whereItGoes')}</p>
           <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
             {slices.map((s, i) => (
-              <div
-                key={s.category}
-                className={SEGMENT_BG[i % SEGMENT_BG.length]}
-                style={{ width: `${s.pct}%` }}
-                title={`${s.category} — ${s.pct.toFixed(0)}%`}
-              />
+              <div key={s.category} className={SEGMENT_BG[i % SEGMENT_BG.length]} style={{ width: `${s.pct}%` }} title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`} />
             ))}
           </div>
           <ul className="mt-4 space-y-2.5">
             {slices.map((s, i) => (
               <li key={s.category} className="flex items-center gap-3">
-                <span
-                  className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${SEGMENT_BG[i % SEGMENT_BG.length]}`}
-                />
+                <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${SEGMENT_BG[i % SEGMENT_BG.length]}`} />
                 <span className="flex-1 truncate text-sm text-zinc-300">{catLabel(s.category)}</span>
                 <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
-                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
-                  {formatMoney(s.monthly, currency, locale)}
-                </span>
+                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">{fmt(s.monthly)}</span>
               </li>
             ))}
           </ul>
@@ -167,21 +182,19 @@ export default function MoneyFlow() {
       {!loading && !error && streams.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
           <p className="text-sm text-zinc-500">{t('money.noStreamsYet')}</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
-          >
+          <button onClick={() => openAdd('expense')} className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100">
             {t('money.addFirstStream')}
           </button>
         </div>
       )}
 
-      {/* Streams grouped by category */}
-      {!loading && !error && streams.length > 0 && categories.map((cat) => {
-        const group = streams.filter((s) => (s.category?.trim() || 'Uncategorised') === cat);
+      {/* Streams grouped by type */}
+      {!loading && !error && TYPE_ORDER.map((type) => {
+        const group = streams.filter((s) => s.stream_type === type);
+        if (group.length === 0) return null;
         return (
-          <section key={cat} className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{catLabel(cat)}</p>
+          <section key={type} className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t(TYPE_HEADER_KEY[type])}</p>
             {group.map((s) => (
               <button
                 key={s.id}
@@ -193,14 +206,10 @@ export default function MoneyFlow() {
                   <p className="text-sm text-zinc-100">{s.name}</p>
                   <p className="mt-0.5 text-xs text-zinc-500">
                     {t(freqKey[s.frequency])}
-                    {!s.is_recurring && (
-                      <span className="ml-2 rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-400">
-                        {t('freq.oneOff')}
-                      </span>
-                    )}
+                    {s.category?.trim() && <span className="ml-1">· {catLabel(s.category.trim())}</span>}
                   </p>
                 </div>
-                <p className="flex-shrink-0 text-sm font-medium text-emerald-500">
+                <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[type]}`}>
                   {formatMoney(s.amount, s.currency, locale)}
                 </p>
               </button>
@@ -209,29 +218,50 @@ export default function MoneyFlow() {
         );
       })}
 
-      {/* Floating add button — sits above the fixed bottom nav. */}
-      <button
-        onClick={() => setShowForm(true)}
-        aria-label={t('money.addStreamAria')}
-        className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
-      >
-        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-      </button>
+      {/* Contextual Add menu */}
+      {addMenuOpen && (
+        <button
+          aria-label={t('common.close')}
+          onClick={() => setAddMenuOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40"
+        />
+      )}
+      <div className="fixed bottom-28 right-4 z-50 flex flex-col items-end gap-2">
+        {addMenuOpen && (
+          <div className="flex flex-col items-end gap-2">
+            {([
+              ['income', 'money.income', 'border-emerald-500/40 text-emerald-400'],
+              ['expense', 'money.expense', 'border-zinc-700 text-zinc-200'],
+              ['savings', 'money.savings', 'border-teal-500/40 text-teal-300'],
+            ] as [StreamType, string, string][]).map(([type, key, cls]) => (
+              <button
+                key={type}
+                onClick={() => openAdd(type)}
+                className={`rounded-full border bg-zinc-900 px-4 py-2 text-sm font-medium shadow-lg ${cls}`}
+              >
+                {t(key)}
+              </button>
+            ))}
+          </div>
+        )}
+        <button
+          onClick={() => setAddMenuOpen((v) => !v)}
+          aria-label={t('money.addStreamAria')}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
+        >
+          <svg className={`h-6 w-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
+      </div>
 
       <Modal open={showForm} title={t('money.newStream')} onClose={() => setShowForm(false)}>
-        <StreamForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+        <StreamForm initialType={newType} onSaved={handleSaved} onCancel={() => setShowForm(false)} />
       </Modal>
 
       <Modal open={!!editing} title={t('money.editStream')} onClose={() => setEditing(null)}>
         {editing && (
-          <StreamForm
-            initial={editing}
-            onSaved={handleSaved}
-            onCancel={() => setEditing(null)}
-            onDeleted={handleDeleted}
-          />
+          <StreamForm initial={editing} onSaved={handleSaved} onCancel={() => setEditing(null)} onDeleted={handleDeleted} />
         )}
       </Modal>
     </div>

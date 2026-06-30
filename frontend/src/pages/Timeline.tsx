@@ -17,6 +17,7 @@ const typeConfig: Record<
   deadline: { accent: 'rose', labelKey: 'eventType.deadline' },
   payment: { accent: 'emerald', labelKey: 'eventType.payment' },
   appointment: { accent: 'amber', labelKey: 'eventType.appointment' },
+  income: { accent: 'emerald', labelKey: 'eventType.income' },
 };
 
 const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = {

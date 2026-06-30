@@ -1,7 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 
-const COLS = 'id, name, amount, currency, is_recurring, frequency, category, created_at';
+const COLS =
+  'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, created_at';
 
 export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/money-streams
@@ -31,6 +32,9 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       is_recurring?: boolean;
       frequency?: string;
       category?: string;
+      stream_type?: string;
+      due_day?: number;
+      due_shift?: string;
     };
   }>(
     '/',
@@ -46,6 +50,9 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             is_recurring: { type: 'boolean' },
             frequency: { type: 'string', enum: ['monthly', 'yearly', 'one-off'] },
             category: { type: 'string', maxLength: 100 },
+            stream_type: { type: 'string', enum: ['income', 'expense', 'savings'] },
+            due_day: { type: 'integer', minimum: 1, maximum: 31 },
+            due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
           },
         },
       },
@@ -58,11 +65,14 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
         is_recurring = true,
         frequency = 'monthly',
         category = null,
+        stream_type = 'expense',
+        due_day = 1,
+        due_shift = 'next',
       } = req.body;
       const { rows } = await query(
-        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${COLS}`,
-        [name, amount, currency, is_recurring, frequency, category],
+        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${COLS}`,
+        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift],
       );
       return reply.code(201).send(rows[0]);
     },
@@ -78,6 +88,9 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       is_recurring?: boolean;
       frequency?: string;
       category?: string;
+      stream_type?: string;
+      due_day?: number;
+      due_shift?: string;
     };
   }>(
     '/:id',
@@ -92,12 +105,15 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             is_recurring: { type: 'boolean' },
             frequency: { type: 'string', enum: ['monthly', 'yearly', 'one-off'] },
             category: { type: 'string', maxLength: 100 },
+            stream_type: { type: 'string', enum: ['income', 'expense', 'savings'] },
+            due_day: { type: 'integer', minimum: 1, maximum: 31 },
+            due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
           },
         },
       },
     },
     async (req, reply) => {
-      const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category'] as const;
+      const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category', 'stream_type', 'due_day', 'due_shift'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;

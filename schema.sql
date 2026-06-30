@@ -26,6 +26,9 @@ CREATE TABLE money_streams (
     is_recurring BOOLEAN DEFAULT TRUE,
     frequency VARCHAR(50) DEFAULT 'monthly', -- 'monthly', 'yearly', 'one-off'
     category VARCHAR(100),
+    stream_type VARCHAR(20) NOT NULL DEFAULT 'expense', -- 'income' | 'expense' | 'savings'
+    due_day SMALLINT NOT NULL DEFAULT 1,           -- day-of-month the stream falls due (1-31)
+    due_shift VARCHAR(10) NOT NULL DEFAULT 'next',  -- 'none' | 'prev' | 'next' business-day adjustment
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -33,7 +36,7 @@ CREATE TABLE household_events (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    event_type VARCHAR(50) NOT NULL, -- 'deadline', 'payment', 'appointment'
+    event_type VARCHAR(50) NOT NULL, -- 'deadline', 'payment', 'appointment', 'income'
     target_date DATE NOT NULL,
     is_completed BOOLEAN DEFAULT FALSE,
     money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,

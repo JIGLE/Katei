@@ -78,7 +78,8 @@
   "eventType": {
     "deadline": "Deadline",
     "payment": "Payment",
-    "appointment": "Appointment"
+    "appointment": "Appointment",
+    "income": "Income"
   },
   "money": {
     "eyebrow": "Finance",
@@ -92,7 +93,14 @@
     "addFirstStream": "Add your first stream",
     "addStreamAria": "Add money stream",
     "newStream": "New money stream",
-    "editStream": "Edit money stream"
+    "editStream": "Edit money stream",
+    "income": "Income",
+    "expense": "Expense",
+    "expenses": "Expenses",
+    "savings": "Savings",
+    "net": "Net",
+    "savingsRate": "Savings rate",
+    "savingsGoal": "Savings goal"
   },
   "freq": {
     "monthly": "Monthly",
@@ -192,6 +200,7 @@
     "backupsIntro": "A snapshot is saved daily inside the data volume. Download one to keep it off-box; restore with /app/restore.sh.",
     "noBackups": "No backups yet.",
     "download": "Download",
-    "language": "Display language"
+    "language": "Display language",
+    "savingsGoal": "Monthly savings goal"
   }
 }

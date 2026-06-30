@@ -79,7 +79,8 @@
   "eventType": {
     "deadline": "Date limite",
     "payment": "Paiement",
-    "appointment": "Rendez-vous"
+    "appointment": "Rendez-vous",
+    "income": "Revenu"
   },
   "money": {
     "eyebrow": "Finances",
@@ -93,7 +94,14 @@
     "addFirstStream": "Ajouter votre premier flux",
     "addStreamAria": "Ajouter un flux d'argent",
     "newStream": "Nouveau flux d'argent",
-    "editStream": "Modifier le flux d'argent"
+    "editStream": "Modifier le flux d'argent",
+    "income": "Revenus",
+    "expense": "Dépense",
+    "expenses": "Dépenses",
+    "savings": "Épargne",
+    "net": "Net",
+    "savingsRate": "Taux d'épargne",
+    "savingsGoal": "Objectif d'épargne"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -193,6 +201,7 @@
     "backupsIntro": "Une sauvegarde est enregistrée chaque jour dans le volume de données. Téléchargez-en une pour la conserver hors site ; restauration avec /app/restore.sh.",
     "noBackups": "Aucune sauvegarde pour l'instant.",
     "download": "Télécharger",
-    "language": "Langue d'affichage"
+    "language": "Langue d'affichage",
+    "savingsGoal": "Objectif d'épargne mensuel"
   }
 }

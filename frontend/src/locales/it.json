@@ -79,7 +79,8 @@
   "eventType": {
     "deadline": "Scadenza",
     "payment": "Pagamento",
-    "appointment": "Appuntamento"
+    "appointment": "Appuntamento",
+    "income": "Entrata"
   },
   "money": {
     "eyebrow": "Finanze",
@@ -93,7 +94,14 @@
     "addFirstStream": "Aggiungi il tuo primo flusso",
     "addStreamAria": "Aggiungi flusso di denaro",
     "newStream": "Nuovo flusso di denaro",
-    "editStream": "Modifica flusso di denaro"
+    "editStream": "Modifica flusso di denaro",
+    "income": "Entrate",
+    "expense": "Spesa",
+    "expenses": "Spese",
+    "savings": "Risparmi",
+    "net": "Netto",
+    "savingsRate": "Tasso di risparmio",
+    "savingsGoal": "Obiettivo di risparmio"
   },
   "freq": {
     "monthly": "Mensile",
@@ -193,6 +201,7 @@
     "backupsIntro": "Ogni giorno viene salvato un backup nel volume dati. Scaricane uno per conservarlo altrove; ripristino con /app/restore.sh.",
     "noBackups": "Ancora nessun backup.",
     "download": "Scarica",
-    "language": "Lingua dell'interfaccia"
+    "language": "Lingua dell'interfaccia",
+    "savingsGoal": "Obiettivo di risparmio mensile"
   }
 }

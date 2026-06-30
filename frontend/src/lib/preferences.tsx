@@ -8,6 +8,7 @@ export interface Preferences {
   locale: string;
   timezone: string;
   language: string;
+  savings_goal: number;
 }
 
 const DEFAULTS: Preferences = {
@@ -16,6 +17,7 @@ const DEFAULTS: Preferences = {
   locale: 'de-DE',
   timezone: 'Europe/Berlin',
   language: 'en',
+  savings_goal: 0,
 };
 
 interface PreferencesContextValue extends Preferences {

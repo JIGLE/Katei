@@ -79,7 +79,8 @@
   "eventType": {
     "deadline": "Frist",
     "payment": "Zahlung",
-    "appointment": "Termin"
+    "appointment": "Termin",
+    "income": "Einkommen"
   },
   "money": {
     "eyebrow": "Finanzen",
@@ -93,7 +94,14 @@
     "addFirstStream": "Ersten Geldfluss hinzufügen",
     "addStreamAria": "Geldfluss hinzufügen",
     "newStream": "Neuer Geldfluss",
-    "editStream": "Geldfluss bearbeiten"
+    "editStream": "Geldfluss bearbeiten",
+    "income": "Einkommen",
+    "expense": "Ausgabe",
+    "expenses": "Ausgaben",
+    "savings": "Sparen",
+    "net": "Netto",
+    "savingsRate": "Sparquote",
+    "savingsGoal": "Sparziel"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -193,6 +201,7 @@
     "backupsIntro": "Täglich wird eine Sicherung im Datenvolumen gespeichert. Lade eine herunter, um sie extern aufzubewahren; Wiederherstellung mit /app/restore.sh.",
     "noBackups": "Noch keine Sicherungen.",
     "download": "Herunterladen",
-    "language": "Anzeigesprache"
+    "language": "Anzeigesprache",
+    "savingsGoal": "Monatliches Sparziel"
   }
 }

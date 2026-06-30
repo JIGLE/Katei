@@ -78,6 +78,10 @@ decorative color is forbidden.
 | 🔴 Rose | `rose-500` | **Critical** — deadlines, overdue, destructive | Deadlines, overdue items, delete actions, errors |
 | ⚪ Zinc | `zinc-100 → zinc-600` | **Neutral** — text, structure, "later" | Everything non-semantic |
 
+Money sub-types (budgeting) stay within the money family so green still reads as
+"money": **income** = `emerald`, **savings** = `teal`, **expense** = neutral
+`zinc`. Net is `emerald` when ≥ 0, `rose` when negative.
+
 Event-type → accent mapping (authoritative):
 
 ```

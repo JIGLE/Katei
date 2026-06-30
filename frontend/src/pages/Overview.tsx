@@ -13,6 +13,7 @@ const eventAccent: Record<HouseholdEvent['event_type'], Accent> = {
   deadline: 'rose',
   payment: 'emerald',
   appointment: 'amber',
+  income: 'emerald',
 };
 
 const accentMap: Record<Accent, { pill: string; dot: string }> = {
@@ -21,11 +22,14 @@ const accentMap: Record<Accent, { pill: string; dot: string }> = {
   emerald: { pill: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
 };
 
-// Sum of recurring monthly streams (in the household's default currency).
+// Monthly-equivalent of recurring expenses (monthly as-is, yearly ÷12).
 function monthlyOutflow(streams: MoneyStream[]): number {
   return streams
-    .filter((s) => s.is_recurring && s.frequency === 'monthly')
-    .reduce((sum, s) => sum + parseFloat(s.amount), 0);
+    .filter((s) => s.is_recurring && s.stream_type === 'expense')
+    .reduce((sum, s) => {
+      const a = parseFloat(s.amount);
+      return sum + (s.frequency === 'monthly' ? a : s.frequency === 'yearly' ? a / 12 : 0);
+    }, 0);
 }
 
 // A timeline row. Overdue items are tinted rose; far-out items are dimmed.

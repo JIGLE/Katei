@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { CURRENCIES } from '../lib/countries';
-import type { MoneyStream } from '../lib/types';
+import type { MoneyStream, StreamType } from '../lib/types';
 
 interface StreamFormProps {
   initial?: MoneyStream;
+  initialType?: StreamType;
   onSaved: (stream: MoneyStream) => void;
   onCancel: () => void;
   onDeleted?: (id: number) => void;
@@ -20,18 +21,26 @@ const freqOptions: { value: Frequency; labelKey: string }[] = [
   { value: 'one-off', labelKey: 'freq.oneOff' },
 ];
 
+// Type sub-palette (BRAND §5 extension): income emerald, savings teal, expense neutral.
+const typeOptions: { value: StreamType; labelKey: string; active: string }[] = [
+  { value: 'income', labelKey: 'money.income', active: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400' },
+  { value: 'expense', labelKey: 'money.expense', active: 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100' },
+  { value: 'savings', labelKey: 'money.savings', active: 'border-teal-500/40 bg-teal-500/15 text-teal-300' },
+];
+
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
-export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamFormProps) {
+export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted }: StreamFormProps) {
   const { currency: defaultCurrency } = usePreferences();
   const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [amount, setAmount] = useState(initial?.amount ?? '');
   const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
+  const [streamType, setStreamType] = useState<StreamType>(initial?.stream_type ?? initialType ?? 'expense');
   const [frequency, setFrequency] = useState<Frequency>(initial?.frequency ?? 'monthly');
   const [category, setCategory] = useState(initial?.category ?? '');
 
@@ -57,6 +66,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
         name: name.trim(),
         amount: parsedAmount,
         currency: currency.trim().toUpperCase() || 'USD',
+        stream_type: streamType,
         frequency,
         // "one-off" is a non-recurring cost; everything else recurs.
         is_recurring: frequency !== 'one-off',
@@ -126,6 +136,25 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      <div>
+        <span className={labelCls}>{t('form.type')}</span>
+        <div className="grid grid-cols-3 gap-2">
+          {typeOptions.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setStreamType(opt.value)}
+              className={[
+                'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                streamType === opt.value ? opt.active : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+              ].join(' ')}
+            >
+              {t(opt.labelKey)}
+            </button>
+          ))}
         </div>
       </div>
 

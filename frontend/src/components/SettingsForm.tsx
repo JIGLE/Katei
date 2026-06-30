@@ -45,6 +45,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [locale, setLocale] = useState(prefs.locale);
   const [timezone, setTimezone] = useState(prefs.timezone);
   const [language, setLanguage] = useState(prefs.language);
+  const [savingsGoal, setSavingsGoal] = useState(String(prefs.savings_goal || ''));
   const [savingPrefs, setSavingPrefs] = useState(false);
 
   // Keep local fields in sync once preferences finish loading.
@@ -54,7 +55,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setLocale(prefs.locale);
     setTimezone(prefs.timezone);
     setLanguage(prefs.language);
-  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language]);
+    setSavingsGoal(String(prefs.savings_goal || ''));
+  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal]);
 
   const onCountryChange = (code: string) => {
     setCountry(code);
@@ -66,7 +68,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ country, currency, locale, timezone, language });
+      await prefs.save({ country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0 });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -201,6 +203,19 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           >
             {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
           </select>
+        </div>
+        <div>
+          <label htmlFor="pref_savings_goal" className="mb-1.5 block text-xs text-zinc-500">{t('settings.savingsGoal')}</label>
+          <input
+            id="pref_savings_goal"
+            type="number"
+            min="0"
+            step="0.01"
+            value={savingsGoal}
+            onChange={(e) => setSavingsGoal(e.target.value)}
+            placeholder="0.00"
+            className={`${fieldCls} [color-scheme:dark]`}
+          />
         </div>
         <button
           type="button"
