@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { AssigneeStack } from '../components/Avatar';
-import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
+import { OnboardingCard } from '../components/OnboardingCard';
+import type { AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald';
 
@@ -75,7 +76,9 @@ function EventRow({
 
 export default function Overview() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
+  const [eventsTotal, setEventsTotal] = useState(0);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
+  const [usersCount, setUsersCount] = useState(0);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,15 +88,21 @@ export default function Overview() {
       api.get<HouseholdEvent[]>('/events'),
       api.get<MoneyStream[]>('/money-streams'),
       api.get<AssignmentDetail[]>('/assignments'),
+      api.get<User[]>('/users'),
     ])
-      .then(([evts, strs, asgs]) => {
+      .then(([evts, strs, asgs, users]) => {
         setEvents(evts.filter((e) => !e.is_completed));
+        setEventsTotal(evts.length);
         setStreams(strs);
         setAssignments(asgs);
+        setUsersCount(users.length);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Show the first-run checklist until every setup step is satisfied.
+  const onboardingComplete = usersCount > 1 && streams.length > 0 && eventsTotal > 0;
 
   // Index assignments by event so each row can show who's responsible.
   const membersByEvent = new Map<number, AssignmentDetail[]>();
@@ -118,6 +127,15 @@ export default function Overview() {
         <p className="text-xs uppercase tracking-widest text-zinc-500">Home</p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">Overview</h1>
       </header>
+
+      {/* First-run setup checklist — hides once the household is set up. */}
+      {!loading && !error && !onboardingComplete && (
+        <OnboardingCard
+          usersCount={usersCount}
+          streamsCount={streams.length}
+          eventsCount={eventsTotal}
+        />
+      )}
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
