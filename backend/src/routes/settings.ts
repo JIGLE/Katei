@@ -5,8 +5,53 @@ import type { FastifyPluginAsync } from 'fastify';
 import { createReadStream, existsSync } from 'node:fs';
 import { getSettings, saveSettings, sendNtfy, checkAndNotify } from '../lib/notifications.js';
 import { listBackups, backupPath, runBackup } from '../lib/backups.js';
+import { getSetting, setSetting } from '../db.js';
+
+// EU-leaning defaults when a household hasn't set preferences yet.
+const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
 
 export const settingsRoutes: FastifyPluginAsync = async (app) => {
+  // GET /api/settings/preferences — household country / currency / locale / timezone.
+  app.get('/preferences', async () => ({
+    country: (await getSetting('country')) ?? PREF_DEFAULTS.country,
+    currency: (await getSetting('default_currency')) ?? PREF_DEFAULTS.currency,
+    locale: (await getSetting('locale')) ?? PREF_DEFAULTS.locale,
+    timezone: (await getSetting('timezone')) ?? PREF_DEFAULTS.timezone,
+  }));
+
+  // PUT /api/settings/preferences
+  app.put<{
+    Body: { country: string; currency: string; locale: string; timezone: string };
+  }>(
+    '/preferences',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['country', 'currency', 'locale', 'timezone'],
+          properties: {
+            country: { type: 'string', pattern: '^[A-Za-z]{2}$' },
+            currency: { type: 'string', pattern: '^[A-Za-z]{3}$' },
+            locale: { type: 'string', minLength: 2, maxLength: 35 },
+            timezone: { type: 'string', minLength: 1, maxLength: 64 },
+          },
+        },
+      },
+    },
+    async (req) => {
+      await setSetting('country', req.body.country.toUpperCase());
+      await setSetting('default_currency', req.body.currency.toUpperCase());
+      await setSetting('locale', req.body.locale);
+      await setSetting('timezone', req.body.timezone);
+      return {
+        country: req.body.country.toUpperCase(),
+        currency: req.body.currency.toUpperCase(),
+        locale: req.body.locale,
+        timezone: req.body.timezone,
+      };
+    },
+  );
+
   // GET /api/settings/notifications
   app.get('/notifications', async () => getSettings());
 

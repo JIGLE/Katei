@@ -20,4 +20,9 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || undefined,
   ntfyUrl: process.env.NTFY_URL || undefined,
   leadDays: process.env.LEAD_DAYS || undefined,
+  // Optional EU-leaning locale/currency seeds for the household preferences.
+  country: process.env.COUNTRY || undefined,
+  defaultCurrency: process.env.DEFAULT_CURRENCY || undefined,
+  locale: process.env.LOCALE || undefined,
+  timezone: process.env.TZ || undefined,
 } as const;

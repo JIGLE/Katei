@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { api } from '../lib/api';
+import { usePreferences } from '../lib/preferences';
+import { CURRENCIES } from '../lib/countries';
 import type { MoneyStream } from '../lib/types';
 
 interface StreamFormProps {
@@ -23,10 +25,11 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
 export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamFormProps) {
+  const { currency: defaultCurrency } = usePreferences();
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [amount, setAmount] = useState(initial?.amount ?? '');
-  const [currency, setCurrency] = useState(initial?.currency ?? 'USD');
+  const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
   const [frequency, setFrequency] = useState<Frequency>(initial?.frequency ?? 'monthly');
   const [category, setCategory] = useState(initial?.category ?? '');
 
@@ -109,17 +112,18 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
             className={fieldCls}
           />
         </div>
-        <div className="w-24">
+        <div className="w-28">
           <label htmlFor="currency" className={labelCls}>Currency</label>
-          <input
+          <select
             id="currency"
-            type="text"
-            maxLength={3}
             value={currency}
-            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-            placeholder="USD"
-            className={`${fieldCls} uppercase`}
-          />
+            onChange={(e) => setCurrency(e.target.value)}
+            className={`${fieldCls} [color-scheme:dark]`}
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
       </div>
 

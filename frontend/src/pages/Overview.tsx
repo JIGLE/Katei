@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { AssigneeStack } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
+import { usePreferences } from '../lib/preferences';
+import { formatMoney, daysUntil } from '../lib/format';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald';
@@ -18,13 +20,6 @@ const accentMap: Record<Accent, { pill: string; dot: string }> = {
   emerald: { pill: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
 };
 
-function daysUntil(dateStr: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
-  return Math.ceil((target.getTime() - today.getTime()) / 86_400_000);
-}
-
 function urgencyLabel(days: number): string {
   if (days < 0) return days === -1 ? '1 day ago' : `${-days} days ago`;
   if (days === 0) return 'today';
@@ -32,11 +27,11 @@ function urgencyLabel(days: number): string {
   return `in ${days} days`;
 }
 
-function formatAmount(streams: MoneyStream[]): string {
-  const monthly = streams
+// Sum of recurring monthly streams (in the household's default currency).
+function monthlyOutflow(streams: MoneyStream[]): number {
+  return streams
     .filter((s) => s.is_recurring && s.frequency === 'monthly')
     .reduce((sum, s) => sum + parseFloat(s.amount), 0);
-  return monthly.toLocaleString('en-US', { minimumFractionDigits: 2 });
 }
 
 // A timeline row. Overdue items are tinted rose; far-out items are dimmed.
@@ -82,6 +77,7 @@ export default function Overview() {
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { currency, locale, timezone } = usePreferences();
 
   useEffect(() => {
     Promise.all([
@@ -115,7 +111,7 @@ export default function Overview() {
 
   // Bucket open events by urgency. Each list stays sorted by date ascending.
   const dated = events
-    .map((evt) => ({ evt, days: daysUntil(evt.target_date) }))
+    .map((evt) => ({ evt, days: daysUntil(evt.target_date, timezone) }))
     .sort((a, b) => a.days - b.days);
   const overdue = dated.filter((d) => d.days < 0);
   const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
@@ -142,7 +138,7 @@ export default function Overview() {
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
           <p className="text-xs text-zinc-500">Monthly outflow</p>
           <p className="mt-1 text-xl font-light text-emerald-500">
-            {loading ? '—' : `$${formatAmount(streams)}`}
+            {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale)}
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">

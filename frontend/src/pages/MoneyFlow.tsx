@@ -3,6 +3,8 @@ import { api } from '../lib/api';
 import type { MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
+import { usePreferences } from '../lib/preferences';
+import { formatMoney } from '../lib/format';
 
 const freqLabel: Record<string, string> = {
   monthly: 'Monthly',
@@ -21,10 +23,6 @@ function totalYearly(streams: MoneyStream[]): number {
     .filter((s) => s.is_recurring && s.frequency === 'yearly')
     .reduce((sum, s) => sum + parseFloat(s.amount) / 12, 0);
   return totalMonthly(streams) + yearly;
-}
-
-function fmt(n: number): string {
-  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // Monthly-equivalent spend per category (monthly as-is, yearly ÷ 12, one-offs
@@ -46,7 +44,8 @@ function monthlyEquivByCategory(streams: MoneyStream[]): CategorySlice[] {
           ? parseFloat(s.amount) / 12
           : 0;
     if (monthly <= 0) continue;
-    const cat = s.category ?? 'Uncategorised';
+    // Treat null *or* empty/whitespace category as uncategorised.
+    const cat = s.category?.trim() || 'Uncategorised';
     map.set(cat, (map.get(cat) ?? 0) + monthly);
   }
   const total = Array.from(map.values()).reduce((a, b) => a + b, 0);
@@ -72,6 +71,7 @@ export default function MoneyFlow() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
+  const { currency, locale } = usePreferences();
 
   const fetchStreams = () => {
     setLoading(true);
@@ -95,7 +95,7 @@ export default function MoneyFlow() {
     fetchStreams();
   };
 
-  const categories = Array.from(new Set(streams.map((s) => s.category ?? 'Uncategorised')));
+  const categories = Array.from(new Set(streams.map((s) => s.category?.trim() || 'Uncategorised')));
   const slices = monthlyEquivByCategory(streams);
   const monthlyEquiv = totalYearly(streams); // monthly burn incl. amortized yearly
 
@@ -111,13 +111,13 @@ export default function MoneyFlow() {
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
           <p className="text-xs text-zinc-500">Monthly equivalent</p>
           <p className="mt-1 text-lg font-light text-emerald-500">
-            {loading ? '—' : `$${fmt(monthlyEquiv)}`}
+            {loading ? '—' : formatMoney(monthlyEquiv, currency, locale)}
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
           <p className="text-xs text-zinc-500">Yearly total</p>
           <p className="mt-1 text-lg font-light text-zinc-300">
-            {loading ? '—' : `$${fmt(monthlyEquiv * 12)}`}
+            {loading ? '—' : formatMoney(monthlyEquiv * 12, currency, locale)}
           </p>
         </div>
       </div>
@@ -146,8 +146,8 @@ export default function MoneyFlow() {
                 />
                 <span className="flex-1 truncate text-sm text-zinc-300">{s.category}</span>
                 <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
-                <span className="w-20 text-right text-sm tabular-nums text-zinc-200">
-                  ${fmt(s.monthly)}
+                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
+                  {formatMoney(s.monthly, currency, locale)}
                 </span>
               </li>
             ))}
@@ -173,7 +173,7 @@ export default function MoneyFlow() {
 
       {/* Streams grouped by category */}
       {!loading && !error && streams.length > 0 && categories.map((cat) => {
-        const group = streams.filter((s) => (s.category ?? 'Uncategorised') === cat);
+        const group = streams.filter((s) => (s.category?.trim() || 'Uncategorised') === cat);
         return (
           <section key={cat} className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{cat}</p>
@@ -187,7 +187,7 @@ export default function MoneyFlow() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-zinc-100">{s.name}</p>
                   <p className="mt-0.5 text-xs text-zinc-500">
-                    {freqLabel[s.frequency]} · {s.currency}
+                    {freqLabel[s.frequency]}
                     {!s.is_recurring && (
                       <span className="ml-2 rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-400">
                         one-off
@@ -196,7 +196,7 @@ export default function MoneyFlow() {
                   </p>
                 </div>
                 <p className="flex-shrink-0 text-sm font-medium text-emerald-500">
-                  ${parseFloat(s.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatMoney(s.amount, s.currency, locale)}
                 </p>
               </button>
             ))}

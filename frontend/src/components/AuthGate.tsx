@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
+import { api } from '../lib/api';
+import { usePreferences } from '../lib/preferences';
+import { COUNTRIES, CURRENCIES, TIMEZONES, countryByCode, DEFAULT_COUNTRY } from '../lib/countries';
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
@@ -8,10 +11,22 @@ const fieldCls =
 
 export function AuthGate() {
   const { needsSetup, login, register } = useAuth();
+  const prefs = usePreferences();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Setup-only: country drives currency / locale / timezone, each overridable.
+  const [country, setCountry] = useState(DEFAULT_COUNTRY.code);
+  const [currency, setCurrency] = useState(DEFAULT_COUNTRY.currency);
+  const [timezone, setTimezone] = useState(DEFAULT_COUNTRY.timezone);
+
+  const onCountryChange = (code: string) => {
+    setCountry(code);
+    const c = countryByCode(code);
+    if (c) { setCurrency(c.currency); setTimezone(c.timezone); }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +43,11 @@ export function AuthGate() {
     try {
       if (needsSetup) {
         await register(name.trim(), password);
+        // Persist the household's region preferences right after the session
+        // is created (locale follows the chosen country).
+        const locale = countryByCode(country)?.locale ?? DEFAULT_COUNTRY.locale;
+        await api.put('/settings/preferences', { country, currency, locale, timezone }).catch(() => {});
+        await prefs.reload();
       } else {
         await login(name.trim(), password);
       }
@@ -84,6 +104,48 @@ export function AuthGate() {
                 className={fieldCls}
               />
             </div>
+
+            {needsSetup && (
+              <>
+                <div>
+                  <label htmlFor="country" className={labelCls}>Country</label>
+                  <select
+                    id="country"
+                    value={country}
+                    onChange={(e) => onCountryChange(e.target.value)}
+                    className={`${fieldCls} [color-scheme:dark]`}
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label htmlFor="currency" className={labelCls}>Currency</label>
+                    <select
+                      id="currency"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className={`${fieldCls} [color-scheme:dark]`}
+                    >
+                      {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label htmlFor="timezone" className={labelCls}>Timezone</label>
+                    <select
+                      id="timezone"
+                      value={timezone}
+                      onChange={(e) => setTimezone(e.target.value)}
+                      className={`${fieldCls} [color-scheme:dark]`}
+                    >
+                      {TIMEZONES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
 
             {error && <p className="text-sm text-rose-400">{error}</p>}
 

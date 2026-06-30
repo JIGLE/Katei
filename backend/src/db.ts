@@ -99,4 +99,8 @@ export async function getOrCreateAuthSecret(): Promise<string> {
 export async function seedSettingsFromEnv(): Promise<void> {
   if (config.ntfyUrl) await setSetting('ntfy_url', config.ntfyUrl);
   if (config.leadDays) await setSetting('notify_lead_days', config.leadDays);
+  if (config.country) await setSetting('country', config.country);
+  if (config.defaultCurrency) await setSetting('default_currency', config.defaultCurrency);
+  if (config.locale) await setSetting('locale', config.locale);
+  if (config.timezone) await setSetting('timezone', config.timezone);
 }

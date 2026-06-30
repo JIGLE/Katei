@@ -4,6 +4,8 @@ import type { AssignmentDetail, HouseholdEvent } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { AssigneeStack } from '../components/Avatar';
+import { usePreferences } from '../lib/preferences';
+import { formatDate } from '../lib/format';
 
 type Accent = 'amber' | 'emerald' | 'rose';
 
@@ -22,13 +24,6 @@ const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = 
   rose: { date: 'text-rose-500', dot: 'bg-rose-500', badge: 'bg-rose-500/10 text-rose-500' },
 };
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 type View = 'upcoming' | 'all' | 'done';
 const VIEWS: { key: View; label: string }[] = [
   { key: 'upcoming', label: 'Upcoming' },
@@ -37,6 +32,7 @@ const VIEWS: { key: View; label: string }[] = [
 ];
 
 export default function Timeline() {
+  const { locale, timezone } = usePreferences();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [view, setView] = useState<View>('upcoming');
@@ -182,7 +178,7 @@ export default function Timeline() {
                 <div
                   className={`w-14 flex-shrink-0 border-r border-zinc-800/60 pr-4 text-center text-xs font-medium ${styles.date}`}
                 >
-                  {formatDate(evt.target_date)}
+                  {formatDate(evt.target_date, locale, timezone)}
                 </div>
 
                 {/* Content — tap to edit */}

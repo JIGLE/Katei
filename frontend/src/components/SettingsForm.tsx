@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { usePreferences } from '../lib/preferences';
+import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
 
 interface NotificationSettings {
   ntfy_url: string;
@@ -32,6 +34,41 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [backingUp, setBackingUp] = useState(false);
+
+  // Household preferences (country drives currency / locale / timezone defaults).
+  const prefs = usePreferences();
+  const [country, setCountry] = useState(prefs.country);
+  const [currency, setCurrency] = useState(prefs.currency);
+  const [locale, setLocale] = useState(prefs.locale);
+  const [timezone, setTimezone] = useState(prefs.timezone);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+
+  // Keep local fields in sync once preferences finish loading.
+  useEffect(() => {
+    setCountry(prefs.country);
+    setCurrency(prefs.currency);
+    setLocale(prefs.locale);
+    setTimezone(prefs.timezone);
+  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone]);
+
+  const onCountryChange = (code: string) => {
+    setCountry(code);
+    const c = countryByCode(code);
+    if (c) { setCurrency(c.currency); setLocale(c.locale); setTimezone(c.timezone); }
+  };
+
+  const savePrefs = async () => {
+    setSavingPrefs(true);
+    setMessage(null);
+    try {
+      await prefs.save({ country, currency, locale, timezone });
+      setMessage({ kind: 'ok', text: 'Preferences saved.' });
+    } catch (err) {
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : 'Save failed.' });
+    } finally {
+      setSavingPrefs(false);
+    }
+  };
 
   const loadBackups = () => {
     api.get<BackupInfo[]>('/settings/backups').then(setBackups).catch(() => {});
@@ -98,6 +135,67 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
+      {/* Preferences — country drives currency / locale / timezone, all overridable */}
+      <div className="space-y-3 border-b border-zinc-800/60 pb-4">
+        <label className={`${labelCls} mb-0`}>Preferences</label>
+        <div>
+          <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">Country</label>
+          <select
+            id="country"
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+            className={`${fieldCls} [color-scheme:dark]`}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label htmlFor="pref_currency" className="mb-1.5 block text-xs text-zinc-500">Currency</label>
+            <select
+              id="pref_currency"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className={`${fieldCls} [color-scheme:dark]`}
+            >
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label htmlFor="pref_locale" className="mb-1.5 block text-xs text-zinc-500">Locale</label>
+            <select
+              id="pref_locale"
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              className={`${fieldCls} [color-scheme:dark]`}
+            >
+              {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label htmlFor="pref_tz" className="mb-1.5 block text-xs text-zinc-500">Timezone</label>
+          <select
+            id="pref_tz"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            className={`${fieldCls} [color-scheme:dark]`}
+          >
+            {TIMEZONES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <button
+          type="button"
+          onClick={savePrefs}
+          disabled={savingPrefs}
+          className="w-full rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700 disabled:opacity-50"
+        >
+          {savingPrefs ? 'Saving…' : 'Save preferences'}
+        </button>
+      </div>
+
       <p className="text-xs leading-relaxed text-zinc-500">
         Get a push when an event is due. Create a topic in the{' '}
         <span className="text-zinc-300">ntfy</span> app, then paste its URL below
