@@ -34,6 +34,7 @@ export interface HouseholdEvent {
   target_date: string; // ISO date string
   is_completed: boolean;
   money_stream_id: number | null;
+  actual_amount: string | null; // amount actually paid, captured at "mark as paid"
   created_at: string;
 }
 

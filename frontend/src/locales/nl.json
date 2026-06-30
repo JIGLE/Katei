@@ -74,7 +74,11 @@
     "markIncomplete": "Markeer als open",
     "addEventAria": "Gebeurtenis toevoegen",
     "newEvent": "Nieuwe gebeurtenis",
-    "editEvent": "Gebeurtenis bewerken"
+    "editEvent": "Gebeurtenis bewerken",
+    "markPaidTitle": "Markeren als betaald",
+    "markPaid": "Markeren als betaald",
+    "amountPaid": "Betaald bedrag",
+    "amountPaidHint": "Pas aan als het werkelijke bedrag afweek."
   },
   "eventType": {
     "deadline": "Deadline",

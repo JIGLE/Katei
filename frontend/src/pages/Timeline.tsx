@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { AssignmentDetail, HouseholdEvent } from '../lib/types';
+import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatDate } from '../lib/format';
+
+const fieldCls =
+  'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
+  'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
 type Accent = 'amber' | 'emerald' | 'rose';
 
@@ -34,15 +38,18 @@ const VIEWS: { key: View; labelKey: string }[] = [
 ];
 
 export default function Timeline() {
-  const { locale, timezone } = usePreferences();
+  const { locale, timezone, currency } = usePreferences();
   const { t } = useTranslation();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
+  const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
   const [view, setView] = useState<View>('upcoming');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<HouseholdEvent | null>(null);
+  const [paying, setPaying] = useState<HouseholdEvent | null>(null);
+  const [payAmount, setPayAmount] = useState('');
 
   const fetchEvents = (v: View) => {
     setLoading(true);
@@ -70,6 +77,12 @@ export default function Timeline() {
   // Assignments are independent of the upcoming/all toggle — load once.
   useEffect(() => {
     api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
+    // Money streams let "mark as paid" prefill the expected amount + currency.
+    api.get<MoneyStream[]>('/money-streams').then((rows) => {
+      const m: Record<number, { amount: string; currency: string }> = {};
+      for (const s of rows) m[s.id] = { amount: s.amount, currency: s.currency };
+      setStreams(m);
+    }).catch(() => {});
   }, []);
 
   // Index assignments by event so each row can show who's responsible.
@@ -92,18 +105,47 @@ export default function Timeline() {
     fetchEvents(view);
   };
 
+  // In a filtered view (Upcoming/Done) a toggled item no longer belongs, so
+  // drop it from the list; in All, just reflect the new state.
+  const applyUpdate = (updated: HouseholdEvent) =>
+    setEvents((prev) =>
+      view === 'all'
+        ? prev.map((e) => (e.id === updated.id ? updated : e))
+        : prev.filter((e) => e.id !== updated.id),
+    );
+
   const toggleComplete = async (evt: HouseholdEvent) => {
+    // Completing a payment opens the "mark as paid" prompt to capture the
+    // actual amount; everything else (incl. un-completing) toggles directly.
+    if (!evt.is_completed && evt.event_type === 'payment') {
+      const linked = evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
+      setPayAmount(linked ? String(linked.amount) : '');
+      setPaying(evt);
+      return;
+    }
     try {
       const updated = await api.patch<HouseholdEvent>(`/events/${evt.id}/complete`, {
         is_completed: !evt.is_completed,
       });
-      // In a filtered view (Upcoming/Done) a toggled item no longer belongs,
-      // so drop it from the list; in All, just reflect the new state.
-      setEvents((prev) =>
-        view === 'all'
-          ? prev.map((e) => (e.id === updated.id ? updated : e))
-          : prev.filter((e) => e.id !== updated.id),
-      );
+      applyUpdate(updated);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const payCurrency =
+    paying?.money_stream_id != null ? streams[paying.money_stream_id]?.currency ?? currency : currency;
+
+  const confirmPaid = async () => {
+    if (!paying) return;
+    const amt = parseFloat(payAmount);
+    const body: Record<string, unknown> = { is_completed: true };
+    if (!Number.isNaN(amt) && amt >= 0) body.actual_amount = amt;
+    try {
+      const updated = await api.patch<HouseholdEvent>(`/events/${paying.id}`, body);
+      applyUpdate(updated);
+      setPaying(null);
+      setPayAmount('');
     } catch (e) {
       console.error(e);
     }
@@ -242,6 +284,49 @@ export default function Timeline() {
 
       <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => setShowForm(false)}>
         <EventForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+      </Modal>
+
+      <Modal open={!!paying} title={t('timeline.markPaidTitle')} onClose={() => setPaying(null)}>
+        <div className="space-y-4">
+          <p className="text-sm text-zinc-400">{paying?.title}</p>
+          <div>
+            <label htmlFor="paid_amount" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('timeline.amountPaid')}
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="paid_amount"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+                placeholder="0.00"
+                autoFocus
+                className={fieldCls}
+              />
+              <span className="flex-shrink-0 text-sm text-zinc-500">{payCurrency}</span>
+            </div>
+            <p className="mt-1.5 text-xs text-zinc-500">{t('timeline.amountPaidHint')}</p>
+          </div>
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setPaying(null)}
+              className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={confirmPaid}
+              className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90"
+            >
+              {t('timeline.markPaid')}
+            </button>
+          </div>
+        </div>
       </Modal>
 
       <Modal open={!!editing} title={t('timeline.editEvent')} onClose={() => setEditing(null)}>

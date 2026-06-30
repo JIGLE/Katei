@@ -74,7 +74,11 @@
     "markIncomplete": "Marquer comme à faire",
     "addEventAria": "Ajouter une échéance",
     "newEvent": "Nouvelle échéance",
-    "editEvent": "Modifier l'échéance"
+    "editEvent": "Modifier l'échéance",
+    "markPaidTitle": "Marquer comme payé",
+    "markPaid": "Marquer comme payé",
+    "amountPaid": "Montant payé",
+    "amountPaidHint": "Modifiez si le montant réel diffère de l'habituel."
   },
   "eventType": {
     "deadline": "Date limite",

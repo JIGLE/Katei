@@ -59,6 +59,18 @@ test('toggles completion', opts, async () => {
   assert.equal(res.json().is_completed, true);
 });
 
+test('mark as paid records the actual amount', opts, async () => {
+  const created = (await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Water due', event_type: 'payment' }) })).json();
+  const res = await app.inject({
+    method: 'PATCH', url: `/api/events/${created.id}`, headers: { cookie },
+    payload: { is_completed: true, actual_amount: 142.84 },
+  });
+  assert.equal(res.statusCode, 200);
+  const body = res.json();
+  assert.equal(body.is_completed, true);
+  assert.equal(Number(body.actual_amount), 142.84);
+});
+
 test('deletes an event and 404s afterwards', opts, async () => {
   const created = (await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make() })).json();
   assert.equal((await app.inject({ method: 'DELETE', url: `/api/events/${created.id}`, headers: { cookie } })).statusCode, 204);

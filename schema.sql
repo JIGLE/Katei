@@ -41,6 +41,7 @@ CREATE TABLE household_events (
     target_date DATE NOT NULL,
     is_completed BOOLEAN DEFAULT FALSE,
     money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
+    actual_amount DECIMAL(10, 2),  -- amount actually paid (captured at "mark as paid"); bills vary
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

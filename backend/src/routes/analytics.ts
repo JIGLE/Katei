@@ -12,7 +12,7 @@ export const analyticsRoutes: FastifyPluginAsync = async (app) => {
     const since = windowStart(months, now);
     const { rows } = await query<{ month: string; total: string }>(
       `SELECT to_char(date_trunc('month', e.target_date), 'YYYY-MM') AS month,
-              SUM(s.amount) AS total
+              SUM(COALESCE(e.actual_amount, s.amount)) AS total
          FROM household_events e
          JOIN money_streams s ON s.id = e.money_stream_id
         WHERE e.is_completed = TRUE

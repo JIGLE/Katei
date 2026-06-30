@@ -110,8 +110,10 @@ export default function Overview() {
     membersByEvent.set(a.event_id, list);
   }
 
-  // Bucket open events by urgency. Each list stays sorted by date ascending.
+  // Bucket open events by urgency. "Needs attention" is actionable-only, so
+  // income (money arriving — nothing to do) is excluded; it stays on the Timeline.
   const dated = events
+    .filter((evt) => evt.event_type !== 'income')
     .map((evt) => ({ evt, days: daysUntil(evt.target_date, timezone) }))
     .sort((a, b) => a.days - b.days);
   const overdue = dated.filter((d) => d.days < 0);

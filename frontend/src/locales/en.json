@@ -73,7 +73,11 @@
     "markIncomplete": "Mark incomplete",
     "addEventAria": "Add event",
     "newEvent": "New event",
-    "editEvent": "Edit event"
+    "editEvent": "Edit event",
+    "markPaidTitle": "Mark as paid",
+    "markPaid": "Mark as paid",
+    "amountPaid": "Amount paid",
+    "amountPaidHint": "Edit if the actual amount differed from the usual."
   },
   "eventType": {
     "deadline": "Deadline",

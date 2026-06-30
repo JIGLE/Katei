@@ -74,7 +74,11 @@
     "markIncomplete": "Segna come da fare",
     "addEventAria": "Aggiungi un evento",
     "newEvent": "Nuovo evento",
-    "editEvent": "Modifica evento"
+    "editEvent": "Modifica evento",
+    "markPaidTitle": "Segna come pagato",
+    "markPaid": "Segna come pagato",
+    "amountPaid": "Importo pagato",
+    "amountPaidHint": "Modifica se l'importo reale è diverso dal solito."
   },
   "eventType": {
     "deadline": "Scadenza",

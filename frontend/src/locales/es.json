@@ -74,7 +74,11 @@
     "markIncomplete": "Marcar como pendiente",
     "addEventAria": "Añadir un evento",
     "newEvent": "Nuevo evento",
-    "editEvent": "Editar evento"
+    "editEvent": "Editar evento",
+    "markPaidTitle": "Marcar como pagado",
+    "markPaid": "Marcar como pagado",
+    "amountPaid": "Importe pagado",
+    "amountPaidHint": "Edita si el importe real fue distinto del habitual."
   },
   "eventType": {
     "deadline": "Fecha límite",

@@ -74,7 +74,11 @@
     "markIncomplete": "Als offen markieren",
     "addEventAria": "Termin hinzufügen",
     "newEvent": "Neuer Termin",
-    "editEvent": "Termin bearbeiten"
+    "editEvent": "Termin bearbeiten",
+    "markPaidTitle": "Als bezahlt markieren",
+    "markPaid": "Als bezahlt markieren",
+    "amountPaid": "Bezahlter Betrag",
+    "amountPaidHint": "Anpassen, falls der tatsächliche Betrag abweicht."
   },
   "eventType": {
     "deadline": "Frist",

@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 
 const COLS =
-  'id, title, description, event_type, target_date, is_completed, money_stream_id, created_at';
+  'id, title, description, event_type, target_date, is_completed, money_stream_id, actual_amount, created_at';
 
 export const eventsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/events
@@ -92,6 +92,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       target_date?: string;
       is_completed?: boolean;
       money_stream_id?: number | null;
+      actual_amount?: number | null;
     };
   }>(
     '/:id',
@@ -106,13 +107,14 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
             target_date: { type: 'string', format: 'date' },
             is_completed: { type: 'boolean' },
             money_stream_id: { type: ['integer', 'null'] },
+            actual_amount: { type: ['number', 'null'], minimum: 0 },
           },
         },
       },
     },
     async (req, reply) => {
       const allowed = [
-        'title', 'description', 'event_type', 'target_date', 'is_completed', 'money_stream_id',
+        'title', 'description', 'event_type', 'target_date', 'is_completed', 'money_stream_id', 'actual_amount',
       ] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
