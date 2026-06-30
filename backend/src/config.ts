@@ -13,10 +13,11 @@ export const config = {
   host: process.env.BACKEND_HOST ?? '0.0.0.0',
   databaseUrl: required('DATABASE_URL'),
   nodeEnv: process.env.NODE_ENV ?? 'development',
-  // Optional overrides for app_settings. When set, these win on every boot so a
-  // wiped settings table (or fresh volume) self-heals instead of silently
-  // logging everyone out / stopping reminders. When unset, behaviour is
-  // unchanged (random auth secret, UI-managed ntfy URL).
+  // JWT_SECRET is authoritative on every boot (so sessions survive a wiped
+  // settings table / fresh volume — see getOrCreateAuthSecret). The remaining
+  // env values below are only *initial defaults*: they seed an absent setting
+  // but never override what the household later changes in the UI
+  // (see seedSettingsFromEnv).
   jwtSecret: process.env.JWT_SECRET || undefined,
   ntfyUrl: process.env.NTFY_URL || undefined,
   leadDays: process.env.LEAD_DAYS || undefined,

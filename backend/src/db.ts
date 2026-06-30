@@ -73,6 +73,19 @@ export async function setSetting(key: string, value: string): Promise<void> {
 }
 
 /**
+ * Seed a setting only when it is not already present. Used for env-provided
+ * defaults so a wiped settings table (or fresh volume) self-heals, while UI
+ * changes still persist across restarts instead of being clobbered every boot.
+ */
+export async function setSettingIfAbsent(key: string, value: string): Promise<void> {
+  await query(
+    `INSERT INTO app_settings (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO NOTHING`,
+    [key, value],
+  );
+}
+
+/**
  * Fetch the JWT signing secret. If JWT_SECRET is set in the environment it is
  * authoritative (upserted every boot) so sessions survive a wiped settings
  * table or fresh volume. Otherwise a random secret is generated and persisted
@@ -96,16 +109,18 @@ export async function getOrCreateAuthSecret(): Promise<string> {
 }
 
 /**
- * Seed notification settings from the environment when provided. NTFY_URL and
- * LEAD_DAYS are upserted on boot so they survive a wiped settings table. When
- * unset, the UI-managed values are left untouched.
+ * Seed settings from the environment as initial *defaults* when provided. These
+ * are written only if the key is absent (seed-once), so they populate a fresh /
+ * wiped settings table but never clobber values the household later changes in
+ * the UI — otherwise e.g. TZ (set in most containers) would silently revert the
+ * saved timezone on every restart.
  */
 export async function seedSettingsFromEnv(): Promise<void> {
-  if (config.ntfyUrl) await setSetting('ntfy_url', config.ntfyUrl);
-  if (config.leadDays) await setSetting('notify_lead_days', config.leadDays);
-  if (config.country) await setSetting('country', config.country);
-  if (config.defaultCurrency) await setSetting('default_currency', config.defaultCurrency);
-  if (config.locale) await setSetting('locale', config.locale);
-  if (config.timezone) await setSetting('timezone', config.timezone);
-  if (config.language) await setSetting('language', config.language);
+  if (config.ntfyUrl) await setSettingIfAbsent('ntfy_url', config.ntfyUrl);
+  if (config.leadDays) await setSettingIfAbsent('notify_lead_days', config.leadDays);
+  if (config.country) await setSettingIfAbsent('country', config.country);
+  if (config.defaultCurrency) await setSettingIfAbsent('default_currency', config.defaultCurrency);
+  if (config.locale) await setSettingIfAbsent('locale', config.locale);
+  if (config.timezone) await setSettingIfAbsent('timezone', config.timezone);
+  if (config.language) await setSettingIfAbsent('language', config.language);
 }
