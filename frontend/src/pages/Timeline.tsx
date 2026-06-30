@@ -29,26 +29,44 @@ function formatDate(dateStr: string): string {
   });
 }
 
+type View = 'upcoming' | 'all' | 'done';
+const VIEWS: { key: View; label: string }[] = [
+  { key: 'upcoming', label: 'Upcoming' },
+  { key: 'all', label: 'All' },
+  { key: 'done', label: 'Done' },
+];
+
 export default function Timeline() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
-  const [showAll, setShowAll] = useState(false);
+  const [view, setView] = useState<View>('upcoming');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<HouseholdEvent | null>(null);
 
-  const fetchEvents = (all: boolean) => {
+  const fetchEvents = (v: View) => {
     setLoading(true);
-    const path = all ? '/events' : '/events?upcoming=true';
+    const path = v === 'upcoming' ? '/events?upcoming=true' : '/events';
     api
       .get<HouseholdEvent[]>(path)
-      .then(setEvents)
+      .then((rows) => {
+        if (v === 'done') {
+          // History: completed items, most recently due first.
+          setEvents(
+            rows
+              .filter((e) => e.is_completed)
+              .sort((a, b) => b.target_date.localeCompare(a.target_date)),
+          );
+        } else {
+          setEvents(rows);
+        }
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchEvents(showAll); }, [showAll]);
+  useEffect(() => { fetchEvents(view); }, [view]);
 
   // Assignments are independent of the upcoming/all toggle — load once.
   useEffect(() => {
@@ -67,12 +85,12 @@ export default function Timeline() {
   const handleSaved = () => {
     setShowForm(false);
     setEditing(null);
-    fetchEvents(showAll);
+    fetchEvents(view);
   };
 
   const handleDeleted = () => {
     setEditing(null);
-    fetchEvents(showAll);
+    fetchEvents(view);
   };
 
   const toggleComplete = async (evt: HouseholdEvent) => {
@@ -80,7 +98,13 @@ export default function Timeline() {
       const updated = await api.patch<HouseholdEvent>(`/events/${evt.id}/complete`, {
         is_completed: !evt.is_completed,
       });
-      setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+      // In a filtered view (Upcoming/Done) a toggled item no longer belongs,
+      // so drop it from the list; in All, just reflect the new state.
+      setEvents((prev) =>
+        view === 'all'
+          ? prev.map((e) => (e.id === updated.id ? updated : e))
+          : prev.filter((e) => e.id !== updated.id),
+      );
     } catch (e) {
       console.error(e);
     }
@@ -88,17 +112,26 @@ export default function Timeline() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-end justify-between">
+      <header className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-zinc-500">Planning</p>
           <h1 className="mt-1 text-2xl font-light text-zinc-100">Timeline</h1>
         </div>
-        <button
-          onClick={() => setShowAll((v) => !v)}
-          className="text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
-        >
-          {showAll ? 'Upcoming only' : 'Show all'}
-        </button>
+        {/* View filter */}
+        <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
+          {VIEWS.map((v) => (
+            <button
+              key={v.key}
+              onClick={() => setView(v.key)}
+              className={[
+                'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                view === v.key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
+              ].join(' ')}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       {loading && <p className="text-sm text-zinc-500">Loading…</p>}
@@ -106,13 +139,29 @@ export default function Timeline() {
 
       {!loading && !error && events.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">No events yet.</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
-          >
-            Add your first event
-          </button>
+          {view === 'done' ? (
+            <p className="text-sm text-zinc-500">Nothing completed yet — finished items land here.</p>
+          ) : view === 'upcoming' ? (
+            <>
+              <p className="text-sm text-zinc-500">Nothing upcoming.</p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
+              >
+                Add an event
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-zinc-500">No events yet.</p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
+              >
+                Add your first event
+              </button>
+            </>
+          )}
         </div>
       )}
 
