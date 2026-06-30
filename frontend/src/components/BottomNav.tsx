@@ -25,7 +25,7 @@ const tabs = [
   },
   {
     to: '/money',
-    label: 'Money Flow',
+    label: 'Money',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round"
@@ -55,7 +55,7 @@ const accentColor = {
 export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
-      <div className="mx-4 mb-4 flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-2 shadow-2xl backdrop-blur-sm">
+      <div className="mx-4 mb-4 flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
@@ -63,7 +63,7 @@ export function BottomNav() {
             end={tab.to === '/'}
             className={({ isActive }) =>
               [
-                'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-xs font-medium transition-colors duration-150',
+                'relative flex flex-col items-center gap-1 rounded-xl px-3.5 py-2 text-[0.7rem] font-medium transition-colors duration-150',
                 isActive
                   ? 'bg-zinc-800 text-zinc-100'
                   : 'text-zinc-400 hover:text-zinc-300',
@@ -73,7 +73,7 @@ export function BottomNav() {
             {({ isActive }) => (
               <>
                 {tab.icon}
-                <span>{tab.label}</span>
+                <span className="whitespace-nowrap">{tab.label}</span>
                 {tab.accent && isActive && (
                   <span
                     className={`absolute top-1.5 right-2 h-1 w-1 rounded-full ${accentColor[tab.accent]}`}
