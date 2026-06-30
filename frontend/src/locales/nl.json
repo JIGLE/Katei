@@ -82,7 +82,9 @@
     "markPaidTitle": "Markeren als betaald",
     "markPaid": "Markeren als betaald",
     "amountPaid": "Betaald bedrag",
-    "amountPaidHint": "Pas aan als het werkelijke bedrag afweek."
+    "amountPaidHint": "Pas aan als het werkelijke bedrag afweek.",
+    "assignedToMe": "Aan mij toegewezen",
+    "noneAssigned": "Er is hier niets aan jou toegewezen."
   },
   "eventType": {
     "deadline": "Deadline",

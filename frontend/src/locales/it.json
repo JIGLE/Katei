@@ -82,7 +82,9 @@
     "markPaidTitle": "Segna come pagato",
     "markPaid": "Segna come pagato",
     "amountPaid": "Importo pagato",
-    "amountPaidHint": "Modifica se l'importo reale è diverso dal solito."
+    "amountPaidHint": "Modifica se l'importo reale è diverso dal solito.",
+    "assignedToMe": "Assegnati a me",
+    "noneAssigned": "Non hai nulla di assegnato qui."
   },
   "eventType": {
     "deadline": "Scadenza",

@@ -82,7 +82,9 @@
     "markPaidTitle": "Marquer comme payé",
     "markPaid": "Marquer comme payé",
     "amountPaid": "Montant payé",
-    "amountPaidHint": "Modifiez si le montant réel diffère de l'habituel."
+    "amountPaidHint": "Modifiez si le montant réel diffère de l'habituel.",
+    "assignedToMe": "Qui me sont attribués",
+    "noneAssigned": "Rien ne vous est attribué ici."
   },
   "eventType": {
     "deadline": "Date limite",

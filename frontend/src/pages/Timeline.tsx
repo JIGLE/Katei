@@ -6,6 +6,7 @@ import { EventForm } from '../components/EventForm';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
+import { useAuth } from '../lib/auth';
 import { formatDate } from '../lib/format';
 
 const fieldCls =
@@ -39,11 +40,13 @@ const VIEWS: { key: View; labelKey: string }[] = [
 
 export default function Timeline() {
   const { locale, timezone, currency } = usePreferences();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
   const [view, setView] = useState<View>('upcoming');
+  const [mineOnly, setMineOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -93,6 +96,14 @@ export default function Timeline() {
     list.push(a);
     membersByEvent.set(a.event_id, list);
   }
+
+  // Events assigned to the logged-in member, for the "Assigned to me" filter.
+  const mineEventIds = new Set(
+    assignments
+      .filter((a) => a.user_id === user?.id && a.event_id != null)
+      .map((a) => a.event_id as number),
+  );
+  const visible = mineOnly ? events.filter((e) => mineEventIds.has(e.id)) : events;
 
   const handleSaved = () => {
     setShowForm(false);
@@ -173,12 +184,32 @@ export default function Timeline() {
             </button>
           ))}
         </div>
+        {/* Personal filter — only events assigned to me. */}
+        <button
+          type="button"
+          onClick={() => setMineOnly((v) => !v)}
+          aria-pressed={mineOnly}
+          className={[
+            'self-start rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+            mineOnly
+              ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+              : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+          ].join(' ')}
+        >
+          {t('timeline.assignedToMe')}
+        </button>
       </header>
 
       {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      {!loading && !error && events.length === 0 && (
+      {!loading && !error && visible.length === 0 && mineOnly && (
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
+          <p className="text-sm text-zinc-500">{t('timeline.noneAssigned')}</p>
+        </div>
+      )}
+
+      {!loading && !error && events.length === 0 && !mineOnly && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
           {view === 'done' ? (
             <p className="text-sm text-zinc-500">{t('timeline.nothingCompleted')}</p>
@@ -206,9 +237,9 @@ export default function Timeline() {
         </div>
       )}
 
-      {!loading && !error && events.length > 0 && (
+      {!loading && !error && visible.length > 0 && (
         <section className="space-y-2">
-          {events.map((evt) => {
+          {visible.map((evt) => {
             const cfg = typeConfig[evt.event_type];
             const styles = accentMap[cfg.accent];
             return (

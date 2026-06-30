@@ -81,7 +81,9 @@
     "markPaidTitle": "Mark as paid",
     "markPaid": "Mark as paid",
     "amountPaid": "Amount paid",
-    "amountPaidHint": "Edit if the actual amount differed from the usual."
+    "amountPaidHint": "Edit if the actual amount differed from the usual.",
+    "assignedToMe": "Assigned to me",
+    "noneAssigned": "Nothing assigned to you here."
   },
   "eventType": {
     "deadline": "Deadline",

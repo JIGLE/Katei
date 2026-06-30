@@ -82,7 +82,9 @@
     "markPaidTitle": "Als bezahlt markieren",
     "markPaid": "Als bezahlt markieren",
     "amountPaid": "Bezahlter Betrag",
-    "amountPaidHint": "Anpassen, falls der tatsächliche Betrag abweicht."
+    "amountPaidHint": "Anpassen, falls der tatsächliche Betrag abweicht.",
+    "assignedToMe": "Mir zugewiesen",
+    "noneAssigned": "Dir ist hier nichts zugewiesen."
   },
   "eventType": {
     "deadline": "Frist",

@@ -82,7 +82,9 @@
     "markPaidTitle": "Marcar como pagado",
     "markPaid": "Marcar como pagado",
     "amountPaid": "Importe pagado",
-    "amountPaidHint": "Edita si el importe real fue distinto del habitual."
+    "amountPaidHint": "Edita si el importe real fue distinto del habitual.",
+    "assignedToMe": "Asignado a mí",
+    "noneAssigned": "No tienes nada asignado aquí."
   },
   "eventType": {
     "deadline": "Fecha límite",
