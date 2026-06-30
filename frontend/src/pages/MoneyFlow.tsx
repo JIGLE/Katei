@@ -3,13 +3,14 @@ import { api } from '../lib/api';
 import type { MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
+import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatMoney } from '../lib/format';
 
-const freqLabel: Record<string, string> = {
-  monthly: 'Monthly',
-  yearly: 'Yearly',
-  'one-off': 'One-off',
+const freqKey: Record<string, string> = {
+  monthly: 'freq.monthly',
+  yearly: 'freq.yearly',
+  'one-off': 'freq.oneOff',
 };
 
 function totalMonthly(streams: MoneyStream[]): number {
@@ -72,6 +73,7 @@ export default function MoneyFlow() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
   const { currency, locale } = usePreferences();
+  const { t } = useTranslation();
 
   const fetchStreams = () => {
     setLoading(true);
@@ -98,24 +100,27 @@ export default function MoneyFlow() {
   const categories = Array.from(new Set(streams.map((s) => s.category?.trim() || 'Uncategorised')));
   const slices = monthlyEquivByCategory(streams);
   const monthlyEquiv = totalYearly(streams); // monthly burn incl. amortized yearly
+  // The "Uncategorised" fallback is generated in code, so localize it on display;
+  // real user categories pass through untouched.
+  const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
 
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">Finance</p>
-        <h1 className="mt-1 text-2xl font-light text-zinc-100">Money Flow</h1>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.eyebrow')}</p>
+        <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('money.title')}</h1>
       </header>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-          <p className="text-xs text-zinc-500">Monthly equivalent</p>
+          <p className="text-xs text-zinc-500">{t('money.monthlyEquivalent')}</p>
           <p className="mt-1 text-lg font-light text-emerald-500">
             {loading ? '—' : formatMoney(monthlyEquiv, currency, locale)}
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">Yearly total</p>
+          <p className="text-xs text-zinc-500">{t('money.yearlyTotal')}</p>
           <p className="mt-1 text-lg font-light text-zinc-300">
             {loading ? '—' : formatMoney(monthlyEquiv * 12, currency, locale)}
           </p>
@@ -126,7 +131,7 @@ export default function MoneyFlow() {
       {!loading && !error && slices.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            Where it goes
+            {t('money.whereItGoes')}
           </p>
           <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
             {slices.map((s, i) => (
@@ -144,7 +149,7 @@ export default function MoneyFlow() {
                 <span
                   className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${SEGMENT_BG[i % SEGMENT_BG.length]}`}
                 />
-                <span className="flex-1 truncate text-sm text-zinc-300">{s.category}</span>
+                <span className="flex-1 truncate text-sm text-zinc-300">{catLabel(s.category)}</span>
                 <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
                 <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
                   {formatMoney(s.monthly, currency, locale)}
@@ -152,21 +157,21 @@ export default function MoneyFlow() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-right text-xs text-zinc-600">per month</p>
+          <p className="mt-3 text-right text-xs text-zinc-600">{t('money.perMonth')}</p>
         </section>
       )}
 
-      {loading && <p className="text-sm text-zinc-500">Loading…</p>}
+      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && streams.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">No money streams yet.</p>
+          <p className="text-sm text-zinc-500">{t('money.noStreamsYet')}</p>
           <button
             onClick={() => setShowForm(true)}
             className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
           >
-            Add your first stream
+            {t('money.addFirstStream')}
           </button>
         </div>
       )}
@@ -176,7 +181,7 @@ export default function MoneyFlow() {
         const group = streams.filter((s) => (s.category?.trim() || 'Uncategorised') === cat);
         return (
           <section key={cat} className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{cat}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{catLabel(cat)}</p>
             {group.map((s) => (
               <button
                 key={s.id}
@@ -187,10 +192,10 @@ export default function MoneyFlow() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-zinc-100">{s.name}</p>
                   <p className="mt-0.5 text-xs text-zinc-500">
-                    {freqLabel[s.frequency]}
+                    {t(freqKey[s.frequency])}
                     {!s.is_recurring && (
                       <span className="ml-2 rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-400">
-                        one-off
+                        {t('freq.oneOff')}
                       </span>
                     )}
                   </p>
@@ -207,7 +212,7 @@ export default function MoneyFlow() {
       {/* Floating add button — sits above the fixed bottom nav. */}
       <button
         onClick={() => setShowForm(true)}
-        aria-label="Add money stream"
+        aria-label={t('money.addStreamAria')}
         className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
       >
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -215,11 +220,11 @@ export default function MoneyFlow() {
         </svg>
       </button>
 
-      <Modal open={showForm} title="New money stream" onClose={() => setShowForm(false)}>
+      <Modal open={showForm} title={t('money.newStream')} onClose={() => setShowForm(false)}>
         <StreamForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
       </Modal>
 
-      <Modal open={!!editing} title="Edit money stream" onClose={() => setEditing(null)}>
+      <Modal open={!!editing} title={t('money.editStream')} onClose={() => setEditing(null)}>
         {editing && (
           <StreamForm
             initial={editing}

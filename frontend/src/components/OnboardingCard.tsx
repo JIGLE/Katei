@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface Step {
   label: string;
@@ -20,23 +21,24 @@ export function OnboardingCard({
   eventsCount: number;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const steps: Step[] = [
     {
-      label: 'Add household members',
-      hint: 'Who shares these obligations',
+      label: t('onboarding.addMembers'),
+      hint: t('onboarding.addMembersHint'),
       done: usersCount > 1,
       to: '/household',
     },
     {
-      label: 'Add your recurring money',
-      hint: 'Rent, bills, subscriptions',
+      label: t('onboarding.addMoney'),
+      hint: t('onboarding.addMoneyHint'),
       done: streamsCount > 0,
       to: '/money',
     },
     {
-      label: 'Add an upcoming event',
-      hint: 'A deadline or appointment',
+      label: t('onboarding.addEvent'),
+      hint: t('onboarding.addEventHint'),
       done: eventsCount > 0,
       to: '/timeline',
     },
@@ -47,12 +49,12 @@ export function OnboardingCard({
     <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
       <div className="mb-4 flex items-baseline justify-between">
         <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-          Getting started
+          {t('onboarding.title')}
         </p>
-        <p className="text-xs text-zinc-600">{remaining} left</p>
+        <p className="text-xs text-zinc-600">{t('onboarding.left', { count: remaining })}</p>
       </div>
       <p className="mb-4 text-sm leading-relaxed text-zinc-400">
-        A few steps to set up your household. You can do these in any order.
+        {t('onboarding.intro')}
       </p>
       <ul className="space-y-2">
         {steps.map((s) => (

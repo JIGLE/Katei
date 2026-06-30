@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from './api';
+import { setLanguageFromLocale } from './i18n';
 
 export interface Preferences {
   country: string;
@@ -39,6 +40,11 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     reload().finally(() => setLoading(false));
   }, []);
+
+  // Keep the UI language in sync with the chosen locale.
+  useEffect(() => {
+    setLanguageFromLocale(prefs.locale);
+  }, [prefs.locale]);
 
   const save = async (p: Preferences) => {
     const saved = await api.put<Preferences>('/settings/preferences', p);

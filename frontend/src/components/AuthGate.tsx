@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
@@ -12,6 +13,7 @@ const fieldCls =
 export function AuthGate() {
   const { needsSetup, login, register } = useAuth();
   const prefs = usePreferences();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -31,11 +33,11 @@ export function AuthGate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !password) {
-      setError('Name and password are required.');
+      setError(t('auth.errNamePassword'));
       return;
     }
     if (needsSetup && password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('auth.errPasswordLen'));
       return;
     }
     setSubmitting(true);
@@ -52,7 +54,7 @@ export function AuthGate() {
         await login(name.trim(), password);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong.';
+      const msg = err instanceof Error ? err.message : t('auth.errGeneric');
       // Surface the API's message rather than the raw "401 {json}" string.
       setError(msg.replace(/^\d+\s+/, '').replace(/^\{.*"error":"(.*?)".*\}$/, '$1'));
       setSubmitting(false);
@@ -69,23 +71,21 @@ export function AuthGate() {
 
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-6">
           <h2 className="mb-1 text-lg font-light text-zinc-100">
-            {needsSetup ? 'Create your account' : 'Sign in'}
+            {needsSetup ? t('auth.createTitle') : t('auth.signInTitle')}
           </h2>
           <p className="mb-5 text-xs text-zinc-500">
-            {needsSetup
-              ? 'This will be the first household account.'
-              : 'Welcome back to your household.'}
+            {needsSetup ? t('auth.createSubtitle') : t('auth.signInSubtitle')}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className={labelCls}>Name</label>
+              <label htmlFor="name" className={labelCls}>{t('auth.name')}</label>
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Alex"
+                placeholder={t('auth.namePlaceholder')}
                 autoFocus
                 autoComplete="username"
                 className={fieldCls}
@@ -93,13 +93,13 @@ export function AuthGate() {
             </div>
 
             <div>
-              <label htmlFor="password" className={labelCls}>Password</label>
+              <label htmlFor="password" className={labelCls}>{t('auth.password')}</label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={needsSetup ? 'At least 8 characters' : '••••••••'}
+                placeholder={needsSetup ? t('auth.passwordSetupPlaceholder') : '••••••••'}
                 autoComplete={needsSetup ? 'new-password' : 'current-password'}
                 className={fieldCls}
               />
@@ -108,7 +108,7 @@ export function AuthGate() {
             {needsSetup && (
               <>
                 <div>
-                  <label htmlFor="country" className={labelCls}>Country</label>
+                  <label htmlFor="country" className={labelCls}>{t('auth.country')}</label>
                   <select
                     id="country"
                     value={country}
@@ -122,7 +122,7 @@ export function AuthGate() {
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label htmlFor="currency" className={labelCls}>Currency</label>
+                    <label htmlFor="currency" className={labelCls}>{t('auth.currency')}</label>
                     <select
                       id="currency"
                       value={currency}
@@ -133,14 +133,14 @@ export function AuthGate() {
                     </select>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <label htmlFor="timezone" className={labelCls}>Timezone</label>
+                    <label htmlFor="timezone" className={labelCls}>{t('auth.timezone')}</label>
                     <select
                       id="timezone"
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
                       className={`${fieldCls} [color-scheme:dark]`}
                     >
-                      {TIMEZONES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
                     </select>
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export function AuthGate() {
               disabled={submitting}
               className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {submitting ? 'Please wait…' : needsSetup ? 'Create account' : 'Sign in'}
+              {submitting ? t('common.pleaseWait') : needsSetup ? t('auth.createBtn') : t('auth.signInBtn')}
             </button>
           </form>
         </div>

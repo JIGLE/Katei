@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const tabs = [
   {
     to: '/',
-    label: 'Overview',
+    labelKey: 'nav.overview',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round"
@@ -14,7 +15,7 @@ const tabs = [
   },
   {
     to: '/timeline',
-    label: 'Timeline',
+    labelKey: 'nav.timeline',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round"
@@ -25,7 +26,7 @@ const tabs = [
   },
   {
     to: '/money',
-    label: 'Money',
+    labelKey: 'nav.money',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round"
@@ -36,7 +37,7 @@ const tabs = [
   },
   {
     to: '/household',
-    label: 'Household',
+    labelKey: 'nav.household',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round"
@@ -53,6 +54,7 @@ const accentColor = {
 };
 
 export function BottomNav() {
+  const { t } = useTranslation();
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
       <div className="mx-4 mb-4 flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
@@ -73,7 +75,7 @@ export function BottomNav() {
             {({ isActive }) => (
               <>
                 {tab.icon}
-                <span className="whitespace-nowrap">{tab.label}</span>
+                <span className="whitespace-nowrap">{t(tab.labelKey)}</span>
                 {tab.accent && isActive && (
                   <span
                     className={`absolute top-1.5 right-2 h-1 w-1 rounded-full ${accentColor[tab.accent]}`}

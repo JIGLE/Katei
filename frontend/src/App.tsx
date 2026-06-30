@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BottomNav } from './components/BottomNav';
 import { AuthGate } from './components/AuthGate';
 import { Modal } from './components/Modal';
@@ -12,12 +13,13 @@ import Household from './pages/Household';
 
 export default function App() {
   const { user, loading, logout } = useAuth();
+  const { t } = useTranslation();
   const [showSettings, setShowSettings] = useState(false);
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center bg-zinc-950">
-        <p className="text-sm text-zinc-600">Loading…</p>
+        <p className="text-sm text-zinc-600">{t('common.loading')}</p>
       </div>
     );
   }
@@ -40,7 +42,7 @@ export default function App() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowSettings(true)}
-            aria-label="Settings"
+            aria-label={t('common.settings')}
             className="text-zinc-500 transition-colors hover:text-zinc-300"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -52,7 +54,7 @@ export default function App() {
             onClick={logout}
             className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
           >
-            Sign out
+            {t('common.signOut')}
           </button>
         </div>
       </header>
@@ -71,7 +73,7 @@ export default function App() {
 
       <BottomNav />
 
-      <Modal open={showSettings} title="Notifications" onClose={() => setShowSettings(false)}>
+      <Modal open={showSettings} title={t('settings.notificationsTitle')} onClose={() => setShowSettings(false)}>
         <SettingsForm onClose={() => setShowSettings(false)} />
       </Modal>
     </div>

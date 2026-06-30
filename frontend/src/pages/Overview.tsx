@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { AssigneeStack } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
+import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
-import { formatMoney, daysUntil } from '../lib/format';
+import { formatMoney, daysUntil, formatRelativeDay } from '../lib/format';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald';
@@ -20,13 +21,6 @@ const accentMap: Record<Accent, { pill: string; dot: string }> = {
   emerald: { pill: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
 };
 
-function urgencyLabel(days: number): string {
-  if (days < 0) return days === -1 ? '1 day ago' : `${-days} days ago`;
-  if (days === 0) return 'today';
-  if (days === 1) return 'tomorrow';
-  return `in ${days} days`;
-}
-
 // Sum of recurring monthly streams (in the household's default currency).
 function monthlyOutflow(streams: MoneyStream[]): number {
   return streams
@@ -41,11 +35,13 @@ function EventRow({
   days,
   tone,
   members,
+  locale,
 }: {
   evt: HouseholdEvent;
   days: number;
   tone: 'overdue' | 'week' | 'later';
   members: AssignmentDetail[];
+  locale: string;
 }) {
   const accent = accentMap[eventAccent[evt.event_type]];
   const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
@@ -63,7 +59,7 @@ function EventRow({
       <span className={`flex-1 truncate text-sm ${title}`}>{evt.title}</span>
       <AssigneeStack members={members} size="xs" />
       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
-        {urgencyLabel(days)}
+        {formatRelativeDay(days, locale)}
       </span>
     </li>
   );
@@ -78,6 +74,7 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currency, locale, timezone } = usePreferences();
+  const { t } = useTranslation();
 
   useEffect(() => {
     Promise.all([
@@ -120,8 +117,8 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">Home</p>
-        <h1 className="mt-1 text-2xl font-light text-zinc-100">Overview</h1>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('overview.eyebrow')}</p>
+        <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('overview.title')}</h1>
       </header>
 
       {/* First-run setup checklist — hides once the household is set up. */}
@@ -136,19 +133,19 @@ export default function Overview() {
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">Monthly outflow</p>
+          <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
           <p className="mt-1 text-xl font-light text-emerald-500">
             {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale)}
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">Overdue</p>
+          <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
           <p className="mt-1 text-xl font-light text-rose-500">
             {loading ? '—' : overdue.length}
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">This week</p>
+          <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
           <p className="mt-1 text-xl font-light text-amber-500">
             {loading ? '—' : thisWeek.length}
           </p>
@@ -158,13 +155,13 @@ export default function Overview() {
       {/* Attention list */}
       <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
         <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-          Needs attention
+          {t('overview.needsAttention')}
         </p>
 
-        {loading && <p className="text-sm text-zinc-500">Loading…</p>}
+        {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
         {error && <p className="text-sm text-rose-400">{error}</p>}
         {!loading && !error && dated.length === 0 && (
-          <p className="text-sm text-zinc-500">Nothing coming up — all clear.</p>
+          <p className="text-sm text-zinc-500">{t('overview.allClear')}</p>
         )}
 
         {!loading && !error && dated.length > 0 && (
@@ -172,11 +169,11 @@ export default function Overview() {
             {overdue.length > 0 && (
               <div>
                 <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-rose-500/80">
-                  Overdue
+                  {t('overview.overdue')}
                 </p>
                 <ul className="space-y-3">
                   {overdue.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
                   ))}
                 </ul>
               </div>
@@ -184,11 +181,11 @@ export default function Overview() {
             {thisWeek.length > 0 && (
               <div>
                 <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-500">
-                  This week
+                  {t('overview.thisWeek')}
                 </p>
                 <ul className="space-y-3">
                   {thisWeek.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
                   ))}
                 </ul>
               </div>
@@ -196,11 +193,11 @@ export default function Overview() {
             {later.length > 0 && (
               <div>
                 <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-600">
-                  Later
+                  {t('overview.later')}
                 </p>
                 <ul className="space-y-3">
                   {later.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
                   ))}
                 </ul>
               </div>

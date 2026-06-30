@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import type { User, HouseholdEvent, MoneyStream, Assignment } from '../lib/types';
 
@@ -18,6 +19,7 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none [color-scheme:dark]';
 
 export function AssignmentForm({ users, events, streams, onSaved, onCancel }: AssignmentFormProps) {
+  const { t } = useTranslation();
   const [userId, setUserId] = useState<string>(users[0] ? String(users[0].id) : '');
   const [kind, setKind] = useState<TargetKind>('event');
   const [targetId, setTargetId] = useState<string>('');
@@ -29,11 +31,11 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) {
-      setError('Choose a member.');
+      setError(t('form.errChooseMember'));
       return;
     }
     if (!targetId) {
-      setError(`Choose a ${kind === 'event' ? 'event' : 'money stream'}.`);
+      setError(kind === 'event' ? t('form.errChooseEvent') : t('form.errChooseStream'));
       return;
     }
     setSubmitting(true);
@@ -49,7 +51,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
       const saved = await api.post<Assignment>('/assignments', body);
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create assignment.');
+      setError(err instanceof Error ? err.message : t('form.errCreateAssignment'));
       setSubmitting(false);
     }
   };
@@ -57,7 +59,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="member" className={labelCls}>Member</label>
+        <label htmlFor="member" className={labelCls}>{t('form.member')}</label>
         <select
           id="member"
           value={userId}
@@ -71,7 +73,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
       </div>
 
       <div>
-        <span className={labelCls}>Responsible for</span>
+        <span className={labelCls}>{t('household.responsibleFor')}</span>
         <div className="grid grid-cols-2 gap-2">
           {(['event', 'money_stream'] as TargetKind[]).map((k) => (
             <button
@@ -85,7 +87,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
                   : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
-              {k === 'event' ? 'Event' : 'Money stream'}
+              {k === 'event' ? t('form.targetEvent') : t('form.targetStream')}
             </button>
           ))}
         </div>
@@ -93,7 +95,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
 
       <div>
         <label htmlFor="target" className={labelCls}>
-          {kind === 'event' ? 'Event' : 'Money stream'}
+          {kind === 'event' ? t('form.targetEvent') : t('form.targetStream')}
         </label>
         <select
           id="target"
@@ -101,7 +103,7 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
           onChange={(e) => setTargetId(e.target.value)}
           className={fieldCls}
         >
-          <option value="">Choose…</option>
+          <option value="">{t('common.choose')}</option>
           {kind === 'event'
             ? events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)
             : streams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -109,13 +111,13 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
       </div>
 
       <div>
-        <label htmlFor="role" className={labelCls}>Role</label>
+        <label htmlFor="role" className={labelCls}>{t('form.role')}</label>
         <input
           id="role"
           type="text"
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          placeholder="owner"
+          placeholder={t('form.rolePlaceholder')}
           className={fieldCls}
         />
       </div>
@@ -128,14 +130,14 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
           onClick={onCancel}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Saving…' : 'Assign'}
+          {submitting ? t('common.saving') : t('household.assign')}
         </button>
       </div>
     </form>

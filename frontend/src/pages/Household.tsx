@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import type { User, AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
@@ -25,6 +26,7 @@ function roleColor(role: string): string {
 }
 
 export default function Household() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
@@ -79,30 +81,30 @@ export default function Household() {
     <div className="space-y-6">
       <header className="flex items-end justify-between">
         <div>
-          <p className="text-xs uppercase tracking-widest text-zinc-500">Management</p>
-          <h1 className="mt-1 text-2xl font-light text-zinc-100">Household</h1>
+          <p className="text-xs uppercase tracking-widest text-zinc-500">{t('household.eyebrow')}</p>
+          <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('household.title')}</h1>
         </div>
         {users.length > 0 && (
           <button
             onClick={() => setShowAssignForm(true)}
             className="text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
           >
-            + Assign
+            + {t('household.assign')}
           </button>
         )}
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">Loading…</p>}
+      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && users.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">No household members yet.</p>
+          <p className="text-sm text-zinc-500">{t('household.noMembers')}</p>
           <button
             onClick={() => setShowMemberForm(true)}
             className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
           >
-            Add your first member
+            {t('household.addFirstMember')}
           </button>
         </div>
       )}
@@ -110,7 +112,7 @@ export default function Household() {
       {/* Member list */}
       {!loading && !error && users.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">Members</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.members')}</p>
           {users.map((u) => {
             const userAssignments = assignmentsByUser(u.id);
             return (
@@ -138,7 +140,7 @@ export default function Household() {
                   <div className="flex-1">
                     <p className="text-sm text-zinc-100">{u.name}</p>
                     <p className="mt-0.5 text-xs text-zinc-500">
-                      {userAssignments.length} assignment{userAssignments.length !== 1 ? 's' : ''}
+                      {t('household.assignmentCount', { count: userAssignments.length })}
                     </p>
                   </div>
                 </button>
@@ -164,9 +166,9 @@ export default function Household() {
                             'rounded-md px-1.5 transition-colors',
                             confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-600 hover:text-zinc-400',
                           ].join(' ')}
-                          aria-label="Remove assignment"
+                          aria-label={t('household.removeAssignmentAria')}
                         >
-                          {confirmRemove === a.id ? 'confirm' : '×'}
+                          {confirmRemove === a.id ? t('common.confirm') : '×'}
                         </button>
                       </li>
                     ))}
@@ -182,17 +184,17 @@ export default function Household() {
       {!loading && !error && users.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <p className="mb-1 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            Assignments
+            {t('household.assignmentsLabel')}
           </p>
           <p className="text-xl font-light text-zinc-100">{assignments.length}</p>
-          <p className="mt-0.5 text-xs text-zinc-500">total across all members</p>
+          <p className="mt-0.5 text-xs text-zinc-500">{t('household.totalAcrossMembers')}</p>
         </section>
       )}
 
       {/* Floating add-member button. */}
       <button
         onClick={() => setShowMemberForm(true)}
-        aria-label="Add member"
+        aria-label={t('household.addMemberAria')}
         className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
       >
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -200,11 +202,11 @@ export default function Household() {
         </svg>
       </button>
 
-      <Modal open={showMemberForm} title="New member" onClose={() => setShowMemberForm(false)}>
+      <Modal open={showMemberForm} title={t('household.newMember')} onClose={() => setShowMemberForm(false)}>
         <MemberForm onSaved={handleSaved} onCancel={() => setShowMemberForm(false)} />
       </Modal>
 
-      <Modal open={!!editingMember} title="Edit member" onClose={() => setEditingMember(null)}>
+      <Modal open={!!editingMember} title={t('household.editMember')} onClose={() => setEditingMember(null)}>
         {editingMember && (
           <MemberForm
             initial={editingMember}
@@ -215,7 +217,7 @@ export default function Household() {
         )}
       </Modal>
 
-      <Modal open={showAssignForm} title="New assignment" onClose={() => setShowAssignForm(false)}>
+      <Modal open={showAssignForm} title={t('household.newAssignment')} onClose={() => setShowAssignForm(false)}>
         <AssignmentForm
           users={users}
           events={events}

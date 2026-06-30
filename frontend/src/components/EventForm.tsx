@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import type { HouseholdEvent, MoneyStream } from '../lib/types';
 
@@ -11,10 +12,10 @@ interface EventFormProps {
 
 type EventType = HouseholdEvent['event_type'];
 
-const typeOptions: { value: EventType; label: string; active: string }[] = [
-  { value: 'deadline', label: 'Deadline', active: 'bg-rose-500/15 text-rose-400 border-rose-500/40' },
-  { value: 'payment', label: 'Payment', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
-  { value: 'appointment', label: 'Appointment', active: 'bg-amber-500/15 text-amber-400 border-amber-500/40' },
+const typeOptions: { value: EventType; labelKey: string; active: string }[] = [
+  { value: 'deadline', labelKey: 'eventType.deadline', active: 'bg-rose-500/15 text-rose-400 border-rose-500/40' },
+  { value: 'payment', labelKey: 'eventType.payment', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
+  { value: 'appointment', labelKey: 'eventType.appointment', active: 'bg-amber-500/15 text-amber-400 border-amber-500/40' },
 ];
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -23,6 +24,7 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
 export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormProps) {
+  const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [eventType, setEventType] = useState<EventType>(initial?.event_type ?? 'deadline');
@@ -46,7 +48,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !targetDate) {
-      setError('Title and date are required.');
+      setError(t('form.errTitleDateRequired'));
       return;
     }
     setSubmitting(true);
@@ -64,7 +66,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
         : await api.post<HouseholdEvent>('/events', body);
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save event.');
+      setError(err instanceof Error ? err.message : t('form.errSaveEvent'));
       setSubmitting(false);
     }
   };
@@ -76,7 +78,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
       await api.delete(`/events/${initial.id}`);
       onDeleted(initial.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete event.');
+      setError(err instanceof Error ? err.message : t('form.errDeleteEvent'));
       setSubmitting(false);
     }
   };
@@ -84,20 +86,20 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="title" className={labelCls}>Title</label>
+        <label htmlFor="title" className={labelCls}>{t('form.title')}</label>
         <input
           id="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Rent due"
+          placeholder={t('form.titlePlaceholder')}
           autoFocus
           className={fieldCls}
         />
       </div>
 
       <div>
-        <span className={labelCls}>Type</span>
+        <span className={labelCls}>{t('form.type')}</span>
         <div className="grid grid-cols-3 gap-2">
           {typeOptions.map((opt) => (
             <button
@@ -111,14 +113,14 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
                   : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label htmlFor="target_date" className={labelCls}>Date</label>
+        <label htmlFor="target_date" className={labelCls}>{t('form.date')}</label>
         <input
           id="target_date"
           type="date"
@@ -130,14 +132,14 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
 
       {streams.length > 0 && (
         <div>
-          <label htmlFor="money_stream" className={labelCls}>Linked cost (optional)</label>
+          <label htmlFor="money_stream" className={labelCls}>{t('form.linkedCost')}</label>
           <select
             id="money_stream"
             value={moneyStreamId}
             onChange={(e) => setMoneyStreamId(e.target.value)}
             className={`${fieldCls} [color-scheme:dark]`}
           >
-            <option value="">None</option>
+            <option value="">{t('common.none')}</option>
             {streams.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
@@ -146,13 +148,13 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
       )}
 
       <div>
-        <label htmlFor="description" className={labelCls}>Notes (optional)</label>
+        <label htmlFor="description" className={labelCls}>{t('form.notes')}</label>
         <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          placeholder="Any extra detail…"
+          placeholder={t('form.notesPlaceholder')}
           className={`${fieldCls} resize-none`}
         />
       </div>
@@ -165,14 +167,14 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
           onClick={onCancel}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Add event'}
+          {submitting ? t('common.saving') : isEdit ? t('common.saveChanges') : t('form.addEvent')}
         </button>
       </div>
 
@@ -183,7 +185,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
           disabled={submitting}
           className="w-full pt-1 text-center text-xs text-rose-500/80 transition-colors hover:text-rose-400 disabled:opacity-50"
         >
-          {confirmDelete ? 'Tap again to confirm delete' : 'Delete event'}
+          {confirmDelete ? t('form.confirmDelete') : t('form.deleteEvent')}
         </button>
       )}
     </form>

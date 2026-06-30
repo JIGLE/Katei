@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ModalProps {
   open: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 // fixed bottom navigation; on larger screens it stays centred-bottom and
 // capped at the same max width as the app content.
 export function Modal({ open, title, onClose, children }: ModalProps) {
+  const { t } = useTranslation();
   // Close on Escape and lock body scroll while open.
   useEffect(() => {
     if (!open) return;
@@ -27,7 +29,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
       {/* Backdrop */}
       <button
-        aria-label="Close"
+        aria-label={t('common.close')}
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
@@ -41,7 +43,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
           <button
             onClick={onClose}
             className="text-zinc-500 transition-colors hover:text-zinc-300"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

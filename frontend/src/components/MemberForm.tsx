@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import type { User } from '../lib/types';
 
@@ -15,6 +16,7 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
 export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberFormProps) {
+  const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(initial?.avatar_url ?? '');
@@ -27,7 +29,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Name is required.');
+      setError(t('form.errNameRequired'));
       return;
     }
     setSubmitting(true);
@@ -42,7 +44,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
         : await api.post<User>('/users', body);
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save member.');
+      setError(err instanceof Error ? err.message : t('form.errSaveMember'));
       setSubmitting(false);
     }
   };
@@ -54,7 +56,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
       await api.delete(`/users/${initial.id}`);
       onDeleted(initial.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete member.');
+      setError(err instanceof Error ? err.message : t('form.errDeleteMember'));
       setSubmitting(false);
     }
   };
@@ -62,43 +64,42 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="name" className={labelCls}>Name</label>
+        <label htmlFor="name" className={labelCls}>{t('form.name')}</label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Sam"
+          placeholder={t('form.memberNamePlaceholder')}
           autoFocus
           className={fieldCls}
         />
       </div>
 
       <div>
-        <label htmlFor="avatar_url" className={labelCls}>Avatar URL (optional)</label>
+        <label htmlFor="avatar_url" className={labelCls}>{t('form.avatarUrl')}</label>
         <input
           id="avatar_url"
           type="url"
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder="https://…"
+          placeholder={t('form.avatarPlaceholder')}
           className={fieldCls}
         />
       </div>
 
       <div>
-        <label htmlFor="ntfy_url" className={labelCls}>Notification URL (optional)</label>
+        <label htmlFor="ntfy_url" className={labelCls}>{t('form.notificationUrlOptional')}</label>
         <input
           id="ntfy_url"
           type="url"
           value={ntfyUrl}
           onChange={(e) => setNtfyUrl(e.target.value)}
-          placeholder="https://ntfy.sh/their-topic"
+          placeholder={t('form.ntfyTopicPlaceholder')}
           className={fieldCls}
         />
         <p className="mt-1.5 text-xs text-zinc-500">
-          Reminders for this member's assignments go here. Falls back to the
-          household notification URL when empty.
+          {t('form.memberNtfyHint')}
         </p>
       </div>
 
@@ -110,14 +111,14 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           onClick={onCancel}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Add member'}
+          {submitting ? t('common.saving') : isEdit ? t('common.saveChanges') : t('form.addMember')}
         </button>
       </div>
 
@@ -128,7 +129,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           disabled={submitting}
           className="w-full pt-1 text-center text-xs text-rose-500/80 transition-colors hover:text-rose-400 disabled:opacity-50"
         >
-          {confirmDelete ? 'Tap again to confirm delete' : 'Delete member'}
+          {confirmDelete ? t('form.confirmDelete') : t('form.deleteMember')}
         </button>
       )}
     </form>

@@ -4,6 +4,7 @@ import type { AssignmentDetail, HouseholdEvent } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { AssigneeStack } from '../components/Avatar';
+import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatDate } from '../lib/format';
 
@@ -11,11 +12,11 @@ type Accent = 'amber' | 'emerald' | 'rose';
 
 const typeConfig: Record<
   HouseholdEvent['event_type'],
-  { accent: Accent; label: string }
+  { accent: Accent; labelKey: string }
 > = {
-  deadline: { accent: 'rose', label: 'Deadline' },
-  payment: { accent: 'emerald', label: 'Payment' },
-  appointment: { accent: 'amber', label: 'Appointment' },
+  deadline: { accent: 'rose', labelKey: 'eventType.deadline' },
+  payment: { accent: 'emerald', labelKey: 'eventType.payment' },
+  appointment: { accent: 'amber', labelKey: 'eventType.appointment' },
 };
 
 const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = {
@@ -25,14 +26,15 @@ const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = 
 };
 
 type View = 'upcoming' | 'all' | 'done';
-const VIEWS: { key: View; label: string }[] = [
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'all', label: 'All' },
-  { key: 'done', label: 'Done' },
+const VIEWS: { key: View; labelKey: string }[] = [
+  { key: 'upcoming', labelKey: 'timeline.viewUpcoming' },
+  { key: 'all', labelKey: 'timeline.viewAll' },
+  { key: 'done', labelKey: 'timeline.viewDone' },
 ];
 
 export default function Timeline() {
   const { locale, timezone } = usePreferences();
+  const { t } = useTranslation();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [view, setView] = useState<View>('upcoming');
@@ -110,8 +112,8 @@ export default function Timeline() {
     <div className="space-y-6">
       <header className="space-y-4">
         <div>
-          <p className="text-xs uppercase tracking-widest text-zinc-500">Planning</p>
-          <h1 className="mt-1 text-2xl font-light text-zinc-100">Timeline</h1>
+          <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
+          <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
         </div>
         {/* View filter */}
         <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
@@ -124,37 +126,37 @@ export default function Timeline() {
                 view === v.key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
-              {v.label}
+              {t(v.labelKey)}
             </button>
           ))}
         </div>
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">Loading…</p>}
+      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && events.length === 0 && (
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
           {view === 'done' ? (
-            <p className="text-sm text-zinc-500">Nothing completed yet — finished items land here.</p>
+            <p className="text-sm text-zinc-500">{t('timeline.nothingCompleted')}</p>
           ) : view === 'upcoming' ? (
             <>
-              <p className="text-sm text-zinc-500">Nothing upcoming.</p>
+              <p className="text-sm text-zinc-500">{t('timeline.nothingUpcoming')}</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
               >
-                Add an event
+                {t('timeline.addEvent')}
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm text-zinc-500">No events yet.</p>
+              <p className="text-sm text-zinc-500">{t('timeline.noEventsYet')}</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
               >
-                Add your first event
+                {t('timeline.addFirstEvent')}
               </button>
             </>
           )}
@@ -200,7 +202,7 @@ export default function Timeline() {
 
                 {/* Type badge */}
                 <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles.badge}`}>
-                  {cfg.label}
+                  {t(cfg.labelKey)}
                 </span>
 
                 {/* Complete toggle */}
@@ -212,7 +214,7 @@ export default function Timeline() {
                       ? 'border-emerald-500 bg-emerald-500'
                       : 'border-zinc-600 hover:border-zinc-400',
                   ].join(' ')}
-                  aria-label={evt.is_completed ? 'Mark incomplete' : 'Mark complete'}
+                  aria-label={evt.is_completed ? t('timeline.markIncomplete') : t('timeline.markComplete')}
                 >
                   {evt.is_completed && (
                     <svg className="m-auto h-3 w-3 text-zinc-900" viewBox="0 0 12 12" fill="currentColor">
@@ -229,7 +231,7 @@ export default function Timeline() {
       {/* Floating add button — sits above the fixed bottom nav. */}
       <button
         onClick={() => setShowForm(true)}
-        aria-label="Add event"
+        aria-label={t('timeline.addEventAria')}
         className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
       >
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -237,11 +239,11 @@ export default function Timeline() {
         </svg>
       </button>
 
-      <Modal open={showForm} title="New event" onClose={() => setShowForm(false)}>
+      <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => setShowForm(false)}>
         <EventForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
       </Modal>
 
-      <Modal open={!!editing} title="Edit event" onClose={() => setEditing(null)}>
+      <Modal open={!!editing} title={t('timeline.editEvent')} onClose={() => setEditing(null)}>
         {editing && (
           <EventForm
             initial={editing}

@@ -56,3 +56,15 @@ export function daysUntil(dateStr: string, timezone?: string): number {
   const target = new Date(`${dateStr.slice(0, 10)}T00:00:00Z`).getTime();
   return Math.round((target - today) / 86_400_000);
 }
+
+/**
+ * Localized relative-day label ("today", "tomorrow", "in 4 days", "2 days ago")
+ * via Intl.RelativeTimeFormat — so it needs no translation catalog.
+ */
+export function formatRelativeDay(days: number, locale: string): string {
+  try {
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(days, 'day');
+  } catch {
+    return new Intl.RelativeTimeFormat(FALLBACK.locale, { numeric: 'auto' }).format(days, 'day');
+  }
+}

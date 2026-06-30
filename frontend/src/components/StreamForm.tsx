@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { CURRENCIES } from '../lib/countries';
@@ -13,10 +14,10 @@ interface StreamFormProps {
 
 type Frequency = MoneyStream['frequency'];
 
-const freqOptions: { value: Frequency; label: string }[] = [
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'one-off', label: 'One-off' },
+const freqOptions: { value: Frequency; labelKey: string }[] = [
+  { value: 'monthly', labelKey: 'freq.monthly' },
+  { value: 'yearly', labelKey: 'freq.yearly' },
+  { value: 'one-off', labelKey: 'freq.oneOff' },
 ];
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -26,6 +27,7 @@ const fieldCls =
 
 export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamFormProps) {
   const { currency: defaultCurrency } = usePreferences();
+  const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [amount, setAmount] = useState(initial?.amount ?? '');
@@ -41,11 +43,11 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
     if (!name.trim()) {
-      setError('Name is required.');
+      setError(t('form.errNameRequired'));
       return;
     }
     if (amount === '' || Number.isNaN(parsedAmount) || parsedAmount < 0) {
-      setError('Enter a valid amount.');
+      setError(t('form.errAmountInvalid'));
       return;
     }
     setSubmitting(true);
@@ -65,7 +67,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
         : await api.post<MoneyStream>('/money-streams', body);
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save money stream.');
+      setError(err instanceof Error ? err.message : t('form.errSaveStream'));
       setSubmitting(false);
     }
   };
@@ -77,7 +79,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
       await api.delete(`/money-streams/${initial.id}`);
       onDeleted(initial.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete money stream.');
+      setError(err instanceof Error ? err.message : t('form.errDeleteStream'));
       setSubmitting(false);
     }
   };
@@ -85,13 +87,13 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="name" className={labelCls}>Name</label>
+        <label htmlFor="name" className={labelCls}>{t('form.name')}</label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Rent"
+          placeholder={t('form.streamNamePlaceholder')}
           autoFocus
           className={fieldCls}
         />
@@ -99,7 +101,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
 
       <div className="flex gap-3">
         <div className="flex-1">
-          <label htmlFor="amount" className={labelCls}>Amount</label>
+          <label htmlFor="amount" className={labelCls}>{t('form.amount')}</label>
           <input
             id="amount"
             type="number"
@@ -113,7 +115,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
           />
         </div>
         <div className="w-28">
-          <label htmlFor="currency" className={labelCls}>Currency</label>
+          <label htmlFor="currency" className={labelCls}>{t('form.currency')}</label>
           <select
             id="currency"
             value={currency}
@@ -128,7 +130,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
       </div>
 
       <div>
-        <span className={labelCls}>Frequency</span>
+        <span className={labelCls}>{t('form.frequency')}</span>
         <div className="grid grid-cols-3 gap-2">
           {freqOptions.map((opt) => (
             <button
@@ -142,20 +144,20 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
                   : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label htmlFor="category" className={labelCls}>Category (optional)</label>
+        <label htmlFor="category" className={labelCls}>{t('form.category')}</label>
         <input
           id="category"
           type="text"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g. Housing, Utilities, Subscriptions"
+          placeholder={t('form.categoryPlaceholder')}
           className={fieldCls}
         />
       </div>
@@ -168,14 +170,14 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
           onClick={onCancel}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Add stream'}
+          {submitting ? t('common.saving') : isEdit ? t('common.saveChanges') : t('form.addStream')}
         </button>
       </div>
 
@@ -186,7 +188,7 @@ export function StreamForm({ initial, onSaved, onCancel, onDeleted }: StreamForm
           disabled={submitting}
           className="w-full pt-1 text-center text-xs text-rose-500/80 transition-colors hover:text-rose-400 disabled:opacity-50"
         >
-          {confirmDelete ? 'Tap again to confirm delete' : 'Delete stream'}
+          {confirmDelete ? t('form.confirmDelete') : t('form.deleteStream')}
         </button>
       )}
     </form>

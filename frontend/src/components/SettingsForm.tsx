@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
@@ -26,6 +27,7 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
 export function SettingsForm({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const [url, setUrl] = useState('');
   const [leadDays, setLeadDays] = useState('3');
   const [loading, setLoading] = useState(true);
@@ -62,9 +64,9 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setMessage(null);
     try {
       await prefs.save({ country, currency, locale, timezone });
-      setMessage({ kind: 'ok', text: 'Preferences saved.' });
+      setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : 'Save failed.' });
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
     } finally {
       setSavingPrefs(false);
     }
@@ -88,10 +90,10 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setMessage(null);
     try {
       await api.post('/settings/backups/run', {});
-      setMessage({ kind: 'ok', text: 'Backup created.' });
+      setMessage({ kind: 'ok', text: t('settings.backupCreated') });
       loadBackups();
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : 'Backup failed.' });
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.backupFailed') });
     } finally {
       setBackingUp(false);
     }
@@ -105,9 +107,9 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         ntfy_url: url.trim(),
         lead_days: Number(leadDays) || 0,
       });
-      setMessage({ kind: 'ok', text: 'Saved.' });
+      setMessage({ kind: 'ok', text: t('settings.saved') });
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message : 'Save failed.' });
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message : t('settings.saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -123,23 +125,23 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         lead_days: Number(leadDays) || 0,
       });
       await api.post('/settings/notifications/test', {});
-      setMessage({ kind: 'ok', text: 'Test sent — check your ntfy app.' });
+      setMessage({ kind: 'ok', text: t('settings.testSent') });
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : 'Test failed.' });
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.testFailed') });
     } finally {
       setTesting(false);
     }
   };
 
-  if (loading) return <p className="text-sm text-zinc-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-zinc-500">{t('common.loading')}</p>;
 
   return (
     <div className="space-y-4">
       {/* Preferences — country drives currency / locale / timezone, all overridable */}
       <div className="space-y-3 border-b border-zinc-800/60 pb-4">
-        <label className={`${labelCls} mb-0`}>Preferences</label>
+        <label className={`${labelCls} mb-0`}>{t('settings.preferences')}</label>
         <div>
-          <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">Country</label>
+          <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">{t('settings.country')}</label>
           <select
             id="country"
             value={country}
@@ -153,7 +155,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <label htmlFor="pref_currency" className="mb-1.5 block text-xs text-zinc-500">Currency</label>
+            <label htmlFor="pref_currency" className="mb-1.5 block text-xs text-zinc-500">{t('settings.currency')}</label>
             <select
               id="pref_currency"
               value={currency}
@@ -164,7 +166,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             </select>
           </div>
           <div className="flex-1">
-            <label htmlFor="pref_locale" className="mb-1.5 block text-xs text-zinc-500">Locale</label>
+            <label htmlFor="pref_locale" className="mb-1.5 block text-xs text-zinc-500">{t('settings.locale')}</label>
             <select
               id="pref_locale"
               value={locale}
@@ -176,14 +178,14 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div>
-          <label htmlFor="pref_tz" className="mb-1.5 block text-xs text-zinc-500">Timezone</label>
+          <label htmlFor="pref_tz" className="mb-1.5 block text-xs text-zinc-500">{t('settings.timezone')}</label>
           <select
             id="pref_tz"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
             className={`${fieldCls} [color-scheme:dark]`}
           >
-            {TIMEZONES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
           </select>
         </div>
         <button
@@ -192,18 +194,16 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           disabled={savingPrefs}
           className="w-full rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700 disabled:opacity-50"
         >
-          {savingPrefs ? 'Saving…' : 'Save preferences'}
+          {savingPrefs ? t('common.saving') : t('settings.savePreferences')}
         </button>
       </div>
 
       <p className="text-xs leading-relaxed text-zinc-500">
-        Get a push when an event is due. Create a topic in the{' '}
-        <span className="text-zinc-300">ntfy</span> app, then paste its URL below
-        (e.g. <span className="text-zinc-400">https://ntfy.sh/your-secret-topic</span>).
+        {t('settings.notificationsIntro')}
       </p>
 
       <div>
-        <label htmlFor="ntfy_url" className={labelCls}>Notification URL</label>
+        <label htmlFor="ntfy_url" className={labelCls}>{t('settings.notificationUrl')}</label>
         <input
           id="ntfy_url"
           type="url"
@@ -215,7 +215,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <div>
-        <label htmlFor="lead_days" className={labelCls}>Remind me this many days ahead</label>
+        <label htmlFor="lead_days" className={labelCls}>{t('settings.remindDaysAhead')}</label>
         <input
           id="lead_days"
           type="number"
@@ -240,7 +240,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           disabled={testing || saving || !url.trim()}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700 disabled:opacity-50"
         >
-          {testing ? 'Sending…' : 'Send test'}
+          {testing ? t('settings.sending') : t('settings.sendTest')}
         </button>
         <button
           type="button"
@@ -248,29 +248,28 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           disabled={saving || testing}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('common.saving') : t('settings.save')}
         </button>
       </div>
 
       {/* Backups */}
       <div className="border-t border-zinc-800/60 pt-4">
         <div className="mb-2 flex items-center justify-between">
-          <label className={`${labelCls} mb-0`}>Backups</label>
+          <label className={`${labelCls} mb-0`}>{t('settings.backups')}</label>
           <button
             type="button"
             onClick={backupNow}
             disabled={backingUp}
             className="text-xs text-zinc-400 underline-offset-2 transition-colors hover:text-zinc-200 disabled:opacity-50"
           >
-            {backingUp ? 'Backing up…' : 'Back up now'}
+            {backingUp ? t('settings.backingUp') : t('settings.backupNow')}
           </button>
         </div>
         <p className="mb-3 text-xs leading-relaxed text-zinc-500">
-          A snapshot is saved daily inside the data volume. Download one to keep
-          it off-box; restore with <span className="text-zinc-400">/app/restore.sh</span>.
+          {t('settings.backupsIntro')}
         </p>
         {backups.length === 0 ? (
-          <p className="text-xs text-zinc-600">No backups yet.</p>
+          <p className="text-xs text-zinc-600">{t('settings.noBackups')}</p>
         ) : (
           <ul className="space-y-1.5">
             {backups.map((b) => (
@@ -285,7 +284,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
                   download
                   className="flex-shrink-0 text-xs text-emerald-500 underline-offset-2 hover:text-emerald-400"
                 >
-                  Download
+                  {t('settings.download')}
                 </a>
               </li>
             ))}
@@ -298,7 +297,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         onClick={onClose}
         className="w-full pt-1 text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
       >
-        Close
+        {t('common.close')}
       </button>
     </div>
   );
