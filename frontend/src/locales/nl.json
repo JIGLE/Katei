@@ -101,7 +101,10 @@
     "savings": "Sparen",
     "net": "Netto",
     "savingsRate": "Spaarquote",
-    "savingsGoal": "Spaardoel"
+    "savingsGoal": "Spaardoel",
+    "trends": "Uitgaventrend",
+    "trendsHigh": "Piek",
+    "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier."
   },
   "freq": {
     "monthly": "Maandelijks",

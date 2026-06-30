@@ -31,6 +31,17 @@ export function formatDate(date: string, locale: string, timezone?: string): str
   }
 }
 
+/** 'YYYY-MM' → localized short month label (e.g. "Jun"). */
+export function formatMonthShort(month: string, locale: string): string {
+  const [y, m] = month.split('-').map(Number);
+  const d = new Date(Date.UTC(y, (m || 1) - 1, 1));
+  try {
+    return new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(d);
+  } catch {
+    return new Intl.DateTimeFormat(FALLBACK.locale, { month: 'short', timeZone: 'UTC' }).format(d);
+  }
+}
+
 /** Midnight "today" as a YYYY-MM-DD string in the given timezone. */
 export function todayInTimezone(timezone?: string): string {
   try {

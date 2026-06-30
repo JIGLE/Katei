@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType } from '../lib/types';
+import type { MoneyStream, StreamType, MonthlySpend } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
-import { formatMoney } from '../lib/format';
+import { formatMoney, formatMonthShort } from '../lib/format';
 
 const freqKey: Record<string, string> = {
   monthly: 'freq.monthly',
@@ -65,6 +65,7 @@ const TYPE_HEADER_KEY: Record<StreamType, string> = {
 
 export default function MoneyFlow() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
+  const [trends, setTrends] = useState<MonthlySpend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -83,7 +84,11 @@ export default function MoneyFlow() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchStreams(); }, []);
+  useEffect(() => {
+    fetchStreams();
+    // Spend history is independent of the stream list — a soft, non-blocking load.
+    api.get<MonthlySpend[]>('/analytics/monthly-spend?months=6').then(setTrends).catch(() => {});
+  }, []);
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
   const handleDeleted = () => { setEditing(null); fetchStreams(); };
@@ -100,6 +105,8 @@ export default function MoneyFlow() {
   const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
   const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
+
+  const maxSpend = Math.max(0, ...trends.map((d) => d.total));
 
   const fmt = (n: number) => formatMoney(n, currency, locale);
 
@@ -150,6 +157,36 @@ export default function MoneyFlow() {
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
             <div className="h-full rounded-full bg-teal-400" style={{ width: `${goalPct}%` }} />
           </div>
+        </section>
+      )}
+
+      {/* Spending trends — completed payments per month */}
+      {!loading && !error && trends.length > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <div className="mb-4 flex items-baseline justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.trends')}</p>
+            {maxSpend > 0 && <p className="text-xs tabular-nums text-zinc-500">{t('money.trendsHigh')} {fmt(maxSpend)}</p>}
+          </div>
+          {maxSpend === 0 ? (
+            <p className="py-4 text-center text-sm text-zinc-500">{t('money.trendsEmpty')}</p>
+          ) : (
+            <div className="flex h-28 gap-2">
+              {trends.map((d) => {
+                const h = maxSpend > 0 ? (d.total / maxSpend) * 100 : 0;
+                return (
+                  <div key={d.month} className="flex flex-1 flex-col items-center gap-1.5">
+                    <div className="flex w-full flex-1 items-end" title={`${formatMonthShort(d.month, locale)} — ${fmt(d.total)}`}>
+                      <div
+                        className="w-full rounded-t bg-emerald-500/80"
+                        style={{ height: `${d.total > 0 ? Math.max(h, 3) : 0}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] tabular-nums text-zinc-500">{formatMonthShort(d.month, locale)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 

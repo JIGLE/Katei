@@ -101,7 +101,10 @@
     "savings": "Sparen",
     "net": "Netto",
     "savingsRate": "Sparquote",
-    "savingsGoal": "Sparziel"
+    "savingsGoal": "Sparziel",
+    "trends": "Ausgabentrend",
+    "trendsHigh": "Spitze",
+    "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier."
   },
   "freq": {
     "monthly": "Monatlich",

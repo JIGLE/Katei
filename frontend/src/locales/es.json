@@ -101,7 +101,10 @@
     "savings": "Ahorro",
     "net": "Neto",
     "savingsRate": "Tasa de ahorro",
-    "savingsGoal": "Meta de ahorro"
+    "savingsGoal": "Meta de ahorro",
+    "trends": "Tendencia de gastos",
+    "trendsHigh": "Máx.",
+    "trendsEmpty": "Aún no hay pagos completados — tus gastos mensuales se mostrarán aquí."
   },
   "freq": {
     "monthly": "Mensual",

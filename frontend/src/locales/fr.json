@@ -101,7 +101,10 @@
     "savings": "Épargne",
     "net": "Net",
     "savingsRate": "Taux d'épargne",
-    "savingsGoal": "Objectif d'épargne"
+    "savingsGoal": "Objectif d'épargne",
+    "trends": "Tendances des dépenses",
+    "trendsHigh": "Max",
+    "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici."
   },
   "freq": {
     "monthly": "Mensuel",

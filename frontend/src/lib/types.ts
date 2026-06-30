@@ -49,3 +49,9 @@ export interface AssignmentDetail extends Assignment {
   user_name: string;
   user_avatar: string | null;
 }
+
+// One month of completed-payment spend (GET /api/analytics/monthly-spend).
+export interface MonthlySpend {
+  month: string; // 'YYYY-MM'
+  total: number;
+}
