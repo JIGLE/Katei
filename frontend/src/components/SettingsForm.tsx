@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
-import { usePreferences } from '../lib/preferences';
+import { usePreferences, applyTheme, type Theme } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
 
@@ -46,6 +46,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [timezone, setTimezone] = useState(prefs.timezone);
   const [language, setLanguage] = useState(prefs.language);
   const [savingsGoal, setSavingsGoal] = useState(String(prefs.savings_goal || ''));
+  const [theme, setTheme] = useState<Theme>(prefs.theme);
   const [savingPrefs, setSavingPrefs] = useState(false);
 
   // Keep local fields in sync once preferences finish loading.
@@ -56,7 +57,14 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setTimezone(prefs.timezone);
     setLanguage(prefs.language);
     setSavingsGoal(String(prefs.savings_goal || ''));
-  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal]);
+    setTheme(prefs.theme);
+  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.theme]);
+
+  // Apply the theme live as the user toggles, for instant feedback.
+  const onThemeChange = (next: Theme) => {
+    setTheme(next);
+    applyTheme(next);
+  };
 
   const onCountryChange = (code: string) => {
     setCountry(code);
@@ -68,7 +76,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0 });
+      await prefs.save({ country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, theme });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -151,7 +159,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             id="country"
             value={country}
             onChange={(e) => onCountryChange(e.target.value)}
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>{c.name}</option>
@@ -165,7 +173,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
               id="pref_currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className={`${fieldCls} [color-scheme:dark]`}
+              className={`${fieldCls}`}
             >
               {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -176,7 +184,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
               id="pref_locale"
               value={locale}
               onChange={(e) => setLocale(e.target.value)}
-              className={`${fieldCls} [color-scheme:dark]`}
+              className={`${fieldCls}`}
             >
               {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
@@ -188,7 +196,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             id="pref_tz"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           >
             {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
           </select>
@@ -199,7 +207,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             id="pref_language"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           >
             {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
           </select>
@@ -214,8 +222,28 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             value={savingsGoal}
             onChange={(e) => setSavingsGoal(e.target.value)}
             placeholder="0.00"
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           />
+        </div>
+        <div>
+          <span className="mb-1.5 block text-xs text-zinc-500">{t('settings.theme')}</span>
+          <div className="grid grid-cols-2 gap-2">
+            {(['dark', 'light'] as Theme[]).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onThemeChange(opt)}
+                className={[
+                  'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                  theme === opt
+                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t(`settings.theme_${opt}`)}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           type="button"
@@ -252,7 +280,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           max="60"
           value={leadDays}
           onChange={(e) => setLeadDays(e.target.value)}
-          className={`${fieldCls} [color-scheme:dark]`}
+          className={`${fieldCls}`}
         />
       </div>
 

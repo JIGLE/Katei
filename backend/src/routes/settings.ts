@@ -23,12 +23,13 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       timezone: (await getSetting('timezone')) ?? PREF_DEFAULTS.timezone,
       language,
       savings_goal: Number((await getSetting('savings_goal')) ?? 0),
+      theme: (await getSetting('theme')) === 'light' ? 'light' : 'dark',
     };
   });
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number };
+    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; theme?: string };
   }>(
     '/preferences',
     {
@@ -43,6 +44,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             timezone: { type: 'string', minLength: 1, maxLength: 64 },
             language: { type: 'string', pattern: '^[A-Za-z]{2}$' },
             savings_goal: { type: 'number', minimum: 0 },
+            theme: { type: 'string', enum: ['dark', 'light'] },
           },
         },
       },
@@ -56,6 +58,8 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('language', language);
       const savings_goal = req.body.savings_goal ?? 0;
       await setSetting('savings_goal', String(savings_goal));
+      const theme = req.body.theme === 'light' ? 'light' : 'dark';
+      await setSetting('theme', theme);
       return {
         country: req.body.country.toUpperCase(),
         currency: req.body.currency.toUpperCase(),
@@ -63,6 +67,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
         timezone: req.body.timezone,
         language,
         savings_goal,
+        theme,
       };
     },
   );

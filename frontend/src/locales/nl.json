@@ -208,6 +208,9 @@
     "noBackups": "Nog geen back-ups.",
     "download": "Downloaden",
     "language": "Weergavetaal",
-    "savingsGoal": "Maandelijks spaardoel"
+    "savingsGoal": "Maandelijks spaardoel",
+    "theme": "Weergave",
+    "theme_dark": "Donker",
+    "theme_light": "Licht"
   }
 }

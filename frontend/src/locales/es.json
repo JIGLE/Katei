@@ -208,6 +208,9 @@
     "noBackups": "Aún no hay copias.",
     "download": "Descargar",
     "language": "Idioma de la interfaz",
-    "savingsGoal": "Meta de ahorro mensual"
+    "savingsGoal": "Meta de ahorro mensual",
+    "theme": "Apariencia",
+    "theme_dark": "Oscuro",
+    "theme_light": "Claro"
   }
 }

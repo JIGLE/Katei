@@ -19,6 +19,14 @@
     />
   </head>
   <body class="h-full bg-zinc-950 text-zinc-100 antialiased">
+    <!-- Apply the cached theme before first paint to avoid a flash of the wrong palette. -->
+    <script>
+      try {
+        if (localStorage.getItem('katei-theme') === 'light') {
+          document.documentElement.dataset.theme = 'light';
+        }
+      } catch (e) {}
+    </script>
     <div id="root" class="h-full"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

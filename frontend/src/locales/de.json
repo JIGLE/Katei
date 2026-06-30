@@ -208,6 +208,9 @@
     "noBackups": "Noch keine Sicherungen.",
     "download": "Herunterladen",
     "language": "Anzeigesprache",
-    "savingsGoal": "Monatliches Sparziel"
+    "savingsGoal": "Monatliches Sparziel",
+    "theme": "Darstellung",
+    "theme_dark": "Dunkel",
+    "theme_light": "Hell"
   }
 }

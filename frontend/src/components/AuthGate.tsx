@@ -118,7 +118,7 @@ export function AuthGate() {
                     id="country"
                     value={country}
                     onChange={(e) => onCountryChange(e.target.value)}
-                    className={`${fieldCls} [color-scheme:dark]`}
+                    className={`${fieldCls}`}
                   >
                     {COUNTRIES.map((c) => (
                       <option key={c.code} value={c.code}>{c.name}</option>
@@ -132,7 +132,7 @@ export function AuthGate() {
                       id="currency"
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className={`${fieldCls} [color-scheme:dark]`}
+                      className={`${fieldCls}`}
                     >
                       {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -143,7 +143,7 @@ export function AuthGate() {
                       id="timezone"
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
-                      className={`${fieldCls} [color-scheme:dark]`}
+                      className={`${fieldCls}`}
                     >
                       {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
                     </select>

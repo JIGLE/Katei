@@ -207,6 +207,9 @@
     "noBackups": "No backups yet.",
     "download": "Download",
     "language": "Display language",
-    "savingsGoal": "Monthly savings goal"
+    "savingsGoal": "Monthly savings goal",
+    "theme": "Appearance",
+    "theme_dark": "Dark",
+    "theme_light": "Light"
   }
 }

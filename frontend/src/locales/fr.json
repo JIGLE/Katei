@@ -208,6 +208,9 @@
     "noBackups": "Aucune sauvegarde pour l'instant.",
     "download": "Télécharger",
     "language": "Langue d'affichage",
-    "savingsGoal": "Objectif d'épargne mensuel"
+    "savingsGoal": "Objectif d'épargne mensuel",
+    "theme": "Apparence",
+    "theme_dark": "Sombre",
+    "theme_light": "Clair"
   }
 }

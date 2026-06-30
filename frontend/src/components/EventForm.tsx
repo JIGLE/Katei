@@ -127,7 +127,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
           type="date"
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
-          className={`${fieldCls} [color-scheme:dark]`}
+          className={`${fieldCls}`}
         />
       </div>
 
@@ -138,7 +138,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
             id="money_stream"
             value={moneyStreamId}
             onChange={(e) => setMoneyStreamId(e.target.value)}
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           >
             <option value="">{t('common.none')}</option>
             {streams.map((s) => (

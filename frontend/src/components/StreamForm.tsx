@@ -134,7 +134,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
             id="currency"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className={`${fieldCls} [color-scheme:dark]`}
+            className={`${fieldCls}`}
           >
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -191,7 +191,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
               id="due_day"
               value={dueDay}
               onChange={(e) => setDueDay(Number(e.target.value))}
-              className={`${fieldCls} [color-scheme:dark]`}
+              className={`${fieldCls}`}
             >
               {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>{d}</option>
@@ -205,7 +205,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
               id="due_shift"
               value={dueShift}
               onChange={(e) => setDueShift(e.target.value as DueShift)}
-              className={`${fieldCls} [color-scheme:dark]`}
+              className={`${fieldCls}`}
             >
               <option value="next">{t('form.dueShiftNext')}</option>
               <option value="prev">{t('form.dueShiftPrev')}</option>
