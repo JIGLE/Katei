@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#09090b"/>
+  <text x="256" y="248" font-family="'WenQuanYi Zen Hei', sans-serif" font-size="190" fill="#fafafa" text-anchor="middle" dominant-baseline="central">家庭</text>
+  <rect x="206" y="372" width="100" height="8" rx="4" fill="#10b981"/>
+</svg>
