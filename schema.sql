@@ -29,6 +29,7 @@ CREATE TABLE money_streams (
     stream_type VARCHAR(20) NOT NULL DEFAULT 'expense', -- 'income' | 'expense' | 'savings'
     due_day SMALLINT NOT NULL DEFAULT 1,           -- day-of-month the stream falls due (1-31)
     due_shift VARCHAR(10) NOT NULL DEFAULT 'next',  -- 'none' | 'prev' | 'next' business-day adjustment
+    automated BOOLEAN NOT NULL DEFAULT FALSE,       -- paid automatically (direct debit): no action, no reminder
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

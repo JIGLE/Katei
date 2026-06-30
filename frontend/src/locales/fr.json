@@ -104,7 +104,8 @@
     "savingsGoal": "Objectif d'épargne",
     "trends": "Tendances des dépenses",
     "trendsHigh": "Max",
-    "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici."
+    "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -181,7 +182,9 @@
     "dueShift": "Si week-end/jour férié",
     "dueShiftNone": "Exact",
     "dueShiftPrev": "Avancer",
-    "dueShiftNext": "Jour ouvré suivant"
+    "dueShiftNext": "Jour ouvré suivant",
+    "automated": "Payé automatiquement",
+    "automatedHint": "Prélèvement / virement permanent — aucun rappel ni tâche."
   },
   "settings": {
     "notificationsTitle": "Notifications",

@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 
 const COLS =
-  'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, created_at';
+  'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, created_at';
 
 export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/money-streams
@@ -35,6 +35,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       stream_type?: string;
       due_day?: number;
       due_shift?: string;
+      automated?: boolean;
     };
   }>(
     '/',
@@ -53,6 +54,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             stream_type: { type: 'string', enum: ['income', 'expense', 'savings'] },
             due_day: { type: 'integer', minimum: 1, maximum: 31 },
             due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
+            automated: { type: 'boolean' },
           },
         },
       },
@@ -68,11 +70,12 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
         stream_type = 'expense',
         due_day = 1,
         due_shift = 'next',
+        automated = false,
       } = req.body;
       const { rows } = await query(
-        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${COLS}`,
-        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift],
+        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING ${COLS}`,
+        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated],
       );
       return reply.code(201).send(rows[0]);
     },
@@ -91,6 +94,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       stream_type?: string;
       due_day?: number;
       due_shift?: string;
+      automated?: boolean;
     };
   }>(
     '/:id',
@@ -108,12 +112,13 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             stream_type: { type: 'string', enum: ['income', 'expense', 'savings'] },
             due_day: { type: 'integer', minimum: 1, maximum: 31 },
             due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
+            automated: { type: 'boolean' },
           },
         },
       },
     },
     async (req, reply) => {
-      const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category', 'stream_type', 'due_day', 'due_shift'] as const;
+      const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category', 'stream_type', 'due_day', 'due_shift', 'automated'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;
@@ -130,6 +135,17 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
         values,
       );
       if (!rows.length) return reply.code(404).send({ error: 'Money stream not found' });
+
+      // Switching a stream to automated retires its pending obligations so it
+      // disappears from "needs attention" and reminders immediately.
+      if (req.body.automated === true) {
+        await query(
+          `DELETE FROM household_events
+            WHERE money_stream_id = $1 AND is_completed = FALSE
+              AND target_date >= CURRENT_DATE AND event_type IN ('payment', 'income')`,
+          [req.params.id],
+        );
+      }
       return rows[0];
     },
   );

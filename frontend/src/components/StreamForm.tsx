@@ -44,6 +44,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   const [frequency, setFrequency] = useState<Frequency>(initial?.frequency ?? 'monthly');
   const [dueDay, setDueDay] = useState<number>(initial?.due_day ?? 1);
   const [dueShift, setDueShift] = useState<DueShift>(initial?.due_shift ?? 'next');
+  const [automated, setAutomated] = useState<boolean>(initial?.automated ?? false);
   const [category, setCategory] = useState(initial?.category ?? '');
 
   const [submitting, setSubmitting] = useState(false);
@@ -74,6 +75,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
         is_recurring: frequency !== 'one-off',
         due_day: dueDay,
         due_shift: dueShift,
+        automated: frequency !== 'one-off' ? automated : false,
         category: category.trim() || null,
       };
       const saved = isEdit
@@ -213,6 +215,27 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
             </select>
           </div>
         </div>
+      )}
+
+      {frequency !== 'one-off' && (
+        <button
+          type="button"
+          onClick={() => setAutomated((v) => !v)}
+          aria-pressed={automated}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-zinc-800 px-3 py-2.5 text-left"
+        >
+          <span className="min-w-0">
+            <span className="block text-sm text-zinc-200">{t('form.automated')}</span>
+            <span className="block text-xs text-zinc-500">{t('form.automatedHint')}</span>
+          </span>
+          <span
+            className={`relative h-5 w-9 flex-shrink-0 rounded-full transition-colors ${automated ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${automated ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`}
+            />
+          </span>
+        </button>
       )}
 
       <div>

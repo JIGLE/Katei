@@ -191,7 +191,8 @@ export async function generateRecurringEvents(
     `SELECT id, name, frequency, stream_type, due_day, due_shift
        FROM money_streams
       WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')
-        AND stream_type IN ('income', 'expense')`,
+        AND stream_type IN ('income', 'expense')
+        AND automated = FALSE`,
   );
   const country = (await q<{ value: string }>(
     `SELECT value FROM app_settings WHERE key = 'country'`,

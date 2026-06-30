@@ -104,7 +104,8 @@
     "savingsGoal": "Obiettivo di risparmio",
     "trends": "Andamento spese",
     "trendsHigh": "Max",
-    "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui."
+    "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Mensile",
@@ -181,7 +182,9 @@
     "dueShift": "Se weekend/festivo",
     "dueShiftNone": "Esatto",
     "dueShiftPrev": "Anticipa",
-    "dueShiftNext": "Giorno lavorativo successivo"
+    "dueShiftNext": "Giorno lavorativo successivo",
+    "automated": "Pagato automaticamente",
+    "automatedHint": "Addebito diretto / bonifico ricorrente — nessun promemoria o attività."
   },
   "settings": {
     "notificationsTitle": "Notifiche",

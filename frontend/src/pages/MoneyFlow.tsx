@@ -245,7 +245,14 @@ export default function MoneyFlow() {
                 className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-zinc-100">{s.name}</p>
+                  <p className="flex items-center gap-2 text-sm text-zinc-100">
+                    <span className="truncate">{s.name}</span>
+                    {s.automated && (
+                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-zinc-400">
+                        {t('money.auto')}
+                      </span>
+                    )}
+                  </p>
                   <p className="mt-0.5 text-xs text-zinc-500">
                     {t(freqKey[s.frequency])}
                     {s.category?.trim() && <span className="ml-1">· {catLabel(s.category.trim())}</span>}

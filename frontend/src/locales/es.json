@@ -104,7 +104,8 @@
     "savingsGoal": "Meta de ahorro",
     "trends": "Tendencia de gastos",
     "trendsHigh": "Máx.",
-    "trendsEmpty": "Aún no hay pagos completados — tus gastos mensuales se mostrarán aquí."
+    "trendsEmpty": "Aún no hay pagos completados — tus gastos mensuales se mostrarán aquí.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Mensual",
@@ -181,7 +182,9 @@
     "dueShift": "Si es fin de semana/festivo",
     "dueShiftNone": "Exacto",
     "dueShiftPrev": "Adelantar",
-    "dueShiftNext": "Día hábil siguiente"
+    "dueShiftNext": "Día hábil siguiente",
+    "automated": "Pago automático",
+    "automatedHint": "Domiciliación / transferencia periódica — sin recordatorio ni tarea."
   },
   "settings": {
     "notificationsTitle": "Notificaciones",

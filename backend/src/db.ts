@@ -52,6 +52,8 @@ export async function migrate(): Promise<void> {
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS stream_type TEXT NOT NULL DEFAULT 'expense'`);
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS due_day SMALLINT NOT NULL DEFAULT 1`);
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS due_shift TEXT NOT NULL DEFAULT 'next'`);
+  // Automated (direct-debit) streams generate no actionable event / reminder.
+  await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS automated BOOLEAN NOT NULL DEFAULT FALSE`);
 }
 
 /** Read a single app setting, or null if unset. */

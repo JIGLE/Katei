@@ -103,7 +103,8 @@
     "savingsGoal": "Savings goal",
     "trends": "Spending trends",
     "trendsHigh": "Peak",
-    "trendsEmpty": "No completed payments yet — your monthly spending will chart here."
+    "trendsEmpty": "No completed payments yet — your monthly spending will chart here.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Monthly",
@@ -180,7 +181,9 @@
     "dueShift": "If on a weekend/holiday",
     "dueShiftNone": "Exact",
     "dueShiftPrev": "Move earlier",
-    "dueShiftNext": "Next working day"
+    "dueShiftNext": "Next working day",
+    "automated": "Paid automatically",
+    "automatedHint": "Direct debit / standing order — no reminder or to-do."
   },
   "settings": {
     "notificationsTitle": "Notifications",

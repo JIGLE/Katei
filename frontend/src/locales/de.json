@@ -104,7 +104,8 @@
     "savingsGoal": "Sparziel",
     "trends": "Ausgabentrend",
     "trendsHigh": "Spitze",
-    "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier."
+    "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -181,7 +182,9 @@
     "dueShift": "Bei Wochenende/Feiertag",
     "dueShiftNone": "Exakt",
     "dueShiftPrev": "Vorverlegen",
-    "dueShiftNext": "Nächster Werktag"
+    "dueShiftNext": "Nächster Werktag",
+    "automated": "Automatisch bezahlt",
+    "automatedHint": "Lastschrift / Dauerauftrag — keine Erinnerung oder Aufgabe."
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",

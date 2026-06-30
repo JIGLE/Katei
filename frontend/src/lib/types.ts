@@ -22,6 +22,7 @@ export interface MoneyStream {
   stream_type: StreamType;
   due_day: number;
   due_shift: DueShift;
+  automated: boolean;
   created_at: string;
 }
 

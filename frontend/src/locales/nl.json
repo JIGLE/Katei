@@ -104,7 +104,8 @@
     "savingsGoal": "Spaardoel",
     "trends": "Uitgaventrend",
     "trendsHigh": "Piek",
-    "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier."
+    "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier.",
+    "auto": "Auto"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -181,7 +182,9 @@
     "dueShift": "Bij weekend/feestdag",
     "dueShiftNone": "Exact",
     "dueShiftPrev": "Eerder",
-    "dueShiftNext": "Volgende werkdag"
+    "dueShiftNext": "Volgende werkdag",
+    "automated": "Automatisch betaald",
+    "automatedHint": "Automatische incasso / periodieke overboeking — geen herinnering of taak."
   },
   "settings": {
     "notificationsTitle": "Notificaties",
