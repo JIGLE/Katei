@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { CURRENCIES } from '../lib/countries';
-import type { MoneyStream, StreamType } from '../lib/types';
+import type { MoneyStream, StreamType, DueShift } from '../lib/types';
 
 interface StreamFormProps {
   initial?: MoneyStream;
@@ -42,6 +42,8 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
   const [streamType, setStreamType] = useState<StreamType>(initial?.stream_type ?? initialType ?? 'expense');
   const [frequency, setFrequency] = useState<Frequency>(initial?.frequency ?? 'monthly');
+  const [dueDay, setDueDay] = useState<number>(initial?.due_day ?? 1);
+  const [dueShift, setDueShift] = useState<DueShift>(initial?.due_shift ?? 'next');
   const [category, setCategory] = useState(initial?.category ?? '');
 
   const [submitting, setSubmitting] = useState(false);
@@ -70,6 +72,8 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
         frequency,
         // "one-off" is a non-recurring cost; everything else recurs.
         is_recurring: frequency !== 'one-off',
+        due_day: dueDay,
+        due_shift: dueShift,
         category: category.trim() || null,
       };
       const saved = isEdit
@@ -178,6 +182,38 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
           ))}
         </div>
       </div>
+
+      {frequency !== 'one-off' && (
+        <div className="flex gap-3">
+          <div className="w-32">
+            <label htmlFor="due_day" className={labelCls}>{t('form.dueDay')}</label>
+            <select
+              id="due_day"
+              value={dueDay}
+              onChange={(e) => setDueDay(Number(e.target.value))}
+              className={`${fieldCls} [color-scheme:dark]`}
+            >
+              {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+              <option value={31}>{t('form.lastDay')}</option>
+            </select>
+          </div>
+          <div className="flex-1 min-w-0">
+            <label htmlFor="due_shift" className={labelCls}>{t('form.dueShift')}</label>
+            <select
+              id="due_shift"
+              value={dueShift}
+              onChange={(e) => setDueShift(e.target.value as DueShift)}
+              className={`${fieldCls} [color-scheme:dark]`}
+            >
+              <option value="next">{t('form.dueShiftNext')}</option>
+              <option value="prev">{t('form.dueShiftPrev')}</option>
+              <option value="none">{t('form.dueShiftNone')}</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       <div>
         <label htmlFor="category" className={labelCls}>{t('form.category')}</label>

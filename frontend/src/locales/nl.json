@@ -172,7 +172,13 @@
     "errCreateAssignment": "Toewijzing aanmaken mislukt.",
     "errDeleteEvent": "Gebeurtenis verwijderen mislukt.",
     "errDeleteMember": "Lid verwijderen mislukt.",
-    "errDeleteStream": "Geldstroom verwijderen mislukt."
+    "errDeleteStream": "Geldstroom verwijderen mislukt.",
+    "dueDay": "Vervaldag",
+    "lastDay": "Laatste dag",
+    "dueShift": "Bij weekend/feestdag",
+    "dueShiftNone": "Exact",
+    "dueShiftPrev": "Eerder",
+    "dueShiftNext": "Volgende werkdag"
   },
   "settings": {
     "notificationsTitle": "Notificaties",

@@ -172,7 +172,13 @@
     "errCreateAssignment": "No se pudo crear la asignación.",
     "errDeleteEvent": "No se pudo eliminar el evento.",
     "errDeleteMember": "No se pudo eliminar el miembro.",
-    "errDeleteStream": "No se pudo eliminar el flujo."
+    "errDeleteStream": "No se pudo eliminar el flujo.",
+    "dueDay": "Día de cargo",
+    "lastDay": "Último día",
+    "dueShift": "Si es fin de semana/festivo",
+    "dueShiftNone": "Exacto",
+    "dueShiftPrev": "Adelantar",
+    "dueShiftNext": "Día hábil siguiente"
   },
   "settings": {
     "notificationsTitle": "Notificaciones",

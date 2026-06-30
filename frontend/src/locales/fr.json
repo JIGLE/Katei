@@ -172,7 +172,13 @@
     "errCreateAssignment": "Échec de la création de l'attribution.",
     "errDeleteEvent": "Échec de la suppression de l'échéance.",
     "errDeleteMember": "Échec de la suppression du membre.",
-    "errDeleteStream": "Échec de la suppression du flux."
+    "errDeleteStream": "Échec de la suppression du flux.",
+    "dueDay": "Jour d'échéance",
+    "lastDay": "Dernier jour",
+    "dueShift": "Si week-end/jour férié",
+    "dueShiftNone": "Exact",
+    "dueShiftPrev": "Avancer",
+    "dueShiftNext": "Jour ouvré suivant"
   },
   "settings": {
     "notificationsTitle": "Notifications",

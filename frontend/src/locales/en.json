@@ -171,7 +171,13 @@
     "errCreateAssignment": "Failed to create assignment.",
     "errDeleteEvent": "Failed to delete event.",
     "errDeleteMember": "Failed to delete member.",
-    "errDeleteStream": "Failed to delete money stream."
+    "errDeleteStream": "Failed to delete money stream.",
+    "dueDay": "Due day",
+    "lastDay": "Last day",
+    "dueShift": "If on a weekend/holiday",
+    "dueShiftNone": "Exact",
+    "dueShiftPrev": "Move earlier",
+    "dueShiftNext": "Next working day"
   },
   "settings": {
     "notificationsTitle": "Notifications",

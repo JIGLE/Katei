@@ -172,7 +172,13 @@
     "errCreateAssignment": "Zuweisung konnte nicht erstellt werden.",
     "errDeleteEvent": "Termin konnte nicht gelöscht werden.",
     "errDeleteMember": "Mitglied konnte nicht gelöscht werden.",
-    "errDeleteStream": "Geldfluss konnte nicht gelöscht werden."
+    "errDeleteStream": "Geldfluss konnte nicht gelöscht werden.",
+    "dueDay": "Fälligkeitstag",
+    "lastDay": "Letzter Tag",
+    "dueShift": "Bei Wochenende/Feiertag",
+    "dueShiftNone": "Exakt",
+    "dueShiftPrev": "Vorverlegen",
+    "dueShiftNext": "Nächster Werktag"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",

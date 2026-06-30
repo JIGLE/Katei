@@ -2,7 +2,10 @@
 // topic URL; reminders for events due within the lead window are pushed once.
 
 import type { FastifyBaseLogger } from 'fastify';
+import Holidays from 'date-holidays';
 import { query, getSetting, setSetting } from '../db.js';
+
+export type DueShift = 'none' | 'prev' | 'next';
 
 const URL_KEY = 'ntfy_url';
 const LEAD_KEY = 'notify_lead_days';
@@ -121,31 +124,81 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
   return sent;
 }
 
+function isWeekend(d: Date): boolean {
+  const g = d.getUTCDay();
+  return g === 0 || g === 6;
+}
+
+function isBusinessDay(d: Date, hd: Holidays | null): boolean {
+  if (isWeekend(d)) return false;
+  if (hd) {
+    const h = hd.isHoliday(d);
+    if (Array.isArray(h) && h.some((x) => x.type === 'public')) return false;
+  }
+  return true;
+}
+
 /**
- * Ensure every recurring money stream has a future incomplete event so the user
- * doesn't have to add "Rent due" by hand each month. For each monthly/yearly
- * stream with no upcoming linked event, create one dated at the start of the
- * next period. Returns the count created.
+ * Concrete next occurrence date (YYYY-MM-DD) for a recurring stream:
+ * monthly → `dueDay` of next month (clamped to month length); yearly → `dueDay`
+ * of next January. The result is then shifted to a business day per `dueShift`,
+ * skipping weekends and the country's public holidays. Pure (no DB / no I/O).
+ */
+export function nextOccurrence(
+  opts: { frequency: string; dueDay: number; dueShift: DueShift },
+  country?: string,
+  fromDate: Date = new Date(),
+): string {
+  const { frequency, dueDay, dueShift } = opts;
+  const anchorYear = fromDate.getUTCFullYear();
+  const anchorMonth = frequency === 'yearly' ? 12 : fromDate.getUTCMonth() + 1; // next Jan / next month
+  const y = anchorYear + Math.floor(anchorMonth / 12);
+  const mo = anchorMonth % 12;
+  const daysInMonth = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+  const day = Math.min(Math.max(dueDay || 1, 1), daysInMonth);
+  let d = new Date(Date.UTC(y, mo, day));
+
+  if (dueShift !== 'none') {
+    let hd: Holidays | null = null;
+    try {
+      hd = country ? new Holidays(country.toUpperCase()) : null;
+    } catch {
+      hd = null;
+    }
+    const step = dueShift === 'prev' ? -1 : 1;
+    let guard = 0;
+    while (!isBusinessDay(d, hd) && guard < 14) {
+      d = new Date(d.getTime() + step * 86_400_000);
+      guard += 1;
+    }
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Ensure every recurring income/expense stream has a future incomplete event so
+ * the user doesn't add "Rent due" / "Salary" by hand each month. Dates land on a
+ * business day (see nextOccurrence). Savings streams are skipped (no obligation).
+ * Returns the count created.
  */
 export async function generateRecurringEvents(
   log?: FastifyBaseLogger,
   q: typeof query = query,
 ): Promise<number> {
-  const { rows: streams } = await q<{ id: number; name: string; frequency: string }>(
-    `SELECT id, name, frequency
+  const { rows: streams } = await q<{
+    id: number; name: string; frequency: string; stream_type: string; due_day: number; due_shift: string;
+  }>(
+    `SELECT id, name, frequency, stream_type, due_day, due_shift
        FROM money_streams
-      WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')`,
+      WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')
+        AND stream_type IN ('income', 'expense')`,
   );
+  const country = (await q<{ value: string }>(
+    `SELECT value FROM app_settings WHERE key = 'country'`,
+  )).rows[0]?.value;
 
   let created = 0;
   for (const s of streams) {
-    // First of next month, or Jan 1 of next year. Both inlined (no params) since
-    // they are fixed SQL expressions, not user input.
-    const nextDate =
-      s.frequency === 'monthly'
-        ? `date_trunc('month', CURRENT_DATE + interval '1 month')::date`
-        : `date_trunc('year', CURRENT_DATE + interval '1 year')::date`;
-
     const { rows: existing } = await q<{ count: string }>(
       `SELECT count(*) AS count FROM household_events
         WHERE money_stream_id = $1 AND target_date >= CURRENT_DATE AND is_completed = FALSE`,
@@ -153,10 +206,15 @@ export async function generateRecurringEvents(
     );
     if (Number(existing[0].count) > 0) continue;
 
+    const date = nextOccurrence(
+      { frequency: s.frequency, dueDay: s.due_day, dueShift: s.due_shift as DueShift },
+      country,
+    );
+    const isIncome = s.stream_type === 'income';
     await q(
       `INSERT INTO household_events (title, event_type, target_date, money_stream_id)
-       VALUES ($1, 'payment', ${nextDate}, $2)`,
-      [`${s.name} due`, s.id],
+       VALUES ($1, $2, $3, $4)`,
+      [isIncome ? s.name : `${s.name} due`, isIncome ? 'income' : 'payment', date, s.id],
     );
     created += 1;
     log?.info(`Generated recurring event for stream "${s.name}"`);
