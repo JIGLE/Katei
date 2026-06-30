@@ -42,9 +42,10 @@ COPY --from=frontend /frontend/dist ./public
 # Schema — loaded by entrypoint on first boot.
 COPY schema.sql ./schema.sql
 
-# Entrypoint script.
+# Entrypoint + restore helper scripts.
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY restore.sh /app/restore.sh
+RUN chmod +x /entrypoint.sh /app/restore.sh
 
 VOLUME ["/var/lib/postgresql/data"]
 

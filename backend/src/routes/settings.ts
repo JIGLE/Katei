@@ -2,7 +2,9 @@
 // (mounted inside the authenticated group in index.ts).
 
 import type { FastifyPluginAsync } from 'fastify';
+import { createReadStream, existsSync } from 'node:fs';
 import { getSettings, saveSettings, sendNtfy, checkAndNotify } from '../lib/notifications.js';
+import { listBackups, backupPath, runBackup } from '../lib/backups.js';
 
 export const settingsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/settings/notifications
@@ -46,4 +48,25 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/settings/notifications/run — trigger a due-soon sweep now.
   app.post('/notifications/run', async () => ({ sent: await checkAndNotify() }));
+
+  // GET /api/settings/backups — list available database backups.
+  app.get('/backups', async () => listBackups());
+
+  // POST /api/settings/backups/run — take a backup now.
+  app.post('/backups/run', async (_req, reply) => {
+    const file = await runBackup(app.log);
+    if (!file) return reply.code(500).send({ error: 'Backup failed' });
+    return { file: file.split('/').pop() };
+  });
+
+  // GET /api/settings/backups/:name — download a backup file.
+  app.get<{ Params: { name: string } }>('/backups/:name', async (req, reply) => {
+    const full = backupPath(req.params.name);
+    if (!full) return reply.code(400).send({ error: 'Invalid backup name' });
+    if (!existsSync(full)) return reply.code(404).send({ error: 'Backup not found' });
+    reply
+      .header('Content-Type', 'application/sql')
+      .header('Content-Disposition', `attachment; filename="${req.params.name}"`);
+    return reply.send(createReadStream(full));
+  });
 };

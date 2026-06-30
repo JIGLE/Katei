@@ -6,6 +6,18 @@ interface NotificationSettings {
   lead_days: number;
 }
 
+interface BackupInfo {
+  name: string;
+  size: number;
+  created_at: string;
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -18,6 +30,12 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const [backups, setBackups] = useState<BackupInfo[]>([]);
+  const [backingUp, setBackingUp] = useState(false);
+
+  const loadBackups = () => {
+    api.get<BackupInfo[]>('/settings/backups').then(setBackups).catch(() => {});
+  };
 
   useEffect(() => {
     api
@@ -25,7 +43,22 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
       .then((s) => { setUrl(s.ntfy_url); setLeadDays(String(s.lead_days)); })
       .catch(() => {})
       .finally(() => setLoading(false));
+    loadBackups();
   }, []);
+
+  const backupNow = async () => {
+    setBackingUp(true);
+    setMessage(null);
+    try {
+      await api.post('/settings/backups/run', {});
+      setMessage({ kind: 'ok', text: 'Backup created.' });
+      loadBackups();
+    } catch (err) {
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : 'Backup failed.' });
+    } finally {
+      setBackingUp(false);
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -119,6 +152,47 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         >
           {saving ? 'Saving…' : 'Save'}
         </button>
+      </div>
+
+      {/* Backups */}
+      <div className="border-t border-zinc-800/60 pt-4">
+        <div className="mb-2 flex items-center justify-between">
+          <label className={`${labelCls} mb-0`}>Backups</label>
+          <button
+            type="button"
+            onClick={backupNow}
+            disabled={backingUp}
+            className="text-xs text-zinc-400 underline-offset-2 transition-colors hover:text-zinc-200 disabled:opacity-50"
+          >
+            {backingUp ? 'Backing up…' : 'Back up now'}
+          </button>
+        </div>
+        <p className="mb-3 text-xs leading-relaxed text-zinc-500">
+          A snapshot is saved daily inside the data volume. Download one to keep
+          it off-box; restore with <span className="text-zinc-400">/app/restore.sh</span>.
+        </p>
+        {backups.length === 0 ? (
+          <p className="text-xs text-zinc-600">No backups yet.</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {backups.map((b) => (
+              <li
+                key={b.name}
+                className="flex items-center gap-3 rounded-xl border border-zinc-800/60 px-3 py-2"
+              >
+                <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">{b.name}</span>
+                <span className="flex-shrink-0 text-xs tabular-nums text-zinc-600">{formatSize(b.size)}</span>
+                <a
+                  href={`/api/settings/backups/${b.name}`}
+                  download
+                  className="flex-shrink-0 text-xs text-emerald-500 underline-offset-2 hover:text-emerald-400"
+                >
+                  Download
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <button

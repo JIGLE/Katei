@@ -97,7 +97,19 @@ self-heals instead of logging everyone out or silently stopping reminders:
 A `pg_dump` runs daily and is written to `katei_backups/` **inside the data
 volume**, keeping the most recent 7 (configurable via `BACKUP_RETENTION`). Since
 it lives in the mounted volume, backups persist across restarts and redeploys.
-To restore: `psql --dbname "$DATABASE_URL" -f katei_YYYY-MM-DD.sql`.
+Each dump is self-contained (`--clean --if-exists`), so restoring replaces the
+current database with the snapshot.
+
+From **Settings → Backups** you can take a backup on demand and download any
+snapshot to keep it off-box.
+
+**Restore** with the bundled helper (lists snapshots, then restores the chosen
+one, with a confirmation prompt):
+
+```bash
+docker exec -it <container> /app/restore.sh                    # list backups
+docker exec -it <container> /app/restore.sh katei_2026-06-30.sql
+```
 
 The app also auto-generates events for recurring money streams — a "monthly"
 stream named *Rent* spawns a *Rent due* event for the first of next month, so

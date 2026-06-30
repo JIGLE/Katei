@@ -11,7 +11,7 @@ process.env.BACKUP_DIR = BACKUP_DIR;
 process.env.BACKUP_RETENTION = '3';
 process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 
-const { pruneBackups } = await import('./backups.js');
+const { pruneBackups, isValidBackupName, listBackups, backupPath } = await import('./backups.js');
 
 async function seed(names: string[]) {
   await rm(BACKUP_DIR, { recursive: true, force: true });
@@ -70,4 +70,26 @@ test('pruneBackups does nothing when fewer than RETENTION dumps exist', async ()
 test('pruneBackups handles a missing directory without throwing', async () => {
   await rm(BACKUP_DIR, { recursive: true, force: true });
   await assert.doesNotReject(pruneBackups());
+});
+
+test('isValidBackupName accepts only date-stamped dump names', () => {
+  assert.equal(isValidBackupName('katei_2026-06-30.sql'), true);
+  assert.equal(isValidBackupName('katei_backup.sql'), false);
+  assert.equal(isValidBackupName('notes.txt'), false);
+});
+
+test('backupPath rejects path-traversal and unsafe names', () => {
+  assert.equal(backupPath('../../etc/passwd'), null);
+  assert.equal(backupPath('katei_2026-06-30.sql/../../x'), null);
+  assert.equal(backupPath('katei_2026-06-30.sql')?.endsWith('/katei_2026-06-30.sql'), true);
+});
+
+test('listBackups returns dumps newest-first with size and time', async () => {
+  await seed(['katei_2026-06-01.sql', 'katei_2026-06-03.sql', 'katei_2026-06-02.sql', 'notes.txt']);
+  const list = await listBackups();
+  assert.deepEqual(
+    list.map((b) => b.name),
+    ['katei_2026-06-03.sql', 'katei_2026-06-02.sql', 'katei_2026-06-01.sql'],
+  );
+  assert.ok(list.every((b) => typeof b.size === 'number' && typeof b.created_at === 'string'));
 });
