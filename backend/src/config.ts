@@ -25,4 +25,5 @@ export const config = {
   defaultCurrency: process.env.DEFAULT_CURRENCY || undefined,
   locale: process.env.LOCALE || undefined,
   timezone: process.env.TZ || undefined,
+  language: process.env.LANGUAGE || undefined,
 } as const;

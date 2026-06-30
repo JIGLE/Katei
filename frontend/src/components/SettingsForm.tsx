@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
 
 interface NotificationSettings {
   ntfy_url: string;
@@ -43,6 +44,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [currency, setCurrency] = useState(prefs.currency);
   const [locale, setLocale] = useState(prefs.locale);
   const [timezone, setTimezone] = useState(prefs.timezone);
+  const [language, setLanguage] = useState(prefs.language);
   const [savingPrefs, setSavingPrefs] = useState(false);
 
   // Keep local fields in sync once preferences finish loading.
@@ -51,7 +53,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setCurrency(prefs.currency);
     setLocale(prefs.locale);
     setTimezone(prefs.timezone);
-  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone]);
+    setLanguage(prefs.language);
+  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language]);
 
   const onCountryChange = (code: string) => {
     setCountry(code);
@@ -63,7 +66,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ country, currency, locale, timezone });
+      await prefs.save({ country, currency, locale, timezone, language });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -186,6 +189,17 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
             className={`${fieldCls} [color-scheme:dark]`}
           >
             {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="pref_language" className="mb-1.5 block text-xs text-zinc-500">{t('settings.language')}</label>
+          <select
+            id="pref_language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className={`${fieldCls} [color-scheme:dark]`}
+          >
+            {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
           </select>
         </div>
         <button

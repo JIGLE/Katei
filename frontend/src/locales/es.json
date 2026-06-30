@@ -192,6 +192,7 @@
     "backupFailed": "Error en la copia.",
     "backupsIntro": "Cada día se guarda una copia dentro del volumen de datos. Descarga una para conservarla fuera del servidor; restaura con /app/restore.sh.",
     "noBackups": "Aún no hay copias.",
-    "download": "Descargar"
+    "download": "Descargar",
+    "language": "Idioma de la interfaz"
   }
 }

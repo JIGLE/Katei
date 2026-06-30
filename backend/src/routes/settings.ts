@@ -11,17 +11,23 @@ import { getSetting, setSetting } from '../db.js';
 const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
 
 export const settingsRoutes: FastifyPluginAsync = async (app) => {
-  // GET /api/settings/preferences — household country / currency / locale / timezone.
-  app.get('/preferences', async () => ({
-    country: (await getSetting('country')) ?? PREF_DEFAULTS.country,
-    currency: (await getSetting('default_currency')) ?? PREF_DEFAULTS.currency,
-    locale: (await getSetting('locale')) ?? PREF_DEFAULTS.locale,
-    timezone: (await getSetting('timezone')) ?? PREF_DEFAULTS.timezone,
-  }));
+  // GET /api/settings/preferences — household country / currency / locale / timezone / language.
+  app.get('/preferences', async () => {
+    const locale = (await getSetting('locale')) ?? PREF_DEFAULTS.locale;
+    // UI language defaults to the locale's language, but is independently set.
+    const language = (await getSetting('language')) ?? locale.split('-')[0].toLowerCase();
+    return {
+      country: (await getSetting('country')) ?? PREF_DEFAULTS.country,
+      currency: (await getSetting('default_currency')) ?? PREF_DEFAULTS.currency,
+      locale,
+      timezone: (await getSetting('timezone')) ?? PREF_DEFAULTS.timezone,
+      language,
+    };
+  });
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string };
+    Body: { country: string; currency: string; locale: string; timezone: string; language: string };
   }>(
     '/preferences',
     {
@@ -34,6 +40,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             currency: { type: 'string', pattern: '^[A-Za-z]{3}$' },
             locale: { type: 'string', minLength: 2, maxLength: 35 },
             timezone: { type: 'string', minLength: 1, maxLength: 64 },
+            language: { type: 'string', pattern: '^[A-Za-z]{2}$' },
           },
         },
       },
@@ -43,11 +50,14 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('default_currency', req.body.currency.toUpperCase());
       await setSetting('locale', req.body.locale);
       await setSetting('timezone', req.body.timezone);
+      const language = (req.body.language || req.body.locale.split('-')[0]).toLowerCase();
+      await setSetting('language', language);
       return {
         country: req.body.country.toUpperCase(),
         currency: req.body.currency.toUpperCase(),
         locale: req.body.locale,
         timezone: req.body.timezone,
+        language,
       };
     },
   );

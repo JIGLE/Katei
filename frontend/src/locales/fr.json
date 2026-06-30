@@ -192,6 +192,7 @@
     "backupFailed": "Échec de la sauvegarde.",
     "backupsIntro": "Une sauvegarde est enregistrée chaque jour dans le volume de données. Téléchargez-en une pour la conserver hors site ; restauration avec /app/restore.sh.",
     "noBackups": "Aucune sauvegarde pour l'instant.",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "language": "Langue d'affichage"
   }
 }

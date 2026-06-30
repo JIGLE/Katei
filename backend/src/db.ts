@@ -103,4 +103,5 @@ export async function seedSettingsFromEnv(): Promise<void> {
   if (config.defaultCurrency) await setSetting('default_currency', config.defaultCurrency);
   if (config.locale) await setSetting('locale', config.locale);
   if (config.timezone) await setSetting('timezone', config.timezone);
+  if (config.language) await setSetting('language', config.language);
 }

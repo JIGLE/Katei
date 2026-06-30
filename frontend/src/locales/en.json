@@ -191,6 +191,7 @@
     "backupFailed": "Backup failed.",
     "backupsIntro": "A snapshot is saved daily inside the data volume. Download one to keep it off-box; restore with /app/restore.sh.",
     "noBackups": "No backups yet.",
-    "download": "Download"
+    "download": "Download",
+    "language": "Display language"
   }
 }

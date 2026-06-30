@@ -192,6 +192,7 @@
     "backupFailed": "Backup non riuscito.",
     "backupsIntro": "Ogni giorno viene salvato un backup nel volume dati. Scaricane uno per conservarlo altrove; ripristino con /app/restore.sh.",
     "noBackups": "Ancora nessun backup.",
-    "download": "Scarica"
+    "download": "Scarica",
+    "language": "Lingua dell'interfaccia"
   }
 }

@@ -192,6 +192,7 @@
     "backupFailed": "Back-up mislukt.",
     "backupsIntro": "Er wordt dagelijks een back-up opgeslagen in het datavolume. Download er een om hem extern te bewaren; herstellen met /app/restore.sh.",
     "noBackups": "Nog geen back-ups.",
-    "download": "Downloaden"
+    "download": "Downloaden",
+    "language": "Weergavetaal"
   }
 }

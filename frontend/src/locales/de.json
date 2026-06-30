@@ -192,6 +192,7 @@
     "backupFailed": "Sicherung fehlgeschlagen.",
     "backupsIntro": "Täglich wird eine Sicherung im Datenvolumen gespeichert. Lade eine herunter, um sie extern aufzubewahren; Wiederherstellung mit /app/restore.sh.",
     "noBackups": "Noch keine Sicherungen.",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "language": "Anzeigesprache"
   }
 }

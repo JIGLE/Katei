@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, TIMEZONES, countryByCode, DEFAULT_COUNTRY } from '../lib/countries';
+import { SUPPORTED_LANGUAGES } from '../lib/i18n';
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
@@ -48,7 +49,11 @@ export function AuthGate() {
         // Persist the household's region preferences right after the session
         // is created (locale follows the chosen country).
         const locale = countryByCode(country)?.locale ?? DEFAULT_COUNTRY.locale;
-        await api.put('/settings/preferences', { country, currency, locale, timezone }).catch(() => {});
+        // Default the UI language to the country's language when we support it,
+        // otherwise English (e.g. Denmark → English UI, Danish formatting).
+        const lang = locale.split('-')[0].toLowerCase();
+        const language = (SUPPORTED_LANGUAGES as readonly string[]).includes(lang) ? lang : 'en';
+        await api.put('/settings/preferences', { country, currency, locale, timezone, language }).catch(() => {});
         await prefs.reload();
       } else {
         await login(name.trim(), password);

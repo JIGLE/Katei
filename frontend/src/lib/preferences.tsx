@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from './api';
-import { setLanguageFromLocale } from './i18n';
+import { setLanguage } from './i18n';
 
 export interface Preferences {
   country: string;
   currency: string;
   locale: string;
   timezone: string;
+  language: string;
 }
 
 const DEFAULTS: Preferences = {
@@ -14,6 +15,7 @@ const DEFAULTS: Preferences = {
   currency: 'EUR',
   locale: 'de-DE',
   timezone: 'Europe/Berlin',
+  language: 'en',
 };
 
 interface PreferencesContextValue extends Preferences {
@@ -41,10 +43,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     reload().finally(() => setLoading(false));
   }, []);
 
-  // Keep the UI language in sync with the chosen locale.
+  // UI language is independent of locale (e.g. da-DK formatting, English UI).
   useEffect(() => {
-    setLanguageFromLocale(prefs.locale);
-  }, [prefs.locale]);
+    setLanguage(prefs.language);
+  }, [prefs.language]);
 
   const save = async (p: Preferences) => {
     const saved = await api.put<Preferences>('/settings/preferences', p);

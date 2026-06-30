@@ -14,6 +14,16 @@ import nl from '../locales/nl.json';
 
 export const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it', 'nl'] as const;
 
+// Endonyms for the display-language picker.
+export const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  de: 'Deutsch',
+  fr: 'Français',
+  es: 'Español',
+  it: 'Italiano',
+  nl: 'Nederlands',
+};
+
 void i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },
@@ -28,11 +38,16 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false }, // React already escapes
 });
 
+/** Set the UI language directly (falls back to English if unsupported). */
+export function setLanguage(lang: string): void {
+  const code = (lang || 'en').split('-')[0].toLowerCase();
+  const next = (SUPPORTED_LANGUAGES as readonly string[]).includes(code) ? code : 'en';
+  if (i18n.language !== next) void i18n.changeLanguage(next);
+}
+
 /** Point i18next at the language portion of a BCP-47 locale (e.g. de-DE → de). */
 export function setLanguageFromLocale(locale: string): void {
-  const lang = (locale || 'en').split('-')[0].toLowerCase();
-  const next = (SUPPORTED_LANGUAGES as readonly string[]).includes(lang) ? lang : 'en';
-  if (i18n.language !== next) void i18n.changeLanguage(next);
+  setLanguage((locale || 'en').split('-')[0]);
 }
 
 export default i18n;
