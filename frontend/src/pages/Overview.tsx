@@ -134,25 +134,29 @@ export default function Overview() {
         />
       )}
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Quick stats — outflow gets a full-width row so long localized
+          currency strings (e.g. "14.777,84 kr.") never overflow; the two
+          counts share the row below. */}
+      <div className="space-y-3">
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
           <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
-          <p className="mt-1 text-xl font-light text-emerald-500">
+          <p className="mt-1 text-2xl font-light tabular-nums text-emerald-500">
             {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale)}
           </p>
         </div>
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
-          <p className="mt-1 text-xl font-light text-rose-500">
-            {loading ? '—' : overdue.length}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
-          <p className="mt-1 text-xl font-light text-amber-500">
-            {loading ? '—' : thisWeek.length}
-          </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+            <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
+            <p className="mt-1 text-xl font-light text-rose-500">
+              {loading ? '—' : overdue.length}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+            <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
+            <p className="mt-1 text-xl font-light text-amber-500">
+              {loading ? '—' : thisWeek.length}
+            </p>
+          </div>
         </div>
       </div>
 

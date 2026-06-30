@@ -109,6 +109,11 @@ export default function MoneyFlow() {
   const maxSpend = Math.max(0, ...trends.map((d) => d.total));
 
   const fmt = (n: number) => formatMoney(n, currency, locale);
+  // In the cramped 3-up summary cards, large localized amounts (e.g. Danish
+  // "32.000,00 kr.") must wrap. Their currency separator is a non-breaking
+  // space, so normalize it to a regular space to allow a clean break between
+  // the number and the currency instead of splitting "kr." itself.
+  const fmtWrap = (n: number) => fmt(n).replace(/[  ]/g, ' ');
 
   return (
     <div className="space-y-6">
@@ -119,17 +124,17 @@ export default function MoneyFlow() {
 
       {/* Income / Expenses / Savings */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3">
           <p className="text-xs text-zinc-500">{t('money.income')}</p>
-          <p className="mt-1 text-base font-light text-emerald-500">{loading ? '—' : fmt(income)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">{loading ? '—' : fmtWrap(income)}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-3">
           <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
-          <p className="mt-1 text-base font-light text-zinc-200">{loading ? '—' : fmt(expenses)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">{loading ? '—' : fmtWrap(expenses)}</p>
         </div>
-        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4">
+        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-3">
           <p className="text-xs text-zinc-500">{t('money.savings')}</p>
-          <p className="mt-1 text-base font-light text-teal-300">{loading ? '—' : fmt(savings)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(savings)}</p>
         </div>
       </div>
 
