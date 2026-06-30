@@ -35,7 +35,11 @@
     "signInBtn": "Sign in",
     "errNamePassword": "Name and password are required.",
     "errPasswordLen": "Password must be at least 8 characters.",
-    "errGeneric": "Something went wrong."
+    "errGeneric": "Something went wrong.",
+    "joinTitle": "Join the household",
+    "joinSubtitle": "You've been invited — choose your name and password.",
+    "joinBtn": "Join",
+    "inviteInvalid": "This invite is invalid or has expired."
   },
   "overview": {
     "eyebrow": "Home",
@@ -131,7 +135,16 @@
     "addFirstMember": "Add your first member",
     "assignmentsLabel": "Assignments",
     "assignmentCount_one": "{{count}} assignment",
-    "assignmentCount_other": "{{count}} assignments"
+    "assignmentCount_other": "{{count}} assignments",
+    "admin": "Admin",
+    "invites": "Invites",
+    "createInvite": "Create invite",
+    "inviteLink": "Invite link",
+    "inviteCopied": "Copied to clipboard",
+    "inviteActive": "active",
+    "revokeInvite": "Revoke invite",
+    "noInvites": "No active invites.",
+    "invitesHint": "Share an invite link so a member can set their own name and password. Each link works once."
   },
   "form": {
     "amount": "Amount",

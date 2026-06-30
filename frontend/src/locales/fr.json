@@ -36,7 +36,11 @@
     "signInBtn": "Se connecter",
     "errNamePassword": "Le nom et le mot de passe sont requis.",
     "errPasswordLen": "Le mot de passe doit comporter au moins 8 caractères.",
-    "errGeneric": "Une erreur est survenue."
+    "errGeneric": "Une erreur est survenue.",
+    "joinTitle": "Rejoindre le foyer",
+    "joinSubtitle": "Vous avez été invité — choisissez votre nom et mot de passe.",
+    "joinBtn": "Rejoindre",
+    "inviteInvalid": "Cette invitation est invalide ou a expiré."
   },
   "overview": {
     "eyebrow": "Accueil",
@@ -132,7 +136,16 @@
     "addFirstMember": "Ajouter votre premier membre",
     "assignmentsLabel": "Attributions",
     "assignmentCount_one": "{{count}} attribution",
-    "assignmentCount_other": "{{count}} attributions"
+    "assignmentCount_other": "{{count}} attributions",
+    "admin": "Admin",
+    "invites": "Invitations",
+    "createInvite": "Créer une invitation",
+    "inviteLink": "Lien d'invitation",
+    "inviteCopied": "Copié dans le presse-papiers",
+    "inviteActive": "active",
+    "revokeInvite": "Révoquer l'invitation",
+    "noInvites": "Aucune invitation active.",
+    "invitesHint": "Partagez un lien d'invitation pour qu'un membre choisisse son nom et mot de passe. Chaque lien fonctionne une fois."
   },
   "form": {
     "amount": "Montant",

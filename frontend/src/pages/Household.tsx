@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
-import type { User, AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
+import { useAuth } from '../lib/auth';
+import type { User, AssignmentDetail, HouseholdEvent, MoneyStream, Invite } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { MemberForm } from '../components/MemberForm';
 import { AssignmentForm } from '../components/AssignmentForm';
@@ -27,7 +28,13 @@ function roleColor(role: string): string {
 
 export default function Household() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [users, setUsers] = useState<User[]>([]);
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [creatingInvite, setCreatingInvite] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
@@ -53,6 +60,38 @@ export default function Household() {
   };
 
   useEffect(() => { fetchAll(); }, []);
+
+  // Invites are admin-only (the endpoint 403s otherwise).
+  const fetchInvites = () => {
+    if (!isAdmin) return;
+    api.get<Invite[]>('/invites').then(setInvites).catch(() => {});
+  };
+  useEffect(() => { fetchInvites(); }, [isAdmin]);
+
+  const createInvite = async () => {
+    setCreatingInvite(true);
+    setCopied(false);
+    try {
+      const inv = await api.post<Invite>('/invites', {});
+      const url = `${window.location.origin}/?invite=${inv.code}`;
+      setInviteLink(url);
+      try { await navigator.clipboard.writeText(url); setCopied(true); } catch { /* clipboard blocked */ }
+      fetchInvites();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCreatingInvite(false);
+    }
+  };
+
+  const revokeInvite = async (id: number) => {
+    try {
+      await api.delete(`/invites/${id}`);
+      fetchInvites();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSaved = () => {
     setShowMemberForm(false);
@@ -138,7 +177,14 @@ export default function Household() {
                     </div>
                   )}
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-100">{u.name}</p>
+                    <p className="flex items-center gap-2 text-sm text-zinc-100">
+                      <span className="truncate">{u.name}</span>
+                      {u.role === 'admin' && (
+                        <span className="flex-shrink-0 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-amber-500">
+                          {t('household.admin')}
+                        </span>
+                      )}
+                    </p>
                     <p className="mt-0.5 text-xs text-zinc-500">
                       {t('household.assignmentCount', { count: userAssignments.length })}
                     </p>
@@ -180,6 +226,54 @@ export default function Household() {
         </section>
       )}
 
+      {/* Invites — admin only */}
+      {!loading && !error && isAdmin && (
+        <section className="space-y-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.invites')}</p>
+            <button
+              type="button"
+              onClick={createInvite}
+              disabled={creatingInvite}
+              className="text-xs text-emerald-500 underline-offset-2 transition-colors hover:text-emerald-400 disabled:opacity-50"
+            >
+              {creatingInvite ? t('common.pleaseWait') : t('household.createInvite')}
+            </button>
+          </div>
+
+          {inviteLink && (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+              <p className="mb-1 text-xs text-zinc-500">{copied ? t('household.inviteCopied') : t('household.inviteLink')}</p>
+              <p className="break-all text-xs text-zinc-300">{inviteLink}</p>
+            </div>
+          )}
+
+          {invites.filter((i) => i.active).length > 0 ? (
+            <ul className="space-y-1.5">
+              {invites.filter((i) => i.active).map((i) => (
+                <li key={i.id} className="flex items-center gap-2 text-xs">
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                  <span className="flex-1 truncate capitalize text-zinc-400">
+                    {i.role} · {t('household.inviteActive')}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => revokeInvite(i.id)}
+                    className="rounded-md px-1.5 text-zinc-600 transition-colors hover:text-rose-400"
+                    aria-label={t('household.revokeInvite')}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-zinc-600">{t('household.noInvites')}</p>
+          )}
+          <p className="text-xs leading-relaxed text-zinc-500">{t('household.invitesHint')}</p>
+        </section>
+      )}
+
       {/* Assignment summary */}
       {!loading && !error && users.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
@@ -191,16 +285,18 @@ export default function Household() {
         </section>
       )}
 
-      {/* Floating add-member button. */}
-      <button
-        onClick={() => setShowMemberForm(true)}
-        aria-label={t('household.addMemberAria')}
-        className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
-      >
-        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-      </button>
+      {/* Floating add-member button — admins manage household membership. */}
+      {isAdmin && (
+        <button
+          onClick={() => setShowMemberForm(true)}
+          aria-label={t('household.addMemberAria')}
+          className="fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
+        >
+          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
+      )}
 
       <Modal open={showMemberForm} title={t('household.newMember')} onClose={() => setShowMemberForm(false)}>
         <MemberForm onSaved={handleSaved} onCancel={() => setShowMemberForm(false)} />

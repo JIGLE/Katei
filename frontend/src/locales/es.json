@@ -36,7 +36,11 @@
     "signInBtn": "Iniciar sesión",
     "errNamePassword": "El nombre y la contraseña son obligatorios.",
     "errPasswordLen": "La contraseña debe tener al menos 8 caracteres.",
-    "errGeneric": "Algo salió mal."
+    "errGeneric": "Algo salió mal.",
+    "joinTitle": "Unirse al hogar",
+    "joinSubtitle": "Te han invitado — elige tu nombre y contraseña.",
+    "joinBtn": "Unirse",
+    "inviteInvalid": "Esta invitación no es válida o ha caducado."
   },
   "overview": {
     "eyebrow": "Inicio",
@@ -132,7 +136,16 @@
     "addFirstMember": "Añade tu primer miembro",
     "assignmentsLabel": "Asignaciones",
     "assignmentCount_one": "{{count}} asignación",
-    "assignmentCount_other": "{{count}} asignaciones"
+    "assignmentCount_other": "{{count}} asignaciones",
+    "admin": "Admin",
+    "invites": "Invitaciones",
+    "createInvite": "Crear invitación",
+    "inviteLink": "Enlace de invitación",
+    "inviteCopied": "Copiado al portapapeles",
+    "inviteActive": "activa",
+    "revokeInvite": "Revocar invitación",
+    "noInvites": "No hay invitaciones activas.",
+    "invitesHint": "Comparte un enlace de invitación para que un miembro elija su nombre y contraseña. Cada enlace funciona una vez."
   },
   "form": {
     "amount": "Importe",

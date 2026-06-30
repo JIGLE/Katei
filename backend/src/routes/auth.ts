@@ -24,7 +24,10 @@ interface UserRow {
   avatar_url: string | null;
   created_at: string;
   password_hash: string | null;
+  role: string;
 }
+
+const USER_COLS = 'id, name, avatar_url, created_at, password_hash, role';
 
 async function accountCount(): Promise<number> {
   const { rows } = await query<{ c: number }>(
@@ -33,8 +36,24 @@ async function accountCount(): Promise<number> {
   return rows[0]?.c ?? 0;
 }
 
+interface InviteRow {
+  id: number;
+  role: string;
+}
+
+/** Validate an invite code: must exist, be unused, and not expired. */
+async function validInvite(code: string): Promise<InviteRow | null> {
+  const { rows } = await query<InviteRow>(
+    `SELECT id, role FROM invites
+      WHERE code = $1 AND used_at IS NULL
+        AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)`,
+    [code],
+  );
+  return rows[0] ?? null;
+}
+
 function publicUser(u: UserRow) {
-  return { id: u.id, name: u.name, avatar_url: u.avatar_url, created_at: u.created_at };
+  return { id: u.id, name: u.name, avatar_url: u.avatar_url, role: u.role, created_at: u.created_at };
 }
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
@@ -49,17 +68,24 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       return reply.code(401).send({ error: 'Not authenticated' });
     }
     const { rows } = await query<UserRow>(
-      `SELECT id, name, avatar_url, created_at, password_hash FROM users WHERE id = $1`,
+      `SELECT ${USER_COLS} FROM users WHERE id = $1`,
       [req.user.id],
     );
     if (!rows.length) return reply.code(401).send({ error: 'Not authenticated' });
     return publicUser(rows[0]);
   });
 
-  // Create an account. Open during first-run setup; otherwise requires auth.
-  // If a member already exists by name without a password, the account is
-  // "claimed" by setting its password — linking the login to that person.
-  app.post<{ Body: { name: string; password: string } }>(
+  // Public: validate an invite code so the join screen can show its state.
+  app.get<{ Params: { code: string } }>('/invite/:code', async (req) => {
+    const invite = await validInvite(req.params.code);
+    return invite ? { valid: true, role: invite.role } : { valid: false };
+  });
+
+  // Create an account. The very first account (setup) becomes admin and needs
+  // no invite. After that, registration requires a valid one-time invite code,
+  // which also determines the new account's role. If a passwordless member row
+  // already exists by name, the account "claims" it by setting its password.
+  app.post<{ Body: { name: string; password: string; invite_code?: string } }>(
     '/register',
     {
       schema: {
@@ -69,25 +95,32 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 100 },
             password: { type: 'string', minLength: 8, maxLength: 200 },
+            invite_code: { type: 'string', maxLength: 200 },
           },
         },
       },
     },
     async (req, reply) => {
       const setup = (await accountCount()) === 0;
+
+      let role = 'admin'; // first account
+      let invite: InviteRow | null = null;
       if (!setup) {
-        try {
-          await req.jwtVerify();
-        } catch {
-          return reply.code(403).send({ error: 'Registration requires an existing account' });
+        if (!req.body.invite_code) {
+          return reply.code(403).send({ error: 'An invite is required to join' });
         }
+        invite = await validInvite(req.body.invite_code);
+        if (!invite) {
+          return reply.code(403).send({ error: 'This invite is invalid or has expired' });
+        }
+        role = invite.role;
       }
 
       const { name, password } = req.body;
       const hash = await hashPassword(password);
 
       const existing = await query<UserRow>(
-        `SELECT id, name, avatar_url, created_at, password_hash FROM users WHERE name = $1`,
+        `SELECT ${USER_COLS} FROM users WHERE name = $1`,
         [name],
       );
 
@@ -97,23 +130,30 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         if (found.password_hash) {
           return reply.code(409).send({ error: 'That name is already taken' });
         }
-        // Claim the existing passwordless member row.
+        // Claim the existing passwordless member row, applying the invite role.
         const { rows } = await query<UserRow>(
-          `UPDATE users SET password_hash = $1 WHERE id = $2
-           RETURNING id, name, avatar_url, created_at, password_hash`,
-          [hash, found.id],
+          `UPDATE users SET password_hash = $1, role = $2 WHERE id = $3
+           RETURNING ${USER_COLS}`,
+          [hash, role, found.id],
         );
         user = rows[0];
       } else {
         const { rows } = await query<UserRow>(
-          `INSERT INTO users (name, password_hash) VALUES ($1, $2)
-           RETURNING id, name, avatar_url, created_at, password_hash`,
-          [name, hash],
+          `INSERT INTO users (name, password_hash, role) VALUES ($1, $2, $3)
+           RETURNING ${USER_COLS}`,
+          [name, hash, role],
         );
         user = rows[0];
       }
 
-      const token = app.jwt.sign({ id: user.id, name: user.name });
+      if (invite) {
+        await query(
+          `UPDATE invites SET used_at = CURRENT_TIMESTAMP, used_by = $1 WHERE id = $2`,
+          [user.id, invite.id],
+        );
+      }
+
+      const token = app.jwt.sign({ id: user.id, name: user.name, role: user.role });
       reply.setCookie(COOKIE_NAME, token, cookieOptions);
       return reply.code(201).send(publicUser(user));
     },
@@ -137,14 +177,14 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     async (req, reply) => {
       const { name, password } = req.body;
       const { rows } = await query<UserRow>(
-        `SELECT id, name, avatar_url, created_at, password_hash FROM users WHERE name = $1`,
+        `SELECT ${USER_COLS} FROM users WHERE name = $1`,
         [name],
       );
       const user = rows[0];
       if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
         return reply.code(401).send({ error: 'Invalid name or password' });
       }
-      const token = app.jwt.sign({ id: user.id, name: user.name });
+      const token = app.jwt.sign({ id: user.id, name: user.name, role: user.role });
       reply.setCookie(COOKIE_NAME, token, cookieOptions);
       return publicUser(user);
     },

@@ -36,7 +36,11 @@
     "signInBtn": "Inloggen",
     "errNamePassword": "Naam en wachtwoord zijn verplicht.",
     "errPasswordLen": "Het wachtwoord moet minstens 8 tekens bevatten.",
-    "errGeneric": "Er ging iets mis."
+    "errGeneric": "Er ging iets mis.",
+    "joinTitle": "Lid worden van het huishouden",
+    "joinSubtitle": "Je bent uitgenodigd — kies je naam en wachtwoord.",
+    "joinBtn": "Deelnemen",
+    "inviteInvalid": "Deze uitnodiging is ongeldig of verlopen."
   },
   "overview": {
     "eyebrow": "Thuis",
@@ -132,7 +136,16 @@
     "addFirstMember": "Voeg je eerste lid toe",
     "assignmentsLabel": "Toewijzingen",
     "assignmentCount_one": "{{count}} toewijzing",
-    "assignmentCount_other": "{{count}} toewijzingen"
+    "assignmentCount_other": "{{count}} toewijzingen",
+    "admin": "Admin",
+    "invites": "Uitnodigingen",
+    "createInvite": "Uitnodiging maken",
+    "inviteLink": "Uitnodigingslink",
+    "inviteCopied": "Gekopieerd naar klembord",
+    "inviteActive": "actief",
+    "revokeInvite": "Uitnodiging intrekken",
+    "noInvites": "Geen actieve uitnodigingen.",
+    "invitesHint": "Deel een uitnodigingslink zodat een lid zelf naam en wachtwoord kiest. Elke link werkt één keer."
   },
   "form": {
     "amount": "Bedrag",

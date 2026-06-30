@@ -56,6 +56,20 @@ export async function migrate(): Promise<void> {
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS automated BOOLEAN NOT NULL DEFAULT FALSE`);
   // Amount actually paid, captured when a payment is marked paid (bills vary).
   await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS actual_amount DECIMAL(10, 2)`);
+  // Per-member roles + one-time invite codes (Phase 2: real household accounts).
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'member'`);
+  await query(
+    `CREATE TABLE IF NOT EXISTS invites (
+       id SERIAL PRIMARY KEY,
+       code TEXT UNIQUE NOT NULL,
+       role VARCHAR(20) NOT NULL DEFAULT 'member',
+       created_by INT REFERENCES users(id) ON DELETE SET NULL,
+       expires_at TIMESTAMP,
+       used_at TIMESTAMP,
+       used_by INT REFERENCES users(id) ON DELETE SET NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
 }
 
 /** Read a single app setting, or null if unset. */

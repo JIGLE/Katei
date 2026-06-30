@@ -36,7 +36,11 @@
     "signInBtn": "Anmelden",
     "errNamePassword": "Name und Passwort sind erforderlich.",
     "errPasswordLen": "Das Passwort muss mindestens 8 Zeichen lang sein.",
-    "errGeneric": "Etwas ist schiefgelaufen."
+    "errGeneric": "Etwas ist schiefgelaufen.",
+    "joinTitle": "Dem Haushalt beitreten",
+    "joinSubtitle": "Du wurdest eingeladen — wähle Name und Passwort.",
+    "joinBtn": "Beitreten",
+    "inviteInvalid": "Diese Einladung ist ungültig oder abgelaufen."
   },
   "overview": {
     "eyebrow": "Zuhause",
@@ -132,7 +136,16 @@
     "addFirstMember": "Erstes Mitglied hinzufügen",
     "assignmentsLabel": "Zuweisungen",
     "assignmentCount_one": "{{count}} Zuweisung",
-    "assignmentCount_other": "{{count}} Zuweisungen"
+    "assignmentCount_other": "{{count}} Zuweisungen",
+    "admin": "Admin",
+    "invites": "Einladungen",
+    "createInvite": "Einladung erstellen",
+    "inviteLink": "Einladungslink",
+    "inviteCopied": "In Zwischenablage kopiert",
+    "inviteActive": "aktiv",
+    "revokeInvite": "Einladung widerrufen",
+    "noInvites": "Keine aktiven Einladungen.",
+    "invitesHint": "Teile einen Einladungslink, damit ein Mitglied Name und Passwort selbst festlegt. Jeder Link funktioniert einmal."
   },
   "form": {
     "amount": "Betrag",

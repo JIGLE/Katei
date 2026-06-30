@@ -9,6 +9,7 @@ CREATE TABLE users (
     avatar_url TEXT,
     password_hash TEXT,
     ntfy_url TEXT, -- per-member push notification topic URL (optional)
+    role VARCHAR(20) NOT NULL DEFAULT 'member', -- 'admin' | 'member'; first account is admin
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,6 +43,18 @@ CREATE TABLE household_events (
     is_completed BOOLEAN DEFAULT FALSE,
     money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
     actual_amount DECIMAL(10, 2),  -- amount actually paid (captured at "mark as paid"); bills vary
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- One-time invite codes for onboarding new members (admin-issued).
+CREATE TABLE invites (
+    id SERIAL PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'member', -- role granted to the account that redeems it
+    created_by INT REFERENCES users(id) ON DELETE SET NULL,
+    expires_at TIMESTAMP,
+    used_at TIMESTAMP,
+    used_by INT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
+import { requireAdmin } from '../lib/authz.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
-  const COLS = 'id, name, avatar_url, ntfy_url, created_at';
+  const COLS = 'id, name, avatar_url, ntfy_url, role, created_at';
 
   // GET /api/users
   app.get('/', async () => {
@@ -22,10 +23,11 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     return rows[0];
   });
 
-  // POST /api/users
+  // POST /api/users — add a (passwordless) household member. Admin only.
   app.post<{ Body: { name: string; avatar_url?: string; ntfy_url?: string } }>(
     '/',
     {
+      preHandler: requireAdmin,
       schema: {
         body: {
           type: 'object',
@@ -85,8 +87,8 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  // DELETE /api/users/:id
-  app.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+  // DELETE /api/users/:id — admin only.
+  app.delete<{ Params: { id: string } }>('/:id', { preHandler: requireAdmin }, async (req, reply) => {
     const { rowCount } = await query('DELETE FROM users WHERE id = $1', [req.params.id]);
     if (!rowCount) return reply.code(404).send({ error: 'User not found' });
     return reply.code(204).send();

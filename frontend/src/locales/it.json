@@ -36,7 +36,11 @@
     "signInBtn": "Accedi",
     "errNamePassword": "Nome e password sono obbligatori.",
     "errPasswordLen": "La password deve contenere almeno 8 caratteri.",
-    "errGeneric": "Qualcosa è andato storto."
+    "errGeneric": "Qualcosa è andato storto.",
+    "joinTitle": "Unisciti alla casa",
+    "joinSubtitle": "Sei stato invitato — scegli nome e password.",
+    "joinBtn": "Unisciti",
+    "inviteInvalid": "Questo invito non è valido o è scaduto."
   },
   "overview": {
     "eyebrow": "Home",
@@ -132,7 +136,16 @@
     "addFirstMember": "Aggiungi il tuo primo membro",
     "assignmentsLabel": "Assegnazioni",
     "assignmentCount_one": "{{count}} assegnazione",
-    "assignmentCount_other": "{{count}} assegnazioni"
+    "assignmentCount_other": "{{count}} assegnazioni",
+    "admin": "Admin",
+    "invites": "Inviti",
+    "createInvite": "Crea invito",
+    "inviteLink": "Link d'invito",
+    "inviteCopied": "Copiato negli appunti",
+    "inviteActive": "attivo",
+    "revokeInvite": "Revoca invito",
+    "noInvites": "Nessun invito attivo.",
+    "invitesHint": "Condividi un link d'invito così un membro sceglie nome e password. Ogni link funziona una volta."
   },
   "form": {
     "amount": "Importo",
