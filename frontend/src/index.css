@@ -25,3 +25,44 @@
     @apply bg-zinc-700 rounded-full;
   }
 }
+
+/* Start-up splash animation */
+@keyframes splash-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-underline-draw {
+  from {
+    width: 0;
+  }
+  to {
+    width: 4rem;
+  }
+}
+
+.splash-mark {
+  animation: splash-mark-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.splash-underline {
+  width: 4rem;
+  animation: splash-underline-draw 700ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-mark {
+    animation: splash-mark-in 300ms ease-out both;
+    transform: none;
+  }
+  .splash-underline {
+    animation: none;
+    width: 4rem;
+  }
+}

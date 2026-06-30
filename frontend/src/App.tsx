@@ -1,27 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from './components/BottomNav';
 import { AuthGate } from './components/AuthGate';
 import { Modal } from './components/Modal';
 import { SettingsForm } from './components/SettingsForm';
+import { Splash } from './components/Splash';
 import { useAuth } from './lib/auth';
+import { usePreferences } from './lib/preferences';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
 import MoneyFlow from './pages/MoneyFlow';
 import Household from './pages/Household';
 
+// Minimum time the branded splash stays up so it never just flashes.
+const SPLASH_MIN_MS = 900;
+
 export default function App() {
   const { user, loading, logout } = useAuth();
+  const { loading: prefsLoading } = usePreferences();
   const { t } = useTranslation();
   const [showSettings, setShowSettings] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center bg-zinc-950">
-        <p className="text-sm text-zinc-600">{t('common.loading')}</p>
-      </div>
-    );
+  // Splash lifecycle: shown on first load, fades once data is ready and the
+  // minimum display time has elapsed, then unmounts.
+  const [splashGone, setSplashGone] = useState(false);
+  const [minElapsed, setMinElapsed] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setMinElapsed(true), SPLASH_MIN_MS);
+    return () => clearTimeout(id);
+  }, []);
+  const ready = !loading && !prefsLoading && minElapsed;
+
+  if (!splashGone) {
+    return <Splash leaving={ready} onDone={() => setSplashGone(true)} />;
   }
 
   if (!user) {
