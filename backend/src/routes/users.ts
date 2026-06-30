@@ -2,10 +2,12 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
+  const COLS = 'id, name, avatar_url, ntfy_url, created_at';
+
   // GET /api/users
   app.get('/', async () => {
     const { rows } = await query(
-      'SELECT id, name, avatar_url, created_at FROM users ORDER BY created_at ASC',
+      `SELECT ${COLS} FROM users ORDER BY created_at ASC`,
     );
     return rows;
   });
@@ -13,7 +15,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/users/:id
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
     const { rows } = await query(
-      'SELECT id, name, avatar_url, created_at FROM users WHERE id = $1',
+      `SELECT ${COLS} FROM users WHERE id = $1`,
       [req.params.id],
     );
     if (!rows.length) return reply.code(404).send({ error: 'User not found' });
@@ -21,7 +23,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/users
-  app.post<{ Body: { name: string; avatar_url?: string } }>(
+  app.post<{ Body: { name: string; avatar_url?: string; ntfy_url?: string } }>(
     '/',
     {
       schema: {
@@ -31,22 +33,23 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 100 },
             avatar_url: { type: 'string' },
+            ntfy_url: { type: 'string', maxLength: 500 },
           },
         },
       },
     },
     async (req, reply) => {
-      const { name, avatar_url = null } = req.body;
+      const { name, avatar_url = null, ntfy_url = null } = req.body;
       const { rows } = await query(
-        'INSERT INTO users (name, avatar_url) VALUES ($1, $2) RETURNING *',
-        [name, avatar_url],
+        `INSERT INTO users (name, avatar_url, ntfy_url) VALUES ($1, $2, $3) RETURNING ${COLS}`,
+        [name, avatar_url, ntfy_url],
       );
       return reply.code(201).send(rows[0]);
     },
   );
 
   // PATCH /api/users/:id
-  app.patch<{ Params: { id: string }; Body: { name?: string; avatar_url?: string } }>(
+  app.patch<{ Params: { id: string }; Body: { name?: string; avatar_url?: string; ntfy_url?: string } }>(
     '/:id',
     {
       schema: {
@@ -55,21 +58,26 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 100 },
             avatar_url: { type: 'string' },
+            ntfy_url: { type: 'string', maxLength: 500 },
           },
         },
       },
     },
     async (req, reply) => {
-      const { name, avatar_url } = req.body;
+      const allowed = ['name', 'avatar_url', 'ntfy_url'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;
-      if (name !== undefined) { fields.push(`name = $${i++}`); values.push(name); }
-      if (avatar_url !== undefined) { fields.push(`avatar_url = $${i++}`); values.push(avatar_url); }
+      for (const key of allowed) {
+        if (req.body[key] !== undefined) {
+          fields.push(`${key} = $${i++}`);
+          values.push(req.body[key]);
+        }
+      }
       if (!fields.length) return reply.code(400).send({ error: 'Nothing to update' });
       values.push(req.params.id);
       const { rows } = await query(
-        `UPDATE users SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
+        `UPDATE users SET ${fields.join(', ')} WHERE id = $${i} RETURNING ${COLS}`,
         values,
       );
       if (!rows.length) return reply.code(404).send({ error: 'User not found' });

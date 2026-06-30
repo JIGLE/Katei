@@ -4,6 +4,7 @@ export interface User {
   id: number;
   name: string;
   avatar_url: string | null;
+  ntfy_url: string | null;
   created_at: string;
 }
 

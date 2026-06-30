@@ -3,8 +3,33 @@ import assert from 'node:assert/strict';
 
 process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 
-const { sendNtfy, generateRecurringEvents } = await import('./notifications.js');
+const { sendNtfy, generateRecurringEvents, resolveRecipients } = await import('./notifications.js');
 import type { query as Query } from '../db.js';
+
+// --- resolveRecipients: who gets an event's reminder -----------------------
+
+test('resolveRecipients prefers assignee URLs, de-duplicated', () => {
+  assert.deepEqual(
+    resolveRecipients('https://ntfy.sh/house', [
+      'https://ntfy.sh/sam',
+      'https://ntfy.sh/sam',
+      'https://ntfy.sh/alex',
+    ]),
+    ['https://ntfy.sh/sam', 'https://ntfy.sh/alex'],
+  );
+});
+
+test('resolveRecipients falls back to the household URL when no assignees', () => {
+  assert.deepEqual(resolveRecipients('https://ntfy.sh/house', []), ['https://ntfy.sh/house']);
+  assert.deepEqual(resolveRecipients('https://ntfy.sh/house', ['', '  ']), [
+    'https://ntfy.sh/house',
+  ]);
+});
+
+test('resolveRecipients returns nothing when there is no URL at all', () => {
+  assert.deepEqual(resolveRecipients('', []), []);
+  assert.deepEqual(resolveRecipients('   ', ['']), []);
+});
 
 // --- sendNtfy: HTTP delivery, no DB involved -------------------------------
 

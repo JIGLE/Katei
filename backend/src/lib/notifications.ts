@@ -51,12 +51,26 @@ interface DueEvent {
 }
 
 /**
+ * Decide who receives an event's reminder: the assigned members who have set a
+ * notification URL, de-duplicated. When an event has no such assignees, fall
+ * back to the household-wide URL (when configured).
+ */
+export function resolveRecipients(householdUrl: string, assigneeUrls: string[]): string[] {
+  const cleaned = Array.from(
+    new Set(assigneeUrls.map((u) => (u ?? '').trim()).filter(Boolean)),
+  );
+  if (cleaned.length) return cleaned;
+  const fallback = householdUrl.trim();
+  return fallback ? [fallback] : [];
+}
+
+/**
  * Find incomplete events due within the lead window that haven't been notified,
- * push a reminder for each, and stamp notified_at. Returns the count sent.
+ * push a reminder to each event's assignees (or the household URL as fallback),
+ * and stamp notified_at. Returns the number of events notified.
  */
 export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
   const { ntfy_url, lead_days } = await getSettings();
-  if (!ntfy_url) return 0;
 
   const { rows } = await query<DueEvent>(
     `SELECT id, title, event_type, target_date
@@ -70,22 +84,40 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
 
   let sent = 0;
   for (const ev of rows) {
+    // Notification URLs of members assigned to this event.
+    const { rows: assignees } = await query<{ ntfy_url: string }>(
+      `SELECT DISTINCT u.ntfy_url
+         FROM assignments a
+         JOIN users u ON u.id = a.user_id
+        WHERE a.event_id = $1 AND u.ntfy_url IS NOT NULL AND u.ntfy_url <> ''`,
+      [ev.id],
+    );
+    const recipients = resolveRecipients(ntfy_url, assignees.map((a) => a.ntfy_url));
+    if (recipients.length === 0) continue; // nobody to notify for this event
+
     const date = new Date(ev.target_date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     });
-    try {
-      await sendNtfy(ntfy_url, `${ev.title} — due ${date}`, {
-        title: 'Katei reminder',
-        tags: 'calendar',
-      });
+    let delivered = false;
+    for (const url of recipients) {
+      try {
+        await sendNtfy(url, `${ev.title} — due ${date}`, {
+          title: 'Katei reminder',
+          tags: 'calendar',
+        });
+        delivered = true;
+      } catch (err) {
+        log?.error({ err, eventId: ev.id }, 'Failed to send reminder');
+      }
+    }
+    // Stamp once per event so a delivered reminder isn't repeated next sweep.
+    if (delivered) {
       await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
       sent += 1;
-    } catch (err) {
-      log?.error({ err, eventId: ev.id }, 'Failed to send reminder');
     }
   }
-  if (sent && log) log.info(`Sent ${sent} reminder(s).`);
+  if (sent && log) log.info(`Sent reminders for ${sent} event(s).`);
   return sent;
 }
 

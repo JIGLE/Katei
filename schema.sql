@@ -8,6 +8,7 @@ CREATE TABLE users (
     name VARCHAR(100) NOT NULL,
     avatar_url TEXT,
     password_hash TEXT,
+    ntfy_url TEXT, -- per-member push notification topic URL (optional)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

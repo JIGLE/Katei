@@ -38,6 +38,8 @@ export async function verifyConnection(): Promise<void> {
  */
 export async function migrate(): Promise<void> {
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
+  // Per-member notification URL — reminders for a member's assignments go here.
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ntfy_url TEXT`);
   await query(
     `CREATE TABLE IF NOT EXISTS app_settings (
        key TEXT PRIMARY KEY,

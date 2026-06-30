@@ -18,6 +18,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(initial?.avatar_url ?? '');
+  const [ntfyUrl, setNtfyUrl] = useState(initial?.ntfy_url ?? '');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,8 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
     try {
       const body: Record<string, unknown> = { name: name.trim() };
       if (avatarUrl.trim()) body.avatar_url = avatarUrl.trim();
+      // Always send ntfy_url so it can be set or cleared.
+      body.ntfy_url = ntfyUrl.trim();
       const saved = isEdit
         ? await api.patch<User>(`/users/${initial!.id}`, body)
         : await api.post<User>('/users', body);
@@ -81,6 +84,22 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           placeholder="https://…"
           className={fieldCls}
         />
+      </div>
+
+      <div>
+        <label htmlFor="ntfy_url" className={labelCls}>Notification URL (optional)</label>
+        <input
+          id="ntfy_url"
+          type="url"
+          value={ntfyUrl}
+          onChange={(e) => setNtfyUrl(e.target.value)}
+          placeholder="https://ntfy.sh/their-topic"
+          className={fieldCls}
+        />
+        <p className="mt-1.5 text-xs text-zinc-500">
+          Reminders for this member's assignments go here. Falls back to the
+          household notification URL when empty.
+        </p>
       </div>
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
