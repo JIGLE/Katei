@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
+import { logActivity } from '../lib/activity.js';
 
 const COLS =
   'id, title, description, event_type, target_date, is_completed, money_stream_id, actual_amount, created_at';
@@ -78,6 +79,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
          VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`,
         [title, description, event_type, target_date, money_stream_id],
       );
+      await logActivity(req.user?.id ?? null, 'event_added', title);
       return reply.code(201).send(rows[0]);
     },
   );
@@ -149,11 +151,17 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const { rows } = await query(
+      const { rows } = await query<{ title: string; event_type: string }>(
         `UPDATE household_events SET is_completed = $1 WHERE id = $2 RETURNING ${COLS}`,
         [req.body.is_completed, req.params.id],
       );
       if (!rows.length) return reply.code(404).send({ error: 'Event not found' });
+      // Only celebrate finishing something, not un-checking it. Payments read
+      // differently from chores, so they get their own verb.
+      if (req.body.is_completed) {
+        const action = rows[0].event_type === 'payment' ? 'payment_paid' : 'event_done';
+        await logActivity(req.user?.id ?? null, action, rows[0].title);
+      }
       return rows[0];
     },
   );

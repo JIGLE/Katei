@@ -61,6 +61,15 @@ CREATE TABLE invites (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- A lightweight household activity log — the shared pulse shown on Overview.
+CREATE TABLE activity (
+    id SERIAL PRIMARY KEY,
+    actor_id INT REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(40) NOT NULL, -- 'stream_added' | 'event_added' | 'event_done' | 'payment_paid' | 'member_added'
+    summary TEXT NOT NULL,       -- the entity's name (e.g. 'Rent'), rendered into a sentence client-side
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE assignments (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,

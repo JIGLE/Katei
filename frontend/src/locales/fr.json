@@ -58,7 +58,9 @@
     "summaryOverdue_other": "{{count}} choses requièrent votre attention.",
     "summaryWeek_one": "{{count}} échéance cette semaine.",
     "summaryWeek_other": "{{count}} échéances cette semaine.",
-    "summaryClear": "Tout est à jour."
+    "summaryClear": "Tout est à jour.",
+    "birthdays": "Anniversaires à venir",
+    "activity": "À la maison"
   },
   "onboarding": {
     "title": "Pour commencer",
@@ -264,7 +266,9 @@
     "calendarRegenerate": "Régénérer",
     "tabGeneral": "Général",
     "tabNotifications": "Notifications",
-    "tabData": "Données"
+    "tabData": "Données",
+    "householdName": "Nom du foyer",
+    "householdNamePlaceholder": "Famille Dupont"
   },
   "account": {
     "title": "Mon compte",
@@ -278,5 +282,13 @@
     "newPassword": "Nouveau mot de passe",
     "passwordChanged": "Mot de passe changé.",
     "saveFailed": "Échec de l'enregistrement."
+  },
+  "activity": {
+    "someone": "Quelqu’un",
+    "stream_added": "{{actor}} a ajouté {{item}}",
+    "event_added": "{{actor}} a ajouté {{item}}",
+    "event_done": "{{actor}} a terminé {{item}}",
+    "payment_paid": "{{actor}} a payé {{item}}",
+    "member_added": "{{actor}} a accueilli {{item}}"
   }
 }

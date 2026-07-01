@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { requireAdmin, isAdmin } from '../lib/authz.js';
+import { logActivity } from '../lib/activity.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   const COLS = "id, name, email, avatar_url, ntfy_url, kind, to_char(birthday, 'YYYY-MM-DD') AS birthday, role, created_at";
@@ -48,6 +49,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
         `INSERT INTO users (name, avatar_url, ntfy_url, kind, birthday) VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`,
         [name, avatar_url, ntfy_url, kind, birthday || null],
       );
+      await logActivity(req.user?.id ?? null, 'member_added', name);
       return reply.code(201).send(rows[0]);
     },
   );

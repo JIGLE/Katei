@@ -73,6 +73,25 @@ export interface AssignmentDetail extends Assignment {
   user_avatar: string | null;
 }
 
+// A household activity-log entry (GET /api/activity). The client renders the
+// (action, summary) pair into a localized sentence — no prose is stored.
+export type ActivityAction =
+  | 'stream_added'
+  | 'event_added'
+  | 'event_done'
+  | 'payment_paid'
+  | 'member_added';
+
+export interface Activity {
+  id: number;
+  action: ActivityAction;
+  summary: string;
+  created_at: string;
+  actor_id: number | null;
+  actor_name: string | null;
+  actor_avatar: string | null;
+}
+
 // One month of completed-payment spend (GET /api/analytics/monthly-spend).
 export interface MonthlySpend {
   month: string; // 'YYYY-MM'

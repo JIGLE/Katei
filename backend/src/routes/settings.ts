@@ -25,12 +25,13 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       language,
       savings_goal: Number((await getSetting('savings_goal')) ?? 0),
       theme: (await getSetting('theme')) === 'light' ? 'light' : 'dark',
+      household_name: (await getSetting('household_name')) ?? '',
     };
   });
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; theme?: string };
+    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; theme?: string; household_name?: string };
   }>(
     '/preferences',
     {
@@ -46,6 +47,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             language: { type: 'string', pattern: '^[A-Za-z]{2}$' },
             savings_goal: { type: 'number', minimum: 0 },
             theme: { type: 'string', enum: ['dark', 'light'] },
+            household_name: { type: 'string', maxLength: 60 },
           },
         },
       },
@@ -61,6 +63,8 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('savings_goal', String(savings_goal));
       const theme = req.body.theme === 'light' ? 'light' : 'dark';
       await setSetting('theme', theme);
+      const household_name = (req.body.household_name ?? '').trim();
+      await setSetting('household_name', household_name);
       return {
         country: req.body.country.toUpperCase(),
         currency: req.body.currency.toUpperCase(),
@@ -69,6 +73,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
         language,
         savings_goal,
         theme,
+        household_name,
       };
     },
   );

@@ -58,7 +58,9 @@
     "summaryOverdue_other": "{{count}} cosas requieren atención.",
     "summaryWeek_one": "{{count}} vence esta semana.",
     "summaryWeek_other": "{{count}} vencen esta semana.",
-    "summaryClear": "Todo al día."
+    "summaryClear": "Todo al día.",
+    "birthdays": "Próximos cumpleaños",
+    "activity": "En casa"
   },
   "onboarding": {
     "title": "Primeros pasos",
@@ -264,7 +266,9 @@
     "calendarRegenerate": "Regenerar",
     "tabGeneral": "General",
     "tabNotifications": "Notificaciones",
-    "tabData": "Datos"
+    "tabData": "Datos",
+    "householdName": "Nombre del hogar",
+    "householdNamePlaceholder": "Familia García"
   },
   "account": {
     "title": "Mi cuenta",
@@ -278,5 +282,13 @@
     "newPassword": "Nueva contraseña",
     "passwordChanged": "Contraseña cambiada.",
     "saveFailed": "No se pudo guardar."
+  },
+  "activity": {
+    "someone": "Alguien",
+    "stream_added": "{{actor}} añadió {{item}}",
+    "event_added": "{{actor}} añadió {{item}}",
+    "event_done": "{{actor}} completó {{item}}",
+    "payment_paid": "{{actor}} pagó {{item}}",
+    "member_added": "{{actor}} dio la bienvenida a {{item}}"
   }
 }

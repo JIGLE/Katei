@@ -42,6 +42,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
   // Household preferences (country drives currency / locale / timezone defaults).
   const prefs = usePreferences();
+  const [householdName, setHouseholdName] = useState(prefs.household_name);
   const [country, setCountry] = useState(prefs.country);
   const [currency, setCurrency] = useState(prefs.currency);
   const [locale, setLocale] = useState(prefs.locale);
@@ -54,6 +55,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
   // Keep local fields in sync once preferences finish loading.
   useEffect(() => {
+    setHouseholdName(prefs.household_name);
     setCountry(prefs.country);
     setCurrency(prefs.currency);
     setLocale(prefs.locale);
@@ -61,7 +63,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setLanguage(prefs.language);
     setSavingsGoal(String(prefs.savings_goal || ''));
     setTheme(prefs.theme);
-  }, [prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.theme]);
+  }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.theme]);
 
   // Apply the theme live as the user toggles, for instant feedback.
   const onThemeChange = (next: Theme) => {
@@ -79,7 +81,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, theme });
+      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, theme });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -186,6 +188,18 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
       {/* General — region, language, savings goal, appearance */}
       {tab === 'general' && (
       <div className="animate-fade-slide-in space-y-3">
+        <div>
+          <label htmlFor="household_name" className="mb-1.5 block text-xs text-zinc-500">{t('settings.householdName')}</label>
+          <input
+            id="household_name"
+            type="text"
+            maxLength={60}
+            value={householdName}
+            onChange={(e) => setHouseholdName(e.target.value)}
+            placeholder={t('settings.householdNamePlaceholder')}
+            className={`${fieldCls}`}
+          />
+        </div>
         <div>
           <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">{t('settings.country')}</label>
           <select

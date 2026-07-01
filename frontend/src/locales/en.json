@@ -57,7 +57,9 @@
     "summaryOverdue_other": "{{count}} things need attention.",
     "summaryWeek_one": "{{count}} thing is due this week.",
     "summaryWeek_other": "{{count}} things are due this week.",
-    "summaryClear": "You're all caught up."
+    "summaryClear": "You're all caught up.",
+    "birthdays": "Upcoming birthdays",
+    "activity": "Around the house"
   },
   "onboarding": {
     "title": "Getting started",
@@ -263,7 +265,9 @@
     "calendarRegenerate": "Regenerate",
     "tabGeneral": "General",
     "tabNotifications": "Notifications",
-    "tabData": "Data"
+    "tabData": "Data",
+    "householdName": "Household name",
+    "householdNamePlaceholder": "The Smiths"
   },
   "account": {
     "title": "My account",
@@ -277,5 +281,13 @@
     "newPassword": "New password",
     "passwordChanged": "Password changed.",
     "saveFailed": "Couldn't save."
+  },
+  "activity": {
+    "someone": "Someone",
+    "stream_added": "{{actor}} added {{item}}",
+    "event_added": "{{actor}} added {{item}}",
+    "event_done": "{{actor}} finished {{item}}",
+    "payment_paid": "{{actor}} paid {{item}}",
+    "member_added": "{{actor}} welcomed {{item}}"
   }
 }

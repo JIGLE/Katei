@@ -12,6 +12,7 @@ export interface Preferences {
   language: string;
   savings_goal: number;
   theme: Theme;
+  household_name: string;
 }
 
 const DEFAULTS: Preferences = {
@@ -22,6 +23,7 @@ const DEFAULTS: Preferences = {
   language: 'en',
   savings_goal: 0,
   theme: 'dark',
+  household_name: '',
 };
 
 // Apply the theme to <html> so the CSS-variable palette flips, and cache it so

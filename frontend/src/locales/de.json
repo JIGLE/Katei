@@ -58,7 +58,9 @@
     "summaryOverdue_other": "{{count}} Dinge brauchen Aufmerksamkeit.",
     "summaryWeek_one": "{{count}} Sache ist diese Woche fällig.",
     "summaryWeek_other": "{{count}} Dinge sind diese Woche fällig.",
-    "summaryClear": "Alles erledigt."
+    "summaryClear": "Alles erledigt.",
+    "birthdays": "Anstehende Geburtstage",
+    "activity": "Im Haushalt"
   },
   "onboarding": {
     "title": "Erste Schritte",
@@ -264,7 +266,9 @@
     "calendarRegenerate": "Neu erstellen",
     "tabGeneral": "Allgemein",
     "tabNotifications": "Mitteilungen",
-    "tabData": "Daten"
+    "tabData": "Daten",
+    "householdName": "Haushaltsname",
+    "householdNamePlaceholder": "Familie Müller"
   },
   "account": {
     "title": "Mein Konto",
@@ -278,5 +282,13 @@
     "newPassword": "Neues Passwort",
     "passwordChanged": "Passwort geändert.",
     "saveFailed": "Speichern fehlgeschlagen."
+  },
+  "activity": {
+    "someone": "Jemand",
+    "stream_added": "{{actor}} hat {{item}} hinzugefügt",
+    "event_added": "{{actor}} hat {{item}} hinzugefügt",
+    "event_done": "{{actor}} hat {{item}} erledigt",
+    "payment_paid": "{{actor}} hat {{item}} bezahlt",
+    "member_added": "{{actor}} hat {{item}} begrüßt"
   }
 }

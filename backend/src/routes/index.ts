@@ -7,6 +7,7 @@ import { eventsRoutes } from './events.js';
 import { assignmentsRoutes } from './assignments.js';
 import { analyticsRoutes } from './analytics.js';
 import { invitesRoutes } from './invites.js';
+import { activityRoutes } from './activity.js';
 
 export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(usersRoutes, { prefix: '/users' });
@@ -15,4 +16,5 @@ export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(assignmentsRoutes, { prefix: '/assignments' });
   await app.register(analyticsRoutes, { prefix: '/analytics' });
   await app.register(invitesRoutes, { prefix: '/invites' });
+  await app.register(activityRoutes, { prefix: '/activity' });
 };

@@ -68,6 +68,18 @@ export function daysUntil(dateStr: string, timezone?: string): number {
   return Math.round((target - today) / 86_400_000);
 }
 
+/** Days until the next occurrence of a 'YYYY-MM-DD' birthday, or null. */
+export function daysToBirthday(birthday: string | null): number | null {
+  if (!birthday) return null;
+  const [, m, d] = birthday.split('-').map(Number);
+  if (!m || !d) return null;
+  const today = new Date();
+  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let next = new Date(today.getFullYear(), m - 1, d);
+  if (next < t0) next = new Date(today.getFullYear() + 1, m - 1, d);
+  return Math.round((next.getTime() - t0.getTime()) / 86_400_000);
+}
+
 /**
  * Localized relative-day label ("today", "tomorrow", "in 4 days", "2 days ago")
  * via Intl.RelativeTimeFormat — so it needs no translation catalog.
@@ -77,5 +89,29 @@ export function formatRelativeDay(days: number, locale: string): string {
     return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(days, 'day');
   } catch {
     return new Intl.RelativeTimeFormat(FALLBACK.locale, { numeric: 'auto' }).format(days, 'day');
+  }
+}
+
+/**
+ * Localized relative-time label from a timestamp to now ("just now",
+ * "5 minutes ago", "2 hours ago", "3 days ago"). Picks the coarsest sensible
+ * unit via Intl.RelativeTimeFormat, so it needs no translation catalog.
+ */
+export function formatRelativeTime(dateStr: string, locale: string): string {
+  const then = new Date(dateStr).getTime();
+  if (!Number.isFinite(then)) return '';
+  const seconds = Math.round((then - Date.now()) / 1000);
+  const abs = Math.abs(seconds);
+  const rtf = (l: string) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' });
+  try {
+    const f = rtf(locale);
+    if (abs < 45) return f.format(0, 'second'); // "now" with numeric:auto
+    if (abs < 3600) return f.format(Math.round(seconds / 60), 'minute');
+    if (abs < 86_400) return f.format(Math.round(seconds / 3600), 'hour');
+    if (abs < 2_592_000) return f.format(Math.round(seconds / 86_400), 'day');
+    if (abs < 31_536_000) return f.format(Math.round(seconds / 2_592_000), 'month');
+    return f.format(Math.round(seconds / 31_536_000), 'year');
+  } catch {
+    return rtf(FALLBACK.locale).format(Math.round(seconds / 86_400), 'day');
   }
 }

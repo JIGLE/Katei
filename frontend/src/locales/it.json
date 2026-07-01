@@ -58,7 +58,9 @@
     "summaryOverdue_other": "{{count}} cose richiedono attenzione.",
     "summaryWeek_one": "{{count}} in scadenza questa settimana.",
     "summaryWeek_other": "{{count}} in scadenza questa settimana.",
-    "summaryClear": "Sei in pari."
+    "summaryClear": "Sei in pari.",
+    "birthdays": "Compleanni in arrivo",
+    "activity": "In casa"
   },
   "onboarding": {
     "title": "Per iniziare",
@@ -264,7 +266,9 @@
     "calendarRegenerate": "Rigenera",
     "tabGeneral": "Generale",
     "tabNotifications": "Notifiche",
-    "tabData": "Dati"
+    "tabData": "Dati",
+    "householdName": "Nome della famiglia",
+    "householdNamePlaceholder": "Famiglia Rossi"
   },
   "account": {
     "title": "Il mio account",
@@ -278,5 +282,13 @@
     "newPassword": "Nuova password",
     "passwordChanged": "Password cambiata.",
     "saveFailed": "Salvataggio non riuscito."
+  },
+  "activity": {
+    "someone": "Qualcuno",
+    "stream_added": "{{actor}} ha aggiunto {{item}}",
+    "event_added": "{{actor}} ha aggiunto {{item}}",
+    "event_done": "{{actor}} ha completato {{item}}",
+    "payment_paid": "{{actor}} ha pagato {{item}}",
+    "member_added": "{{actor}} ha dato il benvenuto a {{item}}"
   }
 }

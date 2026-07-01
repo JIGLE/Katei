@@ -37,7 +37,7 @@ test('preferences return EU-leaning defaults', opts, async () => {
 test('PUT persists preferences including theme and savings goal', opts, async () => {
   const put = await app.inject({
     method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
-    payload: { country: 'DK', currency: 'DKK', locale: 'da-DK', timezone: 'Europe/Copenhagen', language: 'en', savings_goal: 500, theme: 'light' },
+    payload: { country: 'DK', currency: 'DKK', locale: 'da-DK', timezone: 'Europe/Copenhagen', language: 'en', savings_goal: 500, theme: 'light', household_name: 'The Nguyens' },
   });
   assert.equal(put.statusCode, 200);
 
@@ -47,6 +47,12 @@ test('PUT persists preferences including theme and savings goal', opts, async ()
   assert.equal(got.language, 'en');
   assert.equal(got.savings_goal, 500);
   assert.equal(got.theme, 'light');
+  assert.equal(got.household_name, 'The Nguyens');
+});
+
+test('household_name defaults to empty string', opts, async () => {
+  const p = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  assert.equal(p.household_name, '');
 });
 
 test('language defaults to the locale language when omitted', opts, async () => {

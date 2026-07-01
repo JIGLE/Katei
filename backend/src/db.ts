@@ -63,6 +63,16 @@ export async function migrate(): Promise<void> {
   // Non-human members (pets) + birthdays — a household is everyone who lives there.
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'human'`);
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS birthday DATE`);
+  // Household activity log — the shared pulse shown on Overview.
+  await query(
+    `CREATE TABLE IF NOT EXISTS activity (
+       id SERIAL PRIMARY KEY,
+       actor_id INT REFERENCES users(id) ON DELETE SET NULL,
+       action VARCHAR(40) NOT NULL,
+       summary TEXT NOT NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
   await query(
     `CREATE TABLE IF NOT EXISTS invites (
        id SERIAL PRIMARY KEY,

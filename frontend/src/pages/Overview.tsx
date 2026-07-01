@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { AssigneeStack } from '../components/Avatar';
+import { AssigneeStack, Avatar } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
-import { formatMoney, daysUntil, formatRelativeDay } from '../lib/format';
-import type { AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
+import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
+import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald';
 
@@ -70,15 +70,26 @@ function EventRow({
   );
 }
 
+// Turn an activity row into a localized sentence. The verb lives in the
+// catalog; the actor + item are interpolated (item stays as stored).
+function activitySentence(
+  a: Activity,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const actor = a.actor_name ?? t('activity.someone');
+  return t(`activity.${a.action}`, { actor, item: a.summary });
+}
+
 export default function Overview() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [eventsTotal, setEventsTotal] = useState(0);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
-  const [usersCount, setUsersCount] = useState(0);
+  const [members, setMembers] = useState<User[]>([]);
+  const [activity, setActivity] = useState<Activity[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { currency, locale, timezone } = usePreferences();
+  const { currency, locale, timezone, household_name } = usePreferences();
   const { user } = useAuth();
   const { t } = useTranslation();
 
@@ -88,17 +99,28 @@ export default function Overview() {
       api.get<MoneyStream[]>('/money-streams'),
       api.get<AssignmentDetail[]>('/assignments'),
       api.get<User[]>('/users'),
+      api.get<Activity[]>('/activity?limit=8'),
     ])
-      .then(([evts, strs, asgs, users]) => {
+      .then(([evts, strs, asgs, users, acts]) => {
         setEvents(evts.filter((e) => !e.is_completed));
         setEventsTotal(evts.length);
         setStreams(strs);
         setAssignments(asgs);
-        setUsersCount(users.length);
+        setMembers(users);
+        setActivity(acts);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const usersCount = members.length;
+
+  // Upcoming birthdays (people & pets) within the next month, soonest first —
+  // the warm, human reason to open the app even when nothing is due.
+  const birthdays = members
+    .map((m) => ({ member: m, days: daysToBirthday(m.birthday) }))
+    .filter((b): b is { member: User; days: number } => b.days !== null && b.days <= 30)
+    .sort((a, b) => a.days - b.days);
 
   // Show the first-run checklist until every setup step is satisfied.
   const onboardingComplete = usersCount > 1 && streams.length > 0 && eventsTotal > 0;
@@ -137,7 +159,10 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">{t(greetKey)}</p>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">
+          {t(greetKey)}
+          {household_name ? <span className="text-zinc-600"> · {household_name}</span> : null}
+        </p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{user?.name ?? t('overview.title')}</h1>
         {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
       </header>
@@ -225,6 +250,46 @@ export default function Overview() {
           </div>
         )}
       </section>
+
+      {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
+      {!loading && birthdays.length > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('overview.birthdays')}
+          </p>
+          <ul className="space-y-3">
+            {birthdays.map(({ member, days }) => (
+              <li key={member.id} className="flex items-center gap-3">
+                <span className="text-base leading-none" aria-hidden>🎂</span>
+                <span className="flex-1 truncate text-sm text-zinc-200">{member.name}</span>
+                <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400">
+                  {days === 0 ? t('household.birthdayToday') : formatRelativeDay(days, locale)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Around the house — the shared pulse of recent activity. */}
+      {!loading && activity.length > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('overview.activity')}
+          </p>
+          <ul className="space-y-3">
+            {activity.map((a) => (
+              <li key={a.id} className="flex items-center gap-3">
+                <Avatar name={a.actor_name ?? '·'} url={a.actor_avatar} size="sm" />
+                <span className="flex-1 truncate text-sm text-zinc-300">{activitySentence(a, t)}</span>
+                <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
+                  {formatRelativeTime(a.created_at, locale)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

@@ -58,7 +58,9 @@
     "summaryOverdue_other": "{{count}} dingen vragen aandacht.",
     "summaryWeek_one": "{{count}} deze week te doen.",
     "summaryWeek_other": "{{count}} deze week te doen.",
-    "summaryClear": "Alles is bij."
+    "summaryClear": "Alles is bij.",
+    "birthdays": "Aankomende verjaardagen",
+    "activity": "In huis"
   },
   "onboarding": {
     "title": "Aan de slag",
@@ -264,7 +266,9 @@
     "calendarRegenerate": "Opnieuw genereren",
     "tabGeneral": "Algemeen",
     "tabNotifications": "Meldingen",
-    "tabData": "Gegevens"
+    "tabData": "Gegevens",
+    "householdName": "Naam van het huishouden",
+    "householdNamePlaceholder": "Familie De Vries"
   },
   "account": {
     "title": "Mijn account",
@@ -278,5 +282,13 @@
     "newPassword": "Nieuw wachtwoord",
     "passwordChanged": "Wachtwoord gewijzigd.",
     "saveFailed": "Opslaan mislukt."
+  },
+  "activity": {
+    "someone": "Iemand",
+    "stream_added": "{{actor}} heeft {{item}} toegevoegd",
+    "event_added": "{{actor}} heeft {{item}} toegevoegd",
+    "event_done": "{{actor}} heeft {{item}} afgerond",
+    "payment_paid": "{{actor}} heeft {{item}} betaald",
+    "member_added": "{{actor}} heeft {{item}} verwelkomd"
   }
 }

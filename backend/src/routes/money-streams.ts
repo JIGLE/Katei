@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
+import { logActivity } from '../lib/activity.js';
 
 const COLS =
   'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, created_at';
@@ -77,6 +78,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING ${COLS}`,
         [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated],
       );
+      await logActivity(req.user?.id ?? null, 'stream_added', name);
       return reply.code(201).send(rows[0]);
     },
   );

@@ -6,6 +6,7 @@ import type { User, AssignmentDetail, HouseholdEvent, MoneyStream, Invite } from
 import { Modal } from '../components/Modal';
 import { MemberForm } from '../components/MemberForm';
 import { AssignmentForm } from '../components/AssignmentForm';
+import { daysToBirthday } from '../lib/format';
 
 function initials(name: string): string {
   return name
@@ -24,18 +25,6 @@ const roleColors: Record<string, string> = {
 
 function roleColor(role: string): string {
   return roleColors[role.toLowerCase()] ?? 'text-zinc-400';
-}
-
-// Days until the next occurrence of a 'YYYY-MM-DD' birthday, or null.
-function daysToBirthday(birthday: string | null): number | null {
-  if (!birthday) return null;
-  const [, m, d] = birthday.split('-').map(Number);
-  if (!m || !d) return null;
-  const today = new Date();
-  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  let next = new Date(today.getFullYear(), m - 1, d);
-  if (next < t0) next = new Date(today.getFullYear() + 1, m - 1, d);
-  return Math.round((next.getTime() - t0.getTime()) / 86_400_000);
 }
 
 export default function Household() {
