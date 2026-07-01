@@ -60,7 +60,8 @@
     "summaryWeek_other": "{{count}} Dinge sind diese Woche fällig.",
     "summaryClear": "Alles erledigt.",
     "birthdays": "Anstehende Geburtstage",
-    "activity": "Im Haushalt"
+    "activity": "Im Haushalt",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Erste Schritte",

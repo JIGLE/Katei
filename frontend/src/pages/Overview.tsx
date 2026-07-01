@@ -146,10 +146,18 @@ export default function Overview() {
   const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
   const later = dated.filter((d) => d.days > 7);
 
-  // A warm, personal header: time-of-day greeting + name, with a one-line status
-  // that turns the top of the page into something human rather than a label.
+  // A warm, personal header that leads with the household identity: the home's
+  // name is the eyebrow and a time-of-day greeting to the member is the title,
+  // with a one-line status beneath. Falls back gracefully when no name is set.
   const hour = new Date().getHours();
   const greetKey = hour < 12 ? 'overview.morning' : hour < 18 ? 'overview.afternoon' : 'overview.evening';
+  const greeting = t(greetKey);
+  const eyebrow = household_name || greeting;
+  const title = user?.name
+    ? household_name
+      ? t('overview.greetingName', { greeting, name: user.name })
+      : user.name
+    : t('overview.title');
   const summary = loading
     ? null
     : overdue.length > 0
@@ -161,11 +169,8 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">
-          {t(greetKey)}
-          {household_name ? <span className="text-zinc-600"> · {household_name}</span> : null}
-        </p>
-        <h1 className="mt-1 text-2xl font-light text-zinc-100">{user?.name ?? t('overview.title')}</h1>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{eyebrow}</p>
+        <h1 className="mt-1 text-2xl font-light text-zinc-100">{title}</h1>
         {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
       </header>
 

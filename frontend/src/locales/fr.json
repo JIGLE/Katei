@@ -60,7 +60,8 @@
     "summaryWeek_other": "{{count}} échéances cette semaine.",
     "summaryClear": "Tout est à jour.",
     "birthdays": "Anniversaires à venir",
-    "activity": "À la maison"
+    "activity": "À la maison",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Pour commencer",

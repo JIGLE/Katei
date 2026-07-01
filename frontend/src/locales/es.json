@@ -60,7 +60,8 @@
     "summaryWeek_other": "{{count}} vencen esta semana.",
     "summaryClear": "Todo al día.",
     "birthdays": "Próximos cumpleaños",
-    "activity": "En casa"
+    "activity": "En casa",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Primeros pasos",

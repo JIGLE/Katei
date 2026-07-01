@@ -59,7 +59,8 @@
     "summaryWeek_other": "{{count}} things are due this week.",
     "summaryClear": "You're all caught up.",
     "birthdays": "Upcoming birthdays",
-    "activity": "Around the house"
+    "activity": "Around the house",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Getting started",

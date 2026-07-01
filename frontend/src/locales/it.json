@@ -60,7 +60,8 @@
     "summaryWeek_other": "{{count}} in scadenza questa settimana.",
     "summaryClear": "Sei in pari.",
     "birthdays": "Compleanni in arrivo",
-    "activity": "In casa"
+    "activity": "In casa",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Per iniziare",

@@ -60,7 +60,8 @@
     "summaryWeek_other": "{{count}} deze week te doen.",
     "summaryClear": "Alles is bij.",
     "birthdays": "Aankomende verjaardagen",
-    "activity": "In huis"
+    "activity": "In huis",
+    "greetingName": "{{greeting}}, {{name}}"
   },
   "onboarding": {
     "title": "Aan de slag",
