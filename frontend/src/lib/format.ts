@@ -81,30 +81,32 @@ export function daysToBirthday(birthday: string | null): number | null {
 }
 
 /**
- * Localized relative-day label ("today", "tomorrow", "in 4 days", "2 days ago")
- * via Intl.RelativeTimeFormat — so it needs no translation catalog.
+ * Relative-day label ("today", "tomorrow", "in 4 days", "2 days ago") via
+ * Intl.RelativeTimeFormat. `lang` is the UI language (e.g. 'en', 'es') so the
+ * words follow the interface, not the number/date formatting locale — otherwise
+ * an English UI on Spanish formatting would read "hoy".
  */
-export function formatRelativeDay(days: number, locale: string): string {
+export function formatRelativeDay(days: number, lang: string): string {
   try {
-    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(days, 'day');
+    return new Intl.RelativeTimeFormat(lang, { numeric: 'auto' }).format(days, 'day');
   } catch {
     return new Intl.RelativeTimeFormat(FALLBACK.locale, { numeric: 'auto' }).format(days, 'day');
   }
 }
 
 /**
- * Localized relative-time label from a timestamp to now ("just now",
- * "5 minutes ago", "2 hours ago", "3 days ago"). Picks the coarsest sensible
- * unit via Intl.RelativeTimeFormat, so it needs no translation catalog.
+ * Relative-time label from a timestamp to now ("just now", "5 minutes ago",
+ * "2 hours ago", "3 days ago"). Picks the coarsest sensible unit. `lang` is the
+ * UI language so the words follow the interface (see formatRelativeDay).
  */
-export function formatRelativeTime(dateStr: string, locale: string): string {
+export function formatRelativeTime(dateStr: string, lang: string): string {
   const then = new Date(dateStr).getTime();
   if (!Number.isFinite(then)) return '';
   const seconds = Math.round((then - Date.now()) / 1000);
   const abs = Math.abs(seconds);
   const rtf = (l: string) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' });
   try {
-    const f = rtf(locale);
+    const f = rtf(lang);
     if (abs < 45) return f.format(0, 'second'); // "now" with numeric:auto
     if (abs < 3600) return f.format(Math.round(seconds / 60), 'minute');
     if (abs < 86_400) return f.format(Math.round(seconds / 3600), 'hour');

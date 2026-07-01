@@ -42,13 +42,13 @@ function EventRow({
   days,
   tone,
   members,
-  locale,
+  lang,
 }: {
   evt: HouseholdEvent;
   days: number;
   tone: 'overdue' | 'week' | 'later';
   members: AssignmentDetail[];
-  locale: string;
+  lang: string;
 }) {
   const accent = accentMap[eventAccent[evt.event_type]];
   const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
@@ -66,7 +66,7 @@ function EventRow({
       <span className={`flex-1 truncate text-sm ${title}`}>{evt.title}</span>
       <AssigneeStack members={members} size="xs" />
       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
-        {formatRelativeDay(days, locale)}
+        {formatRelativeDay(days, lang)}
       </span>
     </li>
   );
@@ -93,7 +93,8 @@ export default function Overview() {
   const [error, setError] = useState<string | null>(null);
   const { currency, locale, timezone, household_name } = usePreferences();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
 
   useEffect(() => {
     Promise.all([
@@ -225,7 +226,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {overdue.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
                   ))}
                 </ul>
               </div>
@@ -237,7 +238,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {thisWeek.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
                   ))}
                 </ul>
               </div>
@@ -249,7 +250,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {later.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} locale={locale} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
                   ))}
                 </ul>
               </div>
@@ -270,7 +271,7 @@ export default function Overview() {
                 <span className="text-base leading-none" aria-hidden>🎂</span>
                 <span className="flex-1 truncate text-sm text-zinc-200">{member.name}</span>
                 <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400">
-                  {days === 0 ? t('household.birthdayToday') : formatRelativeDay(days, locale)}
+                  {days === 0 ? t('household.birthdayToday') : formatRelativeDay(days, lang)}
                 </span>
               </li>
             ))}
@@ -290,7 +291,7 @@ export default function Overview() {
                 <Avatar name={a.actor_name ?? '·'} url={a.actor_avatar} size="sm" />
                 <span className="flex-1 truncate text-sm text-zinc-300">{activitySentence(a, t)}</span>
                 <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
-                  {formatRelativeTime(a.created_at, locale)}
+                  {formatRelativeTime(a.created_at, lang)}
                 </time>
               </li>
             ))}

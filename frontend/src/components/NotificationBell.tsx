@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
-import { usePreferences } from '../lib/preferences';
 import { formatRelativeTime } from '../lib/format';
 import { Modal } from './Modal';
 import type { AppNotification } from '../lib/types';
@@ -20,8 +19,7 @@ const TYPE_ICON: Record<string, string> = {
 };
 
 export function NotificationBell() {
-  const { t } = useTranslation();
-  const { locale } = usePreferences();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [feed, setFeed] = useState<Feed>({ items: [], unread: 0 });
   const [open, setOpen] = useState(false);
@@ -74,7 +72,7 @@ export function NotificationBell() {
                   {n.body && <p className="mt-0.5 text-xs text-zinc-500">{n.body}</p>}
                 </div>
                 <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
-                  {formatRelativeTime(n.created_at, locale)}
+                  {formatRelativeTime(n.created_at, i18n.language)}
                 </time>
               </li>
             ))}
