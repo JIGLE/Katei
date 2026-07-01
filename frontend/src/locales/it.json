@@ -50,7 +50,15 @@
     "thisWeek": "Questa settimana",
     "needsAttention": "Richiede attenzione",
     "allClear": "Niente in arrivo — tutto a posto.",
-    "later": "Più tardi"
+    "later": "Più tardi",
+    "morning": "Buongiorno",
+    "afternoon": "Buon pomeriggio",
+    "evening": "Buonasera",
+    "summaryOverdue_one": "{{count}} cosa richiede attenzione.",
+    "summaryOverdue_other": "{{count}} cose richiedono attenzione.",
+    "summaryWeek_one": "{{count}} in scadenza questa settimana.",
+    "summaryWeek_other": "{{count}} in scadenza questa settimana.",
+    "summaryClear": "Sei in pari."
   },
   "onboarding": {
     "title": "Per iniziare",
@@ -244,6 +252,9 @@
     "calendarIntro": "Iscriviti nella tua app calendario per vedere scadenze e pagamenti. Tieni privato il link; rigeneralo per revocare l'accesso.",
     "calendarUrl": "URL di iscrizione (tocca per copiare)",
     "calendarCopied": "Copiato negli appunti",
-    "calendarRegenerate": "Rigenera"
+    "calendarRegenerate": "Rigenera",
+    "tabGeneral": "Generale",
+    "tabNotifications": "Notifiche",
+    "tabData": "Dati"
   }
 }

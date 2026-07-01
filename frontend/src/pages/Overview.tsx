@@ -4,6 +4,7 @@ import { AssigneeStack } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
+import { useAuth } from '../lib/auth';
 import { formatMoney, daysUntil, formatRelativeDay } from '../lib/format';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
@@ -78,6 +79,7 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currency, locale, timezone } = usePreferences();
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -120,11 +122,24 @@ export default function Overview() {
   const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
   const later = dated.filter((d) => d.days > 7);
 
+  // A warm, personal header: time-of-day greeting + name, with a one-line status
+  // that turns the top of the page into something human rather than a label.
+  const hour = new Date().getHours();
+  const greetKey = hour < 12 ? 'overview.morning' : hour < 18 ? 'overview.afternoon' : 'overview.evening';
+  const summary = loading
+    ? null
+    : overdue.length > 0
+      ? t('overview.summaryOverdue', { count: overdue.length })
+      : thisWeek.length > 0
+        ? t('overview.summaryWeek', { count: thisWeek.length })
+        : t('overview.summaryClear');
+
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('overview.eyebrow')}</p>
-        <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('overview.title')}</h1>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{t(greetKey)}</p>
+        <h1 className="mt-1 text-2xl font-light text-zinc-100">{user?.name ?? t('overview.title')}</h1>
+        {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
       </header>
 
       {/* First-run setup checklist — hides once the household is set up. */}

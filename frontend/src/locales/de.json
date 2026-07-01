@@ -50,7 +50,15 @@
     "thisWeek": "Diese Woche",
     "needsAttention": "Braucht Aufmerksamkeit",
     "allClear": "Nichts in Sicht — alles erledigt.",
-    "later": "Später"
+    "later": "Später",
+    "morning": "Guten Morgen",
+    "afternoon": "Guten Tag",
+    "evening": "Guten Abend",
+    "summaryOverdue_one": "{{count}} Sache braucht Aufmerksamkeit.",
+    "summaryOverdue_other": "{{count}} Dinge brauchen Aufmerksamkeit.",
+    "summaryWeek_one": "{{count}} Sache ist diese Woche fällig.",
+    "summaryWeek_other": "{{count}} Dinge sind diese Woche fällig.",
+    "summaryClear": "Alles erledigt."
   },
   "onboarding": {
     "title": "Erste Schritte",
@@ -244,6 +252,9 @@
     "calendarIntro": "Abonniere den Feed in deiner Kalender-App, um Fälligkeiten und Zahlungen zu sehen. Halte den Link privat; neu erstellen widerruft den Zugriff.",
     "calendarUrl": "Abo-URL (zum Kopieren tippen)",
     "calendarCopied": "In Zwischenablage kopiert",
-    "calendarRegenerate": "Neu erstellen"
+    "calendarRegenerate": "Neu erstellen",
+    "tabGeneral": "Allgemein",
+    "tabNotifications": "Mitteilungen",
+    "tabData": "Daten"
   }
 }

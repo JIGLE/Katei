@@ -49,7 +49,15 @@
     "thisWeek": "This week",
     "needsAttention": "Needs attention",
     "allClear": "Nothing coming up — all clear.",
-    "later": "Later"
+    "later": "Later",
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "summaryOverdue_one": "{{count}} thing needs attention.",
+    "summaryOverdue_other": "{{count}} things need attention.",
+    "summaryWeek_one": "{{count}} thing is due this week.",
+    "summaryWeek_other": "{{count}} things are due this week.",
+    "summaryClear": "You're all caught up."
   },
   "onboarding": {
     "title": "Getting started",
@@ -243,6 +251,9 @@
     "calendarIntro": "Subscribe in your calendar app to see due dates and payments. Keep the link private; regenerate it to revoke access.",
     "calendarUrl": "Subscribe URL (tap to copy)",
     "calendarCopied": "Copied to clipboard",
-    "calendarRegenerate": "Regenerate"
+    "calendarRegenerate": "Regenerate",
+    "tabGeneral": "General",
+    "tabNotifications": "Notifications",
+    "tabData": "Data"
   }
 }

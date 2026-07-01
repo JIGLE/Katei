@@ -67,7 +67,7 @@ export default function App() {
 
       <BottomNav />
 
-      <Modal open={showSettings} title={t('settings.notificationsTitle')} onClose={() => setShowSettings(false)}>
+      <Modal open={showSettings} title={t('common.settings')} onClose={() => setShowSettings(false)}>
         <SettingsForm onClose={() => setShowSettings(false)} />
       </Modal>
     </div>

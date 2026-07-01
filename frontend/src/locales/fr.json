@@ -50,7 +50,15 @@
     "thisWeek": "Cette semaine",
     "needsAttention": "À traiter",
     "allClear": "Rien à venir — tout est en ordre.",
-    "later": "Plus tard"
+    "later": "Plus tard",
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir",
+    "summaryOverdue_one": "{{count}} chose requiert votre attention.",
+    "summaryOverdue_other": "{{count}} choses requièrent votre attention.",
+    "summaryWeek_one": "{{count}} échéance cette semaine.",
+    "summaryWeek_other": "{{count}} échéances cette semaine.",
+    "summaryClear": "Tout est à jour."
   },
   "onboarding": {
     "title": "Pour commencer",
@@ -244,6 +252,9 @@
     "calendarIntro": "Abonnez-vous dans votre application calendrier pour voir échéances et paiements. Gardez le lien privé ; régénérez-le pour révoquer l'accès.",
     "calendarUrl": "URL d'abonnement (toucher pour copier)",
     "calendarCopied": "Copié dans le presse-papiers",
-    "calendarRegenerate": "Régénérer"
+    "calendarRegenerate": "Régénérer",
+    "tabGeneral": "Général",
+    "tabNotifications": "Notifications",
+    "tabData": "Données"
   }
 }

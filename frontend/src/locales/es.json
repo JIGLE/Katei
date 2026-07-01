@@ -50,7 +50,15 @@
     "thisWeek": "Esta semana",
     "needsAttention": "Requiere atención",
     "allClear": "Nada por venir — todo en orden.",
-    "later": "Más tarde"
+    "later": "Más tarde",
+    "morning": "Buenos días",
+    "afternoon": "Buenas tardes",
+    "evening": "Buenas noches",
+    "summaryOverdue_one": "{{count}} cosa requiere atención.",
+    "summaryOverdue_other": "{{count}} cosas requieren atención.",
+    "summaryWeek_one": "{{count}} vence esta semana.",
+    "summaryWeek_other": "{{count}} vencen esta semana.",
+    "summaryClear": "Todo al día."
   },
   "onboarding": {
     "title": "Primeros pasos",
@@ -244,6 +252,9 @@
     "calendarIntro": "Suscríbete en tu app de calendario para ver vencimientos y pagos. Mantén el enlace privado; regenéralo para revocar el acceso.",
     "calendarUrl": "URL de suscripción (toca para copiar)",
     "calendarCopied": "Copiado al portapapeles",
-    "calendarRegenerate": "Regenerar"
+    "calendarRegenerate": "Regenerar",
+    "tabGeneral": "General",
+    "tabNotifications": "Notificaciones",
+    "tabData": "Datos"
   }
 }

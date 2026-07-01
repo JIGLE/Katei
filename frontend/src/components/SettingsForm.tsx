@@ -50,6 +50,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [savingsGoal, setSavingsGoal] = useState(String(prefs.savings_goal || ''));
   const [theme, setTheme] = useState<Theme>(prefs.theme);
   const [savingPrefs, setSavingPrefs] = useState(false);
+  const [tab, setTab] = useState<'general' | 'notifications' | 'data'>('general');
 
   // Keep local fields in sync once preferences finish loading.
   useEffect(() => {
@@ -168,9 +169,23 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
-      {/* Preferences — country drives currency / locale / timezone, all overridable */}
-      <div className="space-y-3 border-b border-zinc-800/60 pb-4">
-        <label className={`${labelCls} mb-0`}>{t('settings.preferences')}</label>
+      {/* Tabs — split the long form into focused sections. */}
+      <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-950 p-1">
+        {([['general', 'settings.tabGeneral'], ['notifications', 'settings.tabNotifications'], ['data', 'settings.tabData']] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={['flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors', tab === key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'].join(' ')}
+          >
+            {t(label)}
+          </button>
+        ))}
+      </div>
+
+      {/* General — region, language, savings goal, appearance */}
+      {tab === 'general' && (
+      <div className="space-y-3">
         <div>
           <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">{t('settings.country')}</label>
           <select
@@ -272,7 +287,11 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           {savingPrefs ? t('common.saving') : t('settings.savePreferences')}
         </button>
       </div>
+      )}
 
+      {/* Notifications */}
+      {tab === 'notifications' && (
+      <div className="space-y-4">
       <p className="text-xs leading-relaxed text-zinc-500">
         {t('settings.notificationsIntro')}
       </p>
@@ -302,12 +321,6 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         />
       </div>
 
-      {message && (
-        <p className={`text-sm ${message.kind === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {message.text}
-        </p>
-      )}
-
       <div className="flex gap-3 pt-1">
         <button
           type="button"
@@ -326,9 +339,14 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           {saving ? t('common.saving') : t('settings.save')}
         </button>
       </div>
+      </div>
+      )}
 
+      {/* Data — calendar feed + backups */}
+      {tab === 'data' && (
+      <div className="space-y-4">
       {/* Backups */}
-      <div className="border-t border-zinc-800/60 pt-4">
+      <div>
         <div className="mb-2 flex items-center justify-between">
           <label className={`${labelCls} mb-0`}>{t('settings.backups')}</label>
           <button
@@ -391,6 +409,14 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           </button>
         )}
       </div>
+      </div>
+      )}
+
+      {message && (
+        <p className={`text-sm ${message.kind === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {message.text}
+        </p>
+      )}
 
       <button
         type="button"

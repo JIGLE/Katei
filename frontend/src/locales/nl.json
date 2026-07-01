@@ -50,7 +50,15 @@
     "thisWeek": "Deze week",
     "needsAttention": "Vraagt aandacht",
     "allClear": "Niets op komst — alles in orde.",
-    "later": "Later"
+    "later": "Later",
+    "morning": "Goedemorgen",
+    "afternoon": "Goedemiddag",
+    "evening": "Goedenavond",
+    "summaryOverdue_one": "{{count}} ding vraagt aandacht.",
+    "summaryOverdue_other": "{{count}} dingen vragen aandacht.",
+    "summaryWeek_one": "{{count}} deze week te doen.",
+    "summaryWeek_other": "{{count}} deze week te doen.",
+    "summaryClear": "Alles is bij."
   },
   "onboarding": {
     "title": "Aan de slag",
@@ -244,6 +252,9 @@
     "calendarIntro": "Abonneer je in je agenda-app om vervaldata en betalingen te zien. Houd de link privé; genereer opnieuw om toegang in te trekken.",
     "calendarUrl": "Abonnee-URL (tik om te kopiëren)",
     "calendarCopied": "Gekopieerd naar klembord",
-    "calendarRegenerate": "Opnieuw genereren"
+    "calendarRegenerate": "Opnieuw genereren",
+    "tabGeneral": "Algemeen",
+    "tabNotifications": "Meldingen",
+    "tabData": "Gegevens"
   }
 }
