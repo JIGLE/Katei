@@ -274,17 +274,6 @@ export default function Household() {
         </section>
       )}
 
-      {/* Assignment summary */}
-      {!loading && !error && users.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('household.assignmentsLabel')}
-          </p>
-          <p className="text-xl font-light text-zinc-100">{assignments.length}</p>
-          <p className="mt-0.5 text-xs text-zinc-500">{t('household.totalAcrossMembers')}</p>
-        </section>
-      )}
-
       {/* Floating add-member button — admins manage household membership. */}
       {isAdmin && (
         <button

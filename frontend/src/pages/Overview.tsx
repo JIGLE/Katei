@@ -136,29 +136,24 @@ export default function Overview() {
         />
       )}
 
-      {/* Quick stats — outflow gets a full-width row so long localized
-          currency strings (e.g. "14.777,84 kr.") never overflow; the two
-          counts share the row below. */}
-      <div className="space-y-3">
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
-          <p className="mt-1 text-2xl font-light tabular-nums text-emerald-500">
-            {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale)}
-          </p>
+      {/* At-a-glance strip — a quiet, unified summary (one panel split by
+          dividers, matching the Money page) so the "Needs attention" list below
+          is the focal point rather than spend. Outflow's non-breaking currency
+          separator is normalized so long amounts wrap cleanly in the cell. */}
+      <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
+          <p className="mt-1 text-lg font-light tabular-nums text-rose-500">{loading ? '—' : overdue.length}</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-            <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
-            <p className="mt-1 text-xl font-light text-rose-500">
-              {loading ? '—' : overdue.length}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-            <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
-            <p className="mt-1 text-xl font-light text-amber-500">
-              {loading ? '—' : thisWeek.length}
-            </p>
-          </div>
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
+          <p className="mt-1 text-lg font-light tabular-nums text-amber-500">{loading ? '—' : thisWeek.length}</p>
+        </div>
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">
+            {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale).replace(/[  ]/g, ' ')}
+          </p>
         </div>
       </div>
 
