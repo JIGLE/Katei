@@ -303,5 +303,9 @@
     "payment_paid": "{{actor}} pagó {{item}}",
     "member_added": "{{actor}} dio la bienvenida a {{item}}",
     "savings_added": "{{actor}} apartó {{item}}"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "Estás al día."
   }
 }

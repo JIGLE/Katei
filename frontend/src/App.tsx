@@ -8,6 +8,7 @@ import { SettingsForm } from './components/SettingsForm';
 import { AccountForm } from './components/AccountForm';
 import { Splash } from './components/Splash';
 import { AccountMenu } from './components/AccountMenu';
+import { NotificationBell } from './components/NotificationBell';
 import { useAuth } from './lib/auth';
 import { usePreferences } from './lib/preferences';
 import Overview from './pages/Overview';
@@ -52,11 +53,14 @@ export default function App() {
       {/* Slim account header */}
       <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
         <span className="text-base font-light tracking-widest text-zinc-300">家庭</span>
-        <AccountMenu
-          user={user}
-          onOpenAccount={() => setShowAccount(true)}
-          onOpenSettings={() => setShowSettings(true)}
-        />
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <AccountMenu
+            user={user}
+            onOpenAccount={() => setShowAccount(true)}
+            onOpenSettings={() => setShowSettings(true)}
+          />
+        </div>
       </header>
 
       {/* Scrollable content area — padded above the fixed bottom nav */}

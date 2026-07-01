@@ -54,6 +54,27 @@ interface DueEvent {
 }
 
 /**
+ * Record an in-app notification (the header bell). Failures are swallowed — a
+ * notification is a nicety and must never sink the operation that raised it.
+ */
+export async function createNotification(
+  userId: number,
+  type: string,
+  title: string,
+  body: string | null = null,
+  eventId: number | null = null,
+): Promise<void> {
+  try {
+    await query(
+      `INSERT INTO notifications (user_id, type, title, body, event_id) VALUES ($1, $2, $3, $4, $5)`,
+      [userId, type, title, body, eventId],
+    );
+  } catch {
+    // Intentionally ignored.
+  }
+}
+
+/**
  * Decide who receives an event's reminder: the assigned members who have set a
  * notification URL, de-duplicated. When an event has no such assignees, fall
  * back to the household-wide URL (when configured).
@@ -69,8 +90,10 @@ export function resolveRecipients(householdUrl: string, assigneeUrls: string[]):
 
 /**
  * Find incomplete events due within the lead window that haven't been notified,
- * push a reminder to each event's assignees (or the household URL as fallback),
- * and stamp notified_at. Returns the number of events notified.
+ * raise an in-app notification for each event's assignees (or every account when
+ * unassigned), also push to ntfy when configured, and stamp notified_at. The
+ * in-app bell works even without any ntfy setup. Returns the number of events
+ * processed.
  */
 export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
   const { ntfy_url, lead_days } = await getSettings();
@@ -87,40 +110,46 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
 
   let sent = 0;
   for (const ev of rows) {
-    // Notification URLs of members assigned to this event.
-    const { rows: assignees } = await query<{ ntfy_url: string }>(
-      `SELECT DISTINCT u.ntfy_url
+    // Members assigned to this event — the natural recipients.
+    const { rows: assignees } = await query<{ id: number; ntfy_url: string | null }>(
+      `SELECT DISTINCT u.id, u.ntfy_url
          FROM assignments a
          JOIN users u ON u.id = a.user_id
-        WHERE a.event_id = $1 AND u.ntfy_url IS NOT NULL AND u.ntfy_url <> ''`,
+        WHERE a.event_id = $1`,
       [ev.id],
     );
-    const recipients = resolveRecipients(ntfy_url, assignees.map((a) => a.ntfy_url));
-    if (recipients.length === 0) continue; // nobody to notify for this event
+    // In-app recipients: the assignees, or every account-holding member when the
+    // event isn't assigned to anyone (a household-wide reminder).
+    let targetIds = assignees.map((a) => a.id);
+    if (targetIds.length === 0) {
+      const { rows: all } = await query<{ id: number }>(
+        `SELECT id FROM users WHERE password_hash IS NOT NULL`,
+      );
+      targetIds = all.map((u) => u.id);
+    }
 
-    const date = new Date(ev.target_date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-    let delivered = false;
+    const date = new Date(ev.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const body = `Due ${date}`;
+    for (const uid of targetIds) {
+      await createNotification(uid, 'reminder', ev.title, body, ev.id);
+    }
+
+    // Push to ntfy in parallel when a URL is configured (assignee URLs first,
+    // else the household URL). Delivery failures don't block the in-app bell.
+    const recipients = resolveRecipients(ntfy_url, assignees.map((a) => a.ntfy_url ?? ''));
     for (const url of recipients) {
       try {
-        await sendNtfy(url, `${ev.title} — due ${date}`, {
-          title: 'Katei reminder',
-          tags: 'calendar',
-        });
-        delivered = true;
+        await sendNtfy(url, `${ev.title} — due ${date}`, { title: 'Katei reminder', tags: 'calendar' });
       } catch (err) {
         log?.error({ err, eventId: ev.id }, 'Failed to send reminder');
       }
     }
-    // Stamp once per event so a delivered reminder isn't repeated next sweep.
-    if (delivered) {
-      await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
-      sent += 1;
-    }
+
+    // Stamp once per event so it isn't raised again next sweep.
+    await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
+    sent += 1;
   }
-  if (sent && log) log.info(`Sent reminders for ${sent} event(s).`);
+  if (sent && log) log.info(`Notified for ${sent} event(s).`);
   return sent;
 }
 

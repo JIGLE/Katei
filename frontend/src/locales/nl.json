@@ -303,5 +303,9 @@
     "payment_paid": "{{actor}} heeft {{item}} betaald",
     "member_added": "{{actor}} heeft {{item}} verwelkomd",
     "savings_added": "{{actor}} heeft {{item}} opzijgezet"
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "empty": "Je bent helemaal bij."
   }
 }

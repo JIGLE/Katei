@@ -112,6 +112,17 @@ export interface SavingsSummary {
   entries: SavingsEntry[];
 }
 
+// An in-app notification (the header bell), scoped to the current member.
+export interface AppNotification {
+  id: number;
+  type: string;
+  title: string;
+  body: string | null;
+  event_id: number | null;
+  read_at: string | null;
+  created_at: string;
+}
+
 // One month of completed-payment spend (GET /api/analytics/monthly-spend).
 export interface MonthlySpend {
   month: string; // 'YYYY-MM'

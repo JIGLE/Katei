@@ -302,5 +302,9 @@
     "payment_paid": "{{actor}} paid {{item}}",
     "member_added": "{{actor}} welcomed {{item}}",
     "savings_added": "{{actor}} set aside {{item}}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You're all caught up."
   }
 }
