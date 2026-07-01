@@ -39,7 +39,9 @@
     "joinTitle": "Join the household",
     "joinSubtitle": "You've been invited — choose your name and password.",
     "joinBtn": "Join",
-    "inviteInvalid": "This invite is invalid or has expired."
+    "inviteInvalid": "This invite is invalid or has expired.",
+    "currentSavings": "Current savings (optional)",
+    "currentSavingsHint": "What your household has saved so far. You can change this later."
   },
   "overview": {
     "eyebrow": "Home",

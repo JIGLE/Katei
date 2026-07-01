@@ -36,6 +36,7 @@ export function AuthGate() {
   const [country, setCountry] = useState(DEFAULT_COUNTRY.code);
   const [currency, setCurrency] = useState(DEFAULT_COUNTRY.currency);
   const [timezone, setTimezone] = useState(DEFAULT_COUNTRY.timezone);
+  const [savingsOpening, setSavingsOpening] = useState('');
 
   const onCountryChange = (code: string) => {
     setCountry(code);
@@ -65,7 +66,10 @@ export function AuthGate() {
         // otherwise English (e.g. Denmark → English UI, Danish formatting).
         const lang = locale.split('-')[0].toLowerCase();
         const language = (SUPPORTED_LANGUAGES as readonly string[]).includes(lang) ? lang : 'en';
-        await api.put('/settings/preferences', { country, currency, locale, timezone, language }).catch(() => {});
+        await api.put('/settings/preferences', {
+          country, currency, locale, timezone, language,
+          savings_opening: Number(savingsOpening) || 0,
+        }).catch(() => {});
         await prefs.reload();
       } else if (mode === 'invite') {
         await register(name.trim(), password, inviteCode);
@@ -175,6 +179,20 @@ export function AuthGate() {
                       {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
                     </select>
                   </div>
+                </div>
+                <div>
+                  <label htmlFor="savings_opening" className={labelCls}>{t('auth.currentSavings')}</label>
+                  <input
+                    id="savings_opening"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={savingsOpening}
+                    onChange={(e) => setSavingsOpening(e.target.value)}
+                    placeholder="0.00"
+                    className={fieldCls}
+                  />
+                  <p className="mt-1 text-xs text-zinc-600">{t('auth.currentSavingsHint')}</p>
                 </div>
               </>
             )}

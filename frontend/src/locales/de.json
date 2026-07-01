@@ -40,7 +40,9 @@
     "joinTitle": "Dem Haushalt beitreten",
     "joinSubtitle": "Du wurdest eingeladen — wähle Name und Passwort.",
     "joinBtn": "Beitreten",
-    "inviteInvalid": "Diese Einladung ist ungültig oder abgelaufen."
+    "inviteInvalid": "Diese Einladung ist ungültig oder abgelaufen.",
+    "currentSavings": "Aktuelle Ersparnisse (optional)",
+    "currentSavingsHint": "Was dein Haushalt bisher gespart hat. Später änderbar."
   },
   "overview": {
     "eyebrow": "Zuhause",

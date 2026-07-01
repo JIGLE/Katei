@@ -40,7 +40,9 @@
     "joinTitle": "Unirse al hogar",
     "joinSubtitle": "Te han invitado — elige tu nombre y contraseña.",
     "joinBtn": "Unirse",
-    "inviteInvalid": "Esta invitación no es válida o ha caducado."
+    "inviteInvalid": "Esta invitación no es válida o ha caducado.",
+    "currentSavings": "Ahorros actuales (opcional)",
+    "currentSavingsHint": "Lo que tu hogar ha ahorrado hasta ahora. Puedes cambiarlo después."
   },
   "overview": {
     "eyebrow": "Inicio",

@@ -40,7 +40,9 @@
     "joinTitle": "Rejoindre le foyer",
     "joinSubtitle": "Vous avez été invité — choisissez votre nom et mot de passe.",
     "joinBtn": "Rejoindre",
-    "inviteInvalid": "Cette invitation est invalide ou a expiré."
+    "inviteInvalid": "Cette invitation est invalide ou a expiré.",
+    "currentSavings": "Épargne actuelle (facultatif)",
+    "currentSavingsHint": "Ce que votre foyer a épargné jusqu'ici. Modifiable plus tard."
   },
   "overview": {
     "eyebrow": "Accueil",

@@ -40,7 +40,9 @@
     "joinTitle": "Unisciti alla casa",
     "joinSubtitle": "Sei stato invitato — scegli nome e password.",
     "joinBtn": "Unisciti",
-    "inviteInvalid": "Questo invito non è valido o è scaduto."
+    "inviteInvalid": "Questo invito non è valido o è scaduto.",
+    "currentSavings": "Risparmi attuali (facoltativo)",
+    "currentSavingsHint": "Quanto ha risparmiato finora la tua famiglia. Modificabile in seguito."
   },
   "overview": {
     "eyebrow": "Home",

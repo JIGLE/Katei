@@ -40,7 +40,9 @@
     "joinTitle": "Lid worden van het huishouden",
     "joinSubtitle": "Je bent uitgenodigd — kies je naam en wachtwoord.",
     "joinBtn": "Deelnemen",
-    "inviteInvalid": "Deze uitnodiging is ongeldig of verlopen."
+    "inviteInvalid": "Deze uitnodiging is ongeldig of verlopen.",
+    "currentSavings": "Huidig spaargeld (optioneel)",
+    "currentSavingsHint": "Wat je huishouden tot nu toe heeft gespaard. Later te wijzigen."
   },
   "overview": {
     "eyebrow": "Thuis",
