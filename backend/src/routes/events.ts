@@ -86,10 +86,13 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           required: ['title', 'event_type', 'target_date'],
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
-            description: { type: 'string' },
+            description: { type: ['string', 'null'] },
             event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income', 'savings'] },
             target_date: { type: 'string', format: 'date' },
-            money_stream_id: { type: 'integer' },
+            // Nullable: the form sends null for "no linked cost". Without 'null'
+            // here, Fastify's type coercion turns null into 0, which then fails
+            // the money_stream_id foreign key ("A linked item no longer exists").
+            money_stream_id: { type: ['integer', 'null'] },
           },
         },
       },

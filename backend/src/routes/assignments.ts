@@ -58,8 +58,9 @@ export const assignmentsRoutes: FastifyPluginAsync = async (app) => {
           required: ['user_id'],
           properties: {
             user_id: { type: 'integer' },
-            event_id: { type: 'integer' },
-            money_stream_id: { type: 'integer' },
+            // Nullable so an explicit null isn't coerced to 0 (a non-existent FK).
+            event_id: { type: ['integer', 'null'] },
+            money_stream_id: { type: ['integer', 'null'] },
             role: { type: 'string', maxLength: 50 },
           },
         },

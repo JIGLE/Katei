@@ -40,6 +40,17 @@ test('rejects an invalid event_type', opts, async () => {
   assert.equal(res.statusCode, 400);
 });
 
+test('a plain event with money_stream_id: null is created (no null→0 coercion)', opts, async () => {
+  // Exactly what the form sends for "Linked cost: None". Without a nullable
+  // schema, ajv coerces null→0, which fails the money_stream_id foreign key.
+  const res = await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: make({ title: 'Bastian Vet', money_stream_id: null, description: null }),
+  });
+  assert.equal(res.statusCode, 201);
+  assert.equal(res.json().money_stream_id, null); // stored as null, not 0
+});
+
 test('upcoming filter excludes past and completed events', opts, async () => {
   await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Future', target_date: '2999-01-01' }) });
   await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Past', target_date: '2000-01-01' }) });
