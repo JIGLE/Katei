@@ -1,74 +1,10 @@
-import { test, afterEach } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 
-const { sendNtfy, generateRecurringEvents, resolveRecipients, nextOccurrence } = await import('./notifications.js');
+const { generateRecurringEvents, nextOccurrence } = await import('./notifications.js');
 import type { query as Query } from '../db.js';
-
-// --- resolveRecipients: who gets an event's reminder -----------------------
-
-test('resolveRecipients prefers assignee URLs, de-duplicated', () => {
-  assert.deepEqual(
-    resolveRecipients('https://ntfy.sh/house', [
-      'https://ntfy.sh/sam',
-      'https://ntfy.sh/sam',
-      'https://ntfy.sh/alex',
-    ]),
-    ['https://ntfy.sh/sam', 'https://ntfy.sh/alex'],
-  );
-});
-
-test('resolveRecipients falls back to the household URL when no assignees', () => {
-  assert.deepEqual(resolveRecipients('https://ntfy.sh/house', []), ['https://ntfy.sh/house']);
-  assert.deepEqual(resolveRecipients('https://ntfy.sh/house', ['', '  ']), [
-    'https://ntfy.sh/house',
-  ]);
-});
-
-test('resolveRecipients returns nothing when there is no URL at all', () => {
-  assert.deepEqual(resolveRecipients('', []), []);
-  assert.deepEqual(resolveRecipients('   ', ['']), []);
-});
-
-// --- sendNtfy: HTTP delivery, no DB involved -------------------------------
-
-const realFetch = globalThis.fetch;
-afterEach(() => {
-  globalThis.fetch = realFetch;
-});
-
-test('sendNtfy throws when no URL is configured', async () => {
-  await assert.rejects(() => sendNtfy('', 'hi'), /No ntfy URL/);
-});
-
-test('sendNtfy POSTs the body and maps options to headers', async () => {
-  let captured: { url: string; init: RequestInit } | null = null;
-  globalThis.fetch = (async (url: string, init: RequestInit) => {
-    captured = { url, init };
-    return new Response('ok', { status: 200 });
-  }) as typeof fetch;
-
-  await sendNtfy('https://ntfy.sh/topic', 'Rent due', {
-    title: 'Katei',
-    tags: 'calendar',
-    priority: 'high',
-  });
-
-  assert.ok(captured);
-  assert.equal(captured!.url, 'https://ntfy.sh/topic');
-  assert.equal(captured!.init.method, 'POST');
-  assert.equal(captured!.init.body, 'Rent due');
-  const headers = captured!.init.headers as Record<string, string>;
-  assert.equal(headers.Title, 'Katei');
-  assert.equal(headers.Tags, 'calendar');
-  assert.equal(headers.Priority, 'high');
-});
-
-test('sendNtfy throws on a non-2xx response', async () => {
-  globalThis.fetch = (async () => new Response('nope', { status: 502 })) as typeof fetch;
-  await assert.rejects(() => sendNtfy('https://ntfy.sh/topic', 'x'), /502/);
-});
 
 // --- generateRecurringEvents: DB logic via an injected fake query ----------
 

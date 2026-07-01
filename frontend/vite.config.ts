@@ -8,6 +8,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Custom service worker (injectManifest) so we can handle Web Push +
+      // notification clicks in addition to precaching the shell.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
@@ -25,10 +30,7 @@ export default defineConfig({
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
-        // Precache the built shell; never cache the dynamic, authenticated API.
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/],
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
     }),

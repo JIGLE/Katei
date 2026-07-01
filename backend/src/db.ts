@@ -110,6 +110,20 @@ export async function migrate(): Promise<void> {
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+  // Web Push subscriptions — one per member device/browser. Reminders are pushed
+  // here (VAPID); the ntfy integration has been removed.
+  await query(
+    `CREATE TABLE IF NOT EXISTS push_subscriptions (
+       id SERIAL PRIMARY KEY,
+       user_id INT REFERENCES users(id) ON DELETE CASCADE,
+       endpoint TEXT NOT NULL,
+       p256dh TEXT NOT NULL,
+       auth TEXT NOT NULL,
+       user_agent TEXT,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+       UNIQUE (user_id, endpoint)
+     )`,
+  );
   await query(
     `CREATE TABLE IF NOT EXISTS invites (
        id SERIAL PRIMARY KEY,
@@ -129,7 +143,7 @@ export async function migrate(): Promise<void> {
 // Tables with a SERIAL `id` whose sequence must track max(id).
 const SERIAL_TABLES = [
   'users', 'money_streams', 'household_events', 'assignments',
-  'invites', 'activity', 'notifications', 'savings_entries',
+  'invites', 'activity', 'notifications', 'savings_entries', 'push_subscriptions',
 ];
 
 /**
@@ -218,7 +232,6 @@ export async function getOrCreateAuthSecret(): Promise<string> {
  * saved timezone on every restart.
  */
 export async function seedSettingsFromEnv(): Promise<void> {
-  if (config.ntfyUrl) await setSettingIfAbsent('ntfy_url', config.ntfyUrl);
   if (config.leadDays) await setSettingIfAbsent('notify_lead_days', config.leadDays);
   if (config.country) await setSettingIfAbsent('country', config.country);
   if (config.defaultCurrency) await setSettingIfAbsent('default_currency', config.defaultCurrency);

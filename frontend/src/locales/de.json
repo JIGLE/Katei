@@ -264,7 +264,7 @@
     "timezone": "Zeitzone",
     "savePreferences": "Einstellungen speichern",
     "preferencesSaved": "Einstellungen gespeichert.",
-    "notificationsIntro": "Erhalte eine Push-Nachricht, wenn ein Termin ansteht. Erstelle ein Thema in der ntfy-App und füge dessen URL unten ein (z. B. https://ntfy.sh/dein-geheimes-thema).",
+    "notificationsIntro": "Erhalte eine Erinnerung auf deinem Gerät, wenn etwas fällig ist. Aktiviere die Benachrichtigungen unten.",
     "notificationUrl": "Benachrichtigungs-URL",
     "remindDaysAhead": "So viele Tage im Voraus erinnern",
     "sendTest": "Test senden",
@@ -272,7 +272,7 @@
     "save": "Speichern",
     "saved": "Gespeichert.",
     "saveFailed": "Speichern fehlgeschlagen.",
-    "testSent": "Test gesendet — prüfe deine ntfy-App.",
+    "testSent": "Testbenachrichtigung gesendet.",
     "testFailed": "Test fehlgeschlagen.",
     "backups": "Sicherungen",
     "backupNow": "Jetzt sichern",
@@ -298,7 +298,12 @@
     "householdName": "Haushaltsname",
     "householdNamePlaceholder": "Familie Müller",
     "currentSavings": "Aktuelle Ersparnisse",
-    "currentSavingsHint": "Was dein Haushalt bisher gespart hat. Einzahlungen kommen hinzu."
+    "currentSavingsHint": "Was dein Haushalt bisher gespart hat. Einzahlungen kommen hinzu.",
+    "pushOnThisDevice": "Benachrichtigungen auf diesem Gerät",
+    "pushEnabled": "An – du bekommst hier Erinnerungen.",
+    "pushDisabled": "Aus – zum Aktivieren tippen.",
+    "pushUnsupported": "Dieser Browser unterstützt keine Benachrichtigungen.",
+    "pushFailed": "Benachrichtigungen konnten nicht geändert werden."
   },
   "account": {
     "title": "Mein Konto",

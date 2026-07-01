@@ -4,9 +4,9 @@ import { api } from '../lib/api';
 import { usePreferences, applyTheme, type Theme } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
+import { isPushSupported, isSubscribed, enablePush, disablePush } from '../lib/push';
 
 interface NotificationSettings {
-  ntfy_url: string;
   lead_days: number;
 }
 
@@ -29,8 +29,10 @@ const fieldCls =
 
 export function SettingsForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const [url, setUrl] = useState('');
   const [leadDays, setLeadDays] = useState('3');
+  const [pushOn, setPushOn] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const pushSupported = isPushSupported();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -99,9 +101,10 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     api
       .get<NotificationSettings>('/settings/notifications')
-      .then((s) => { setUrl(s.ntfy_url); setLeadDays(String(s.lead_days)); })
+      .then((s) => { setLeadDays(String(s.lead_days)); })
       .catch(() => {})
       .finally(() => setLoading(false));
+    if (pushSupported) isSubscribed().then(setPushOn).catch(() => {});
     loadBackups();
     api.get<{ token: string }>('/settings/calendar').then((r) => setCalToken(r.token)).catch(() => {});
   }, []);
@@ -139,10 +142,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSaving(true);
     setMessage(null);
     try {
-      await api.put('/settings/notifications', {
-        ntfy_url: url.trim(),
-        lead_days: Number(leadDays) || 0,
-      });
+      await api.put('/settings/notifications', { lead_days: Number(leadDays) || 0 });
       setMessage({ kind: 'ok', text: t('settings.saved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message : t('settings.saveFailed') });
@@ -151,15 +151,28 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const togglePush = async () => {
+    setPushBusy(true);
+    setMessage(null);
+    try {
+      if (pushOn) {
+        await disablePush();
+        setPushOn(false);
+      } else {
+        await enablePush();
+        setPushOn(true);
+      }
+    } catch (err) {
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.pushFailed') });
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   const sendTest = async () => {
     setTesting(true);
     setMessage(null);
     try {
-      // Persist first so the test hits the current URL.
-      await api.put('/settings/notifications', {
-        ntfy_url: url.trim(),
-        lead_days: Number(leadDays) || 0,
-      });
       await api.post('/settings/notifications/test', {});
       setMessage({ kind: 'ok', text: t('settings.testSent') });
     } catch (err) {
@@ -326,17 +339,30 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         {t('settings.notificationsIntro')}
       </p>
 
-      <div>
-        <label htmlFor="ntfy_url" className={labelCls}>{t('settings.notificationUrl')}</label>
-        <input
-          id="ntfy_url"
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://ntfy.sh/…"
-          className={fieldCls}
-        />
-      </div>
+      {/* Web Push toggle for this device */}
+      {pushSupported ? (
+        <button
+          type="button"
+          onClick={togglePush}
+          disabled={pushBusy}
+          aria-pressed={pushOn}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-zinc-800 px-3 py-2.5 text-left disabled:opacity-50"
+        >
+          <span className="min-w-0">
+            <span className="block text-sm text-zinc-200">{t('settings.pushOnThisDevice')}</span>
+            <span className="block text-xs text-zinc-500">
+              {pushBusy ? t('common.pleaseWait') : pushOn ? t('settings.pushEnabled') : t('settings.pushDisabled')}
+            </span>
+          </span>
+          <span className={`relative h-5 w-9 flex-shrink-0 rounded-full transition-colors ${pushOn ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
+            <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${pushOn ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`} />
+          </span>
+        </button>
+      ) : (
+        <p className="rounded-xl border border-zinc-800 px-3 py-2.5 text-xs text-zinc-500">
+          {t('settings.pushUnsupported')}
+        </p>
+      )}
 
       <div>
         <label htmlFor="lead_days" className={labelCls}>{t('settings.remindDaysAhead')}</label>
@@ -355,7 +381,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={sendTest}
-          disabled={testing || saving || !url.trim()}
+          disabled={testing || saving || !pushOn}
           className="flex-1 rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700 disabled:opacity-50"
         >
           {testing ? t('settings.sending') : t('settings.sendTest')}

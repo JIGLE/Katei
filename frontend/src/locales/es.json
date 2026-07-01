@@ -264,7 +264,7 @@
     "timezone": "Zona horaria",
     "savePreferences": "Guardar preferencias",
     "preferencesSaved": "Preferencias guardadas.",
-    "notificationsIntro": "Recibe un aviso cuando se acerque un evento. Crea un tema en la app ntfy y pega su URL abajo (p. ej. https://ntfy.sh/tu-tema-secreto).",
+    "notificationsIntro": "Recibe un aviso en tu dispositivo cuando algo venza. Activa las notificaciones abajo.",
     "notificationUrl": "URL de notificación",
     "remindDaysAhead": "Recordarme con estos días de antelación",
     "sendTest": "Enviar prueba",
@@ -272,7 +272,7 @@
     "save": "Guardar",
     "saved": "Guardado.",
     "saveFailed": "Error al guardar.",
-    "testSent": "Prueba enviada — revisa tu app ntfy.",
+    "testSent": "Notificación de prueba enviada.",
     "testFailed": "Error en la prueba.",
     "backups": "Copias de seguridad",
     "backupNow": "Hacer copia ahora",
@@ -298,7 +298,12 @@
     "householdName": "Nombre del hogar",
     "householdNamePlaceholder": "Familia García",
     "currentSavings": "Ahorros actuales",
-    "currentSavingsHint": "Lo que tu hogar ha ahorrado hasta ahora. Las aportaciones se suman."
+    "currentSavingsHint": "Lo que tu hogar ha ahorrado hasta ahora. Las aportaciones se suman.",
+    "pushOnThisDevice": "Notificaciones en este dispositivo",
+    "pushEnabled": "Activado: recibirás avisos aquí.",
+    "pushDisabled": "Desactivado: toca para activar.",
+    "pushUnsupported": "Este navegador no admite notificaciones.",
+    "pushFailed": "No se pudieron cambiar las notificaciones."
   },
   "account": {
     "title": "Mi cuenta",

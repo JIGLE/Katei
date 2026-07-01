@@ -264,7 +264,7 @@
     "timezone": "Fuso orario",
     "savePreferences": "Salva preferenze",
     "preferencesSaved": "Preferenze salvate.",
-    "notificationsIntro": "Ricevi una notifica quando un evento è in scadenza. Crea un argomento nell'app ntfy e incolla qui sotto il suo URL (es. https://ntfy.sh/il-tuo-argomento-segreto).",
+    "notificationsIntro": "Ricevi un promemoria sul tuo dispositivo quando qualcosa scade. Attiva le notifiche qui sotto.",
     "notificationUrl": "URL di notifica",
     "remindDaysAhead": "Ricordamelo con questi giorni di anticipo",
     "sendTest": "Invia test",
@@ -272,7 +272,7 @@
     "save": "Salva",
     "saved": "Salvato.",
     "saveFailed": "Salvataggio non riuscito.",
-    "testSent": "Test inviato — controlla la tua app ntfy.",
+    "testSent": "Notifica di prova inviata.",
     "testFailed": "Test non riuscito.",
     "backups": "Backup",
     "backupNow": "Esegui backup ora",
@@ -298,7 +298,12 @@
     "householdName": "Nome della famiglia",
     "householdNamePlaceholder": "Famiglia Rossi",
     "currentSavings": "Risparmi attuali",
-    "currentSavingsHint": "Quanto ha risparmiato finora la tua famiglia. I versamenti si aggiungono."
+    "currentSavingsHint": "Quanto ha risparmiato finora la tua famiglia. I versamenti si aggiungono.",
+    "pushOnThisDevice": "Notifiche su questo dispositivo",
+    "pushEnabled": "Attivo — riceverai i promemoria qui.",
+    "pushDisabled": "Disattivo — tocca per attivare.",
+    "pushUnsupported": "Questo browser non supporta le notifiche.",
+    "pushFailed": "Impossibile modificare le notifiche."
   },
   "account": {
     "title": "Il mio account",

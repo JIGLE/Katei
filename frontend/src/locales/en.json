@@ -263,7 +263,7 @@
     "timezone": "Timezone",
     "savePreferences": "Save preferences",
     "preferencesSaved": "Preferences saved.",
-    "notificationsIntro": "Get a push when an event is due. Create a topic in the ntfy app, then paste its URL below (e.g. https://ntfy.sh/your-secret-topic).",
+    "notificationsIntro": "Get a reminder on your phone when something's due. Turn on notifications for this device below.",
     "notificationUrl": "Notification URL",
     "remindDaysAhead": "Remind me this many days ahead",
     "sendTest": "Send test",
@@ -271,7 +271,7 @@
     "save": "Save",
     "saved": "Saved.",
     "saveFailed": "Save failed.",
-    "testSent": "Test sent — check your ntfy app.",
+    "testSent": "Test notification sent.",
     "testFailed": "Test failed.",
     "backups": "Backups",
     "backupNow": "Back up now",
@@ -297,7 +297,12 @@
     "householdName": "Household name",
     "householdNamePlaceholder": "The Smiths",
     "currentSavings": "Current savings",
-    "currentSavingsHint": "What your household has saved so far. Deposits add to this."
+    "currentSavingsHint": "What your household has saved so far. Deposits add to this.",
+    "pushOnThisDevice": "Notifications on this device",
+    "pushEnabled": "On — you'll get reminders here.",
+    "pushDisabled": "Off — tap to enable.",
+    "pushUnsupported": "This browser doesn't support notifications.",
+    "pushFailed": "Couldn't change notifications."
   },
   "account": {
     "title": "My account",

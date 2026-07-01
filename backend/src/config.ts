@@ -19,7 +19,6 @@ export const config = {
   // but never override what the household later changes in the UI
   // (see seedSettingsFromEnv).
   jwtSecret: process.env.JWT_SECRET || undefined,
-  ntfyUrl: process.env.NTFY_URL || undefined,
   leadDays: process.env.LEAD_DAYS || undefined,
   // Optional EU-leaning locale/currency seeds for the household preferences.
   country: process.env.COUNTRY || undefined,

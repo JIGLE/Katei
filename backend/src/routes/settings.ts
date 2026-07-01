@@ -3,9 +3,10 @@
 
 import type { FastifyPluginAsync } from 'fastify';
 import { createReadStream, existsSync } from 'node:fs';
-import { getSettings, saveSettings, sendNtfy, checkAndNotify } from '../lib/notifications.js';
+import { getSettings, saveSettings, checkAndNotify, sendPush } from '../lib/notifications.js';
+import type { PushSubRow } from '../lib/notifications.js';
 import { listBackups, backupPath, runBackup } from '../lib/backups.js';
-import { getSetting, setSetting } from '../db.js';
+import { getSetting, setSetting, query } from '../db.js';
 import { randomBytes } from 'node:crypto';
 
 // EU-leaning defaults when a household hasn't set preferences yet.
@@ -100,43 +101,44 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
     return { token };
   });
 
-  // GET /api/settings/notifications
+  // GET /api/settings/notifications — the reminder lead window.
   app.get('/notifications', async () => getSettings());
 
   // PUT /api/settings/notifications
-  app.put<{ Body: { ntfy_url: string; lead_days: number } }>(
+  app.put<{ Body: { lead_days: number } }>(
     '/notifications',
     {
       schema: {
         body: {
           type: 'object',
-          required: ['ntfy_url', 'lead_days'],
-          properties: {
-            ntfy_url: { type: 'string', maxLength: 500 },
-            lead_days: { type: 'integer', minimum: 0, maximum: 60 },
-          },
+          required: ['lead_days'],
+          properties: { lead_days: { type: 'integer', minimum: 0, maximum: 60 } },
         },
       },
     },
     async (req) => {
-      await saveSettings({ ntfy_url: req.body.ntfy_url, lead_days: req.body.lead_days });
+      await saveSettings({ lead_days: req.body.lead_days });
       return getSettings();
     },
   );
 
-  // POST /api/settings/notifications/test — send a test push to the saved URL.
-  app.post('/notifications/test', async (_req, reply) => {
-    const { ntfy_url } = await getSettings();
-    if (!ntfy_url) return reply.code(400).send({ error: 'No notification URL configured' });
-    try {
-      await sendNtfy(ntfy_url, 'Test reminder from Katei 家庭', {
-        title: 'Katei',
-        tags: 'white_check_mark',
-      });
-      return { ok: true };
-    } catch (err) {
-      return reply.code(502).send({ error: err instanceof Error ? err.message : 'Send failed' });
+  // POST /api/settings/notifications/test — push a test to this member's devices.
+  app.post('/notifications/test', async (req, reply) => {
+    const userId = req.user?.id;
+    if (!userId) return reply.code(401).send({ error: 'Not authenticated' });
+    const { rows: subs } = await query<PushSubRow>(
+      `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1`,
+      [userId],
+    );
+    if (!subs.length) return reply.code(400).send({ error: 'No device is subscribed to notifications yet' });
+    let delivered = 0;
+    for (const sub of subs) {
+      try {
+        if ((await sendPush(sub, { title: 'Katei', body: 'Test notification 家庭', url: '/' })) === 'ok') delivered += 1;
+      } catch { /* ignore a single device's failure */ }
     }
+    if (!delivered) return reply.code(502).send({ error: 'Could not deliver to any device' });
+    return { ok: true, delivered };
   });
 
   // POST /api/settings/notifications/run — trigger a due-soon sweep now.

@@ -22,7 +22,6 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
   const [kind, setKind] = useState<MemberKind>(initial?.kind ?? 'human');
   const [birthday, setBirthday] = useState(initial?.birthday ?? '');
   const [avatarUrl, setAvatarUrl] = useState(initial?.avatar_url ?? '');
-  const [ntfyUrl, setNtfyUrl] = useState(initial?.ntfy_url ?? '');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,8 +39,6 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
       const body: Record<string, unknown> = { name: name.trim(), kind };
       body.birthday = birthday || null;
       if (avatarUrl.trim()) body.avatar_url = avatarUrl.trim();
-      // Pets don't receive reminders; only send/clear ntfy for people.
-      body.ntfy_url = kind === 'pet' ? '' : ntfyUrl.trim();
       const saved = isEdit
         ? await api.patch<User>(`/users/${initial!.id}`, body)
         : await api.post<User>('/users', body);
@@ -123,23 +120,6 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           className={fieldCls}
         />
       </div>
-
-      {kind === 'human' && (
-        <div>
-          <label htmlFor="ntfy_url" className={labelCls}>{t('form.notificationUrlOptional')}</label>
-          <input
-            id="ntfy_url"
-            type="url"
-            value={ntfyUrl}
-            onChange={(e) => setNtfyUrl(e.target.value)}
-            placeholder={t('form.ntfyTopicPlaceholder')}
-            className={fieldCls}
-          />
-          <p className="mt-1.5 text-xs text-zinc-500">
-            {t('form.memberNtfyHint')}
-          </p>
-        </div>
-      )}
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 

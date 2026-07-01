@@ -264,7 +264,7 @@
     "timezone": "Tijdzone",
     "savePreferences": "Voorkeuren opslaan",
     "preferencesSaved": "Voorkeuren opgeslagen.",
-    "notificationsIntro": "Krijg een melding wanneer een gebeurtenis eraan komt. Maak een onderwerp aan in de ntfy-app en plak de URL hieronder (bijv. https://ntfy.sh/jouw-geheime-onderwerp).",
+    "notificationsIntro": "Ontvang een herinnering op je apparaat als er iets moet. Zet meldingen hieronder aan.",
     "notificationUrl": "Notificatie-URL",
     "remindDaysAhead": "Zoveel dagen van tevoren herinneren",
     "sendTest": "Test versturen",
@@ -272,7 +272,7 @@
     "save": "Opslaan",
     "saved": "Opgeslagen.",
     "saveFailed": "Opslaan mislukt.",
-    "testSent": "Test verstuurd — controleer je ntfy-app.",
+    "testSent": "Testmelding verzonden.",
     "testFailed": "Test mislukt.",
     "backups": "Back-ups",
     "backupNow": "Nu back-uppen",
@@ -298,7 +298,12 @@
     "householdName": "Naam van het huishouden",
     "householdNamePlaceholder": "Familie De Vries",
     "currentSavings": "Huidig spaargeld",
-    "currentSavingsHint": "Wat je huishouden tot nu toe heeft gespaard. Stortingen komen erbij."
+    "currentSavingsHint": "Wat je huishouden tot nu toe heeft gespaard. Stortingen komen erbij.",
+    "pushOnThisDevice": "Meldingen op dit apparaat",
+    "pushEnabled": "Aan — je krijgt hier herinneringen.",
+    "pushDisabled": "Uit — tik om aan te zetten.",
+    "pushUnsupported": "Deze browser ondersteunt geen meldingen.",
+    "pushFailed": "Kon meldingen niet wijzigen."
   },
   "account": {
     "title": "Mijn account",

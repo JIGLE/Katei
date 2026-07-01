@@ -264,7 +264,7 @@
     "timezone": "Fuseau horaire",
     "savePreferences": "Enregistrer les préférences",
     "preferencesSaved": "Préférences enregistrées.",
-    "notificationsIntro": "Recevez une notification lorsqu'une échéance approche. Créez un sujet dans l'application ntfy, puis collez son URL ci-dessous (ex. https://ntfy.sh/votre-sujet-secret).",
+    "notificationsIntro": "Recevez un rappel sur votre appareil quand une échéance approche. Activez les notifications ci-dessous.",
     "notificationUrl": "URL de notification",
     "remindDaysAhead": "Me rappeler ce nombre de jours à l'avance",
     "sendTest": "Envoyer un test",
@@ -272,7 +272,7 @@
     "save": "Enregistrer",
     "saved": "Enregistré.",
     "saveFailed": "Échec de l'enregistrement.",
-    "testSent": "Test envoyé — vérifiez votre application ntfy.",
+    "testSent": "Notification de test envoyée.",
     "testFailed": "Échec du test.",
     "backups": "Sauvegardes",
     "backupNow": "Sauvegarder maintenant",
@@ -298,7 +298,12 @@
     "householdName": "Nom du foyer",
     "householdNamePlaceholder": "Famille Dupont",
     "currentSavings": "Épargne actuelle",
-    "currentSavingsHint": "Ce que votre foyer a épargné jusqu'ici. Les versements s'y ajoutent."
+    "currentSavingsHint": "Ce que votre foyer a épargné jusqu'ici. Les versements s'y ajoutent.",
+    "pushOnThisDevice": "Notifications sur cet appareil",
+    "pushEnabled": "Activé — vous recevrez les rappels ici.",
+    "pushDisabled": "Désactivé — appuyez pour activer.",
+    "pushUnsupported": "Ce navigateur ne prend pas en charge les notifications.",
+    "pushFailed": "Impossible de modifier les notifications."
   },
   "account": {
     "title": "Mon compte",

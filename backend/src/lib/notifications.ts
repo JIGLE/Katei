@@ -1,48 +1,84 @@
-// Notification delivery via ntfy (https://ntfy.sh). The operator configures a
-// topic URL; reminders for events due within the lead window are pushed once.
+// Reminder delivery via Web Push (VAPID). Members subscribe a device/browser and
+// reminders for events due within the lead window are pushed once. The in-app
+// bell (notifications table) is the always-on channel; push delivers the same
+// content to the lock screen.
 
 import type { FastifyBaseLogger } from 'fastify';
 import Holidays from 'date-holidays';
+import webpush from 'web-push';
 import { query, getSetting, setSetting } from '../db.js';
 
 export type DueShift = 'none' | 'prev' | 'next';
 
-const URL_KEY = 'ntfy_url';
 const LEAD_KEY = 'notify_lead_days';
+const VAPID_PUBLIC_KEY = 'push_vapid_public';
+const VAPID_PRIVATE_KEY = 'push_vapid_private';
+const VAPID_SUBJECT = 'mailto:katei@localhost';
 const DEFAULT_LEAD_DAYS = 3;
 const CHECK_INTERVAL_MS = 60 * 60 * 1000; // hourly
 
 export interface NotificationSettings {
-  ntfy_url: string;
   lead_days: number;
 }
 
 export async function getSettings(): Promise<NotificationSettings> {
-  const url = (await getSetting(URL_KEY)) ?? '';
   const lead = await getSetting(LEAD_KEY);
-  return { ntfy_url: url, lead_days: lead ? Number(lead) : DEFAULT_LEAD_DAYS };
+  return { lead_days: lead ? Number(lead) : DEFAULT_LEAD_DAYS };
 }
 
 export async function saveSettings(settings: NotificationSettings): Promise<void> {
-  await setSetting(URL_KEY, settings.ntfy_url.trim());
   await setSetting(LEAD_KEY, String(settings.lead_days));
 }
 
-/** Send a single ntfy message. Throws on a non-2xx response. */
-export async function sendNtfy(
-  url: string,
-  message: string,
-  opts: { title?: string; tags?: string; priority?: string } = {},
-): Promise<void> {
-  if (!url) throw new Error('No ntfy URL configured');
-  const headers: Record<string, string> = {};
-  if (opts.title) headers['Title'] = opts.title;
-  if (opts.tags) headers['Tags'] = opts.tags;
-  if (opts.priority) headers['Priority'] = opts.priority;
+/**
+ * The household's VAPID keypair, generated and persisted on first use so push
+ * works with no operator config and survives restarts. The public key is safe to
+ * hand the browser; the private key stays in app_settings.
+ */
+export async function getVapidKeys(): Promise<{ publicKey: string; privateKey: string }> {
+  let publicKey = await getSetting(VAPID_PUBLIC_KEY);
+  let privateKey = await getSetting(VAPID_PRIVATE_KEY);
+  if (!publicKey || !privateKey) {
+    const keys = webpush.generateVAPIDKeys();
+    publicKey = keys.publicKey;
+    privateKey = keys.privateKey;
+    await setSetting(VAPID_PUBLIC_KEY, publicKey);
+    await setSetting(VAPID_PRIVATE_KEY, privateKey);
+  }
+  return { publicKey, privateKey };
+}
 
-  const res = await fetch(url, { method: 'POST', headers, body: message });
-  if (!res.ok) {
-    throw new Error(`ntfy responded ${res.status} ${await res.text().catch(() => '')}`.trim());
+let vapidConfigured = false;
+async function configurePush(): Promise<void> {
+  if (vapidConfigured) return;
+  const { publicKey, privateKey } = await getVapidKeys();
+  webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
+  vapidConfigured = true;
+}
+
+export interface PushSubRow {
+  id: number;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}
+
+/**
+ * Send one Web Push message. Returns 'gone' when the subscription is dead (404/
+ * 410) so the caller can prune it; throws on other (transient) errors.
+ */
+export async function sendPush(sub: PushSubRow, payload: object): Promise<'ok' | 'gone'> {
+  await configurePush();
+  try {
+    await webpush.sendNotification(
+      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+      JSON.stringify(payload),
+    );
+    return 'ok';
+  } catch (err) {
+    const status = (err as { statusCode?: number }).statusCode;
+    if (status === 404 || status === 410) return 'gone';
+    throw err;
   }
 }
 
@@ -75,28 +111,13 @@ export async function createNotification(
 }
 
 /**
- * Decide who receives an event's reminder: the assigned members who have set a
- * notification URL, de-duplicated. When an event has no such assignees, fall
- * back to the household-wide URL (when configured).
- */
-export function resolveRecipients(householdUrl: string, assigneeUrls: string[]): string[] {
-  const cleaned = Array.from(
-    new Set(assigneeUrls.map((u) => (u ?? '').trim()).filter(Boolean)),
-  );
-  if (cleaned.length) return cleaned;
-  const fallback = householdUrl.trim();
-  return fallback ? [fallback] : [];
-}
-
-/**
  * Find incomplete events due within the lead window that haven't been notified,
  * raise an in-app notification for each event's assignees (or every account when
- * unassigned), also push to ntfy when configured, and stamp notified_at. The
- * in-app bell works even without any ntfy setup. Returns the number of events
- * processed.
+ * unassigned), push to those members' subscribed devices, and stamp notified_at.
+ * The in-app bell works even with no push subscriptions. Returns events processed.
  */
 export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
-  const { ntfy_url, lead_days } = await getSettings();
+  const { lead_days } = await getSettings();
 
   const { rows } = await query<DueEvent>(
     `SELECT id, title, event_type, target_date
@@ -110,16 +131,12 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
 
   let sent = 0;
   for (const ev of rows) {
-    // Members assigned to this event — the natural recipients.
-    const { rows: assignees } = await query<{ id: number; ntfy_url: string | null }>(
-      `SELECT DISTINCT u.id, u.ntfy_url
-         FROM assignments a
-         JOIN users u ON u.id = a.user_id
-        WHERE a.event_id = $1`,
+    // Members assigned to this event, or every account-holding member when the
+    // event isn't assigned to anyone (a household-wide reminder).
+    const { rows: assignees } = await query<{ id: number }>(
+      `SELECT DISTINCT u.id FROM assignments a JOIN users u ON u.id = a.user_id WHERE a.event_id = $1`,
       [ev.id],
     );
-    // In-app recipients: the assignees, or every account-holding member when the
-    // event isn't assigned to anyone (a household-wide reminder).
     let targetIds = assignees.map((a) => a.id);
     if (targetIds.length === 0) {
       const { rows: all } = await query<{ id: number }>(
@@ -134,14 +151,20 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
       await createNotification(uid, 'reminder', ev.title, body, ev.id);
     }
 
-    // Push to ntfy in parallel when a URL is configured (assignee URLs first,
-    // else the household URL). Delivery failures don't block the in-app bell.
-    const recipients = resolveRecipients(ntfy_url, assignees.map((a) => a.ntfy_url ?? ''));
-    for (const url of recipients) {
-      try {
-        await sendNtfy(url, `${ev.title} — due ${date}`, { title: 'Katei reminder', tags: 'calendar' });
-      } catch (err) {
-        log?.error({ err, eventId: ev.id }, 'Failed to send reminder');
+    // Web Push to those members' subscribed devices; prune dead subscriptions.
+    if (targetIds.length) {
+      const { rows: subs } = await query<PushSubRow>(
+        `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ANY($1::int[])`,
+        [targetIds],
+      );
+      for (const sub of subs) {
+        try {
+          if ((await sendPush(sub, { title: ev.title, body, url: '/timeline' })) === 'gone') {
+            await query(`DELETE FROM push_subscriptions WHERE id = $1`, [sub.id]);
+          }
+        } catch (err) {
+          log?.error({ err, eventId: ev.id }, 'Failed to send push');
+        }
       }
     }
 
