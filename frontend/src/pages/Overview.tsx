@@ -8,19 +8,21 @@ import { useAuth } from '../lib/auth';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
 import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
 
-type Accent = 'amber' | 'rose' | 'emerald';
+type Accent = 'amber' | 'rose' | 'emerald' | 'teal';
 
 const eventAccent: Record<HouseholdEvent['event_type'], Accent> = {
   deadline: 'rose',
   payment: 'emerald',
   appointment: 'amber',
   income: 'emerald',
+  savings: 'teal',
 };
 
 const accentMap: Record<Accent, { pill: string; dot: string }> = {
   amber: { pill: 'bg-amber-500/10 text-amber-500', dot: 'bg-amber-500' },
   rose: { pill: 'bg-rose-500/10 text-rose-500', dot: 'bg-rose-500' },
   emerald: { pill: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
+  teal: { pill: 'bg-teal-500/10 text-teal-300', dot: 'bg-teal-400' },
 };
 
 // Monthly-equivalent of recurring expenses (monthly as-is, yearly ÷12).

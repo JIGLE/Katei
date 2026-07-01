@@ -122,6 +122,13 @@ test('generates an income event titled with the stream name', async () => {
   assert.equal(inserts[0].params?.[1], 'income');
 });
 
+test('generates a savings "set aside" event for a recurring savings stream', async () => {
+  const { q, inserts } = fakeQuery([stream({ id: 1, name: 'Emergency fund', stream_type: 'savings' })], () => false);
+  await generateRecurringEvents(undefined, q);
+  assert.equal(inserts[0].params?.[0], 'Emergency fund');
+  assert.equal(inserts[0].params?.[1], 'savings');
+});
+
 test('skips a stream that already has an upcoming event', async () => {
   const { q, inserts } = fakeQuery([stream({ id: 2, name: 'Netflix' })], () => true);
   const created = await generateRecurringEvents(undefined, q);

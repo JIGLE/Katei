@@ -11,6 +11,7 @@ export interface Preferences {
   timezone: string;
   language: string;
   savings_goal: number;
+  savings_opening: number;
   theme: Theme;
   household_name: string;
 }
@@ -22,6 +23,7 @@ const DEFAULTS: Preferences = {
   timezone: 'Europe/Berlin',
   language: 'en',
   savings_goal: 0,
+  savings_opening: 0,
   theme: 'dark',
   household_name: '',
 };

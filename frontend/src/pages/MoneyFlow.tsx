@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType, MonthlySpend, MonthVariance } from '../lib/types';
+import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
+import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { SavingsRing } from '../components/SavingsRing';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
@@ -67,6 +68,7 @@ const TYPE_HEADER_KEY: Record<StreamType, string> = {
 
 export default function MoneyFlow() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
+  const [savingsData, setSavingsData] = useState<SavingsSummary | null>(null);
   const [trends, setTrends] = useState<MonthlySpend[]>([]);
   const [variance, setVariance] = useState<MonthVariance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +76,7 @@ export default function MoneyFlow() {
   const [showForm, setShowForm] = useState(false);
   const [newType, setNewType] = useState<StreamType>('expense');
   const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [showSavingsForm, setShowSavingsForm] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
   const { currency, locale, savings_goal } = usePreferences();
   const { t } = useTranslation();
@@ -87,8 +90,13 @@ export default function MoneyFlow() {
       .finally(() => setLoading(false));
   };
 
+  const fetchSavings = () => {
+    api.get<SavingsSummary>('/savings').then(setSavingsData).catch(() => {});
+  };
+
   useEffect(() => {
     fetchStreams();
+    fetchSavings();
     // Spend history is independent of the stream list — a soft, non-blocking load.
     api.get<MonthlySpend[]>('/analytics/monthly-spend?months=6').then(setTrends).catch(() => {});
     api.get<MonthVariance[]>('/analytics/variance?months=6').then(setVariance).catch(() => {});
@@ -96,15 +104,19 @@ export default function MoneyFlow() {
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
   const handleDeleted = () => { setEditing(null); fetchStreams(); };
+  const handleSavingsSaved = (s: SavingsSummary) => { setSavingsData(s); setShowSavingsForm(false); };
 
   const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
 
   const income = sumType(streams, 'income');
   const expenses = sumType(streams, 'expense');
-  const savings = sumType(streams, 'savings');
-  const net = income - expenses - savings;
-  const savingsRate = income > 0 ? (savings / income) * 100 : 0;
-  const goalPct = savings_goal > 0 ? Math.min(100, (savings / savings_goal) * 100) : 0;
+  // Planned monthly saving (recurring streams) drives net cash-flow, separate
+  // from the accumulated balance below — a monthly rate vs money already set aside.
+  const plannedMonthly = sumType(streams, 'savings');
+  const net = income - expenses - plannedMonthly;
+  const savingsRate = income > 0 ? (plannedMonthly / income) * 100 : 0;
+  const balance = savingsData?.balance ?? 0;
+  const goalPct = savings_goal > 0 ? Math.min(100, (balance / savings_goal) * 100) : 0;
   // Net is the page's one hero figure (see the polish pass) — it counts up
   // once when the data first arrives, rather than just appearing.
   const animatedNet = useCountUp(net, !loading);
@@ -161,19 +173,54 @@ export default function MoneyFlow() {
         </div>
         <div className="p-4">
           <p className="text-xs text-zinc-500">{t('money.savings')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(savings)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(plannedMonthly)}</p>
         </div>
       </div>
 
-      {/* Savings goal progress — the one deliberately distinctive element on
-          this page: a filling ring rather than a generic linear bar. */}
-      {!loading && savings_goal > 0 && (
-        <section className="flex items-center gap-5 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <SavingsRing pct={goalPct} label={t('money.savingsGoal')} />
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsGoal')}</p>
-            <p className="mt-1 text-sm tabular-nums text-zinc-300">{fmt(savings)} <span className="text-zinc-600">/</span> {fmt(savings_goal)}</p>
+      {/* Savings — the accumulated balance the household has set aside. This is a
+          real running total (opening amount + every contribution), so a one-time
+          deposit moves the number. The goal ring is the page's signature element. */}
+      {!loading && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsBalance')}</p>
+            <button
+              type="button"
+              onClick={() => setShowSavingsForm(true)}
+              className="text-xs text-teal-400 underline-offset-2 transition-colors hover:text-teal-300"
+            >
+              ＋ {t('money.addToSavings')}
+            </button>
           </div>
+
+          <div className="flex items-center gap-5">
+            {savings_goal > 0 && <SavingsRing pct={goalPct} label={t('money.savingsGoal')} />}
+            <div className="min-w-0">
+              <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(balance)}</p>
+              {savings_goal > 0 && (
+                <p className="mt-1 text-xs tabular-nums text-zinc-500">
+                  {t('money.ofGoal', { goal: fmt(savings_goal) })}
+                </p>
+              )}
+              {plannedMonthly > 0 && (
+                <p className="mt-1 text-xs tabular-nums text-zinc-500">
+                  {t('money.plannedMonthly')} <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Recent contributions — the last few ledger entries, newest first. */}
+          {savingsData && savingsData.entries.length > 0 && (
+            <ul className="mt-4 space-y-2 border-t border-zinc-800/60 pt-4">
+              {savingsData.entries.slice(0, 4).map((e) => (
+                <li key={e.id} className="flex items-center gap-3 text-sm">
+                  <span className="flex-1 truncate text-zinc-300">{e.note?.trim() || t('money.contribution')}</span>
+                  <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
 
@@ -351,6 +398,10 @@ export default function MoneyFlow() {
         {editing && (
           <StreamForm initial={editing} onSaved={handleSaved} onCancel={() => setEditing(null)} onDeleted={handleDeleted} />
         )}
+      </Modal>
+
+      <Modal open={showSavingsForm} title={t('money.addToSavings')} onClose={() => setShowSavingsForm(false)}>
+        <SavingsEntryForm onSaved={handleSavingsSaved} onCancel={() => setShowSavingsForm(false)} />
       </Modal>
     </div>
   );

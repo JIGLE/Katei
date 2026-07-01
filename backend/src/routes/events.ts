@@ -5,6 +5,34 @@ import { logActivity } from '../lib/activity.js';
 const COLS =
   'id, title, description, event_type, target_date, is_completed, money_stream_id, actual_amount, created_at';
 
+/**
+ * Post a savings contribution to the ledger when a "set aside" event is confirmed.
+ * Uses the amount actually set aside if captured, otherwise the linked stream's
+ * planned amount. A missing amount records nothing (nothing meaningful to add).
+ */
+async function recordSavingsContribution(
+  streamId: number | null,
+  actualAmount: string | null,
+): Promise<void> {
+  let amount = actualAmount != null ? Number(actualAmount) : null;
+  let note: string | null = null;
+  if (streamId != null) {
+    const { rows } = await query<{ name: string; amount: string }>(
+      `SELECT name, amount FROM money_streams WHERE id = $1`,
+      [streamId],
+    );
+    if (rows.length) {
+      note = rows[0].name;
+      if (amount == null) amount = Number(rows[0].amount);
+    }
+  }
+  if (amount == null || Number.isNaN(amount)) return;
+  await query(
+    `INSERT INTO savings_entries (amount, note, money_stream_id) VALUES ($1, $2, $3)`,
+    [amount, note, streamId],
+  );
+}
+
 export const eventsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/events
   // Query params: ?upcoming=true  — only future incomplete events
@@ -59,7 +87,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: 'string' },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income'] },
+            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income', 'savings'] },
             target_date: { type: 'string', format: 'date' },
             money_stream_id: { type: 'integer' },
           },
@@ -105,7 +133,7 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: 'string' },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income'] },
+            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income', 'savings'] },
             target_date: { type: 'string', format: 'date' },
             is_completed: { type: 'boolean' },
             money_stream_id: { type: ['integer', 'null'] },
@@ -151,16 +179,34 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const { rows } = await query<{ title: string; event_type: string }>(
+      // Read the prior state so we only act on a real false→true transition —
+      // re-confirming an already-done event must not post savings twice.
+      const before = await query<{ is_completed: boolean }>(
+        `SELECT is_completed FROM household_events WHERE id = $1`,
+        [req.params.id],
+      );
+      if (!before.rows.length) return reply.code(404).send({ error: 'Event not found' });
+      const wasCompleted = before.rows[0].is_completed;
+
+      const { rows } = await query<{
+        title: string; event_type: string; money_stream_id: number | null; actual_amount: string | null;
+      }>(
         `UPDATE household_events SET is_completed = $1 WHERE id = $2 RETURNING ${COLS}`,
         [req.body.is_completed, req.params.id],
       );
-      if (!rows.length) return reply.code(404).send({ error: 'Event not found' });
       // Only celebrate finishing something, not un-checking it. Payments read
       // differently from chores, so they get their own verb.
-      if (req.body.is_completed) {
-        const action = rows[0].event_type === 'payment' ? 'payment_paid' : 'event_done';
-        await logActivity(req.user?.id ?? null, action, rows[0].title);
+      if (req.body.is_completed && !wasCompleted) {
+        const evt = rows[0];
+        if (evt.event_type === 'savings') {
+          // Confirming a recurring "set aside" posts the actual amount to the
+          // savings ledger — the balance only grows when a contribution is made.
+          await recordSavingsContribution(evt.money_stream_id, evt.actual_amount);
+          await logActivity(req.user?.id ?? null, 'savings_added', evt.title);
+        } else {
+          const action = evt.event_type === 'payment' ? 'payment_paid' : 'event_done';
+          await logActivity(req.user?.id ?? null, action, evt.title);
+        }
       }
       return rows[0];
     },

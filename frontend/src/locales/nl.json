@@ -100,7 +100,8 @@
     "deadline": "Deadline",
     "payment": "Betaling",
     "appointment": "Afspraak",
-    "income": "Inkomen"
+    "income": "Inkomen",
+    "savings": "Sparen"
   },
   "money": {
     "eyebrow": "Financiën",
@@ -128,7 +129,16 @@
     "auto": "Auto",
     "expectedActual": "Verwacht vs werkelijk",
     "expected": "Verwacht",
-    "actual": "Werkelijk"
+    "actual": "Werkelijk",
+    "savingsBalance": "Spaarsaldo",
+    "addToSavings": "Toevoegen aan spaargeld",
+    "addToSavingsHint": "Leg opzijgezet geld vast. Het wordt meteen bij je spaarsaldo opgeteld.",
+    "ofGoal": "van {{goal}}",
+    "plannedMonthly": "Gepland per maand",
+    "contribution": "Bijdrage",
+    "contributionNote": "Notitie",
+    "contributionNotePlaceholder": "bijv. bonus, belastingteruggave",
+    "contributionDate": "Datum"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -268,7 +278,9 @@
     "tabNotifications": "Meldingen",
     "tabData": "Gegevens",
     "householdName": "Naam van het huishouden",
-    "householdNamePlaceholder": "Familie De Vries"
+    "householdNamePlaceholder": "Familie De Vries",
+    "currentSavings": "Huidig spaargeld",
+    "currentSavingsHint": "Wat je huishouden tot nu toe heeft gespaard. Stortingen komen erbij."
   },
   "account": {
     "title": "Mijn account",
@@ -289,6 +301,7 @@
     "event_added": "{{actor}} heeft {{item}} toegevoegd",
     "event_done": "{{actor}} heeft {{item}} afgerond",
     "payment_paid": "{{actor}} heeft {{item}} betaald",
-    "member_added": "{{actor}} heeft {{item}} verwelkomd"
+    "member_added": "{{actor}} heeft {{item}} verwelkomd",
+    "savings_added": "{{actor}} heeft {{item}} opzijgezet"
   }
 }

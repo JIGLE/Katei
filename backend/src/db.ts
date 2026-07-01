@@ -84,6 +84,32 @@ export async function migrate(): Promise<void> {
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+  // Savings ledger — a household's set-aside money accumulates here. The balance
+  // is the opening amount (app_settings 'savings_opening') plus these entries, so
+  // one-time deposits and confirmed recurring contributions both count.
+  await query(
+    `CREATE TABLE IF NOT EXISTS savings_entries (
+       id SERIAL PRIMARY KEY,
+       amount DECIMAL(10, 2) NOT NULL,
+       note TEXT,
+       occurred_on DATE NOT NULL DEFAULT CURRENT_DATE,
+       money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
+  // Per-user in-app notifications (the header bell). ntfy remains a parallel channel.
+  await query(
+    `CREATE TABLE IF NOT EXISTS notifications (
+       id SERIAL PRIMARY KEY,
+       user_id INT REFERENCES users(id) ON DELETE CASCADE,
+       type VARCHAR(40) NOT NULL,
+       title TEXT NOT NULL,
+       body TEXT,
+       event_id INT REFERENCES household_events(id) ON DELETE SET NULL,
+       read_at TIMESTAMP,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
   await query(
     `CREATE TABLE IF NOT EXISTS invites (
        id SERIAL PRIMARY KEY,

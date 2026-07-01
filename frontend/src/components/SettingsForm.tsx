@@ -49,6 +49,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [timezone, setTimezone] = useState(prefs.timezone);
   const [language, setLanguage] = useState(prefs.language);
   const [savingsGoal, setSavingsGoal] = useState(String(prefs.savings_goal || ''));
+  const [savingsOpening, setSavingsOpening] = useState(String(prefs.savings_opening || ''));
   const [theme, setTheme] = useState<Theme>(prefs.theme);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [tab, setTab] = useState<'general' | 'notifications' | 'data'>('general');
@@ -62,8 +63,9 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setTimezone(prefs.timezone);
     setLanguage(prefs.language);
     setSavingsGoal(String(prefs.savings_goal || ''));
+    setSavingsOpening(String(prefs.savings_opening || ''));
     setTheme(prefs.theme);
-  }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.theme]);
+  }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.savings_opening, prefs.theme]);
 
   // Apply the theme live as the user toggles, for instant feedback.
   const onThemeChange = (next: Theme) => {
@@ -81,7 +83,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, theme });
+      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, savings_opening: Number(savingsOpening) || 0, theme });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -258,6 +260,20 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           >
             {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
           </select>
+        </div>
+        <div>
+          <label htmlFor="pref_savings_opening" className="mb-1.5 block text-xs text-zinc-500">{t('settings.currentSavings')}</label>
+          <input
+            id="pref_savings_opening"
+            type="number"
+            min="0"
+            step="0.01"
+            value={savingsOpening}
+            onChange={(e) => setSavingsOpening(e.target.value)}
+            placeholder="0.00"
+            className={`${fieldCls}`}
+          />
+          <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
         </div>
         <div>
           <label htmlFor="pref_savings_goal" className="mb-1.5 block text-xs text-zinc-500">{t('settings.savingsGoal')}</label>

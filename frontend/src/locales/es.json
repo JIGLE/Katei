@@ -100,7 +100,8 @@
     "deadline": "Fecha límite",
     "payment": "Pago",
     "appointment": "Cita",
-    "income": "Ingreso"
+    "income": "Ingreso",
+    "savings": "Ahorro"
   },
   "money": {
     "eyebrow": "Finanzas",
@@ -128,7 +129,16 @@
     "auto": "Auto",
     "expectedActual": "Previsto vs real",
     "expected": "Previsto",
-    "actual": "Real"
+    "actual": "Real",
+    "savingsBalance": "Saldo de ahorros",
+    "addToSavings": "Añadir a ahorros",
+    "addToSavingsHint": "Registra el dinero que has apartado. Se suma a tu saldo de ahorros al instante.",
+    "ofGoal": "de {{goal}}",
+    "plannedMonthly": "Previsto al mes",
+    "contribution": "Aportación",
+    "contributionNote": "Nota",
+    "contributionNotePlaceholder": "p. ej. bonus, devolución de impuestos",
+    "contributionDate": "Fecha"
   },
   "freq": {
     "monthly": "Mensual",
@@ -268,7 +278,9 @@
     "tabNotifications": "Notificaciones",
     "tabData": "Datos",
     "householdName": "Nombre del hogar",
-    "householdNamePlaceholder": "Familia García"
+    "householdNamePlaceholder": "Familia García",
+    "currentSavings": "Ahorros actuales",
+    "currentSavingsHint": "Lo que tu hogar ha ahorrado hasta ahora. Las aportaciones se suman."
   },
   "account": {
     "title": "Mi cuenta",
@@ -289,6 +301,7 @@
     "event_added": "{{actor}} añadió {{item}}",
     "event_done": "{{actor}} completó {{item}}",
     "payment_paid": "{{actor}} pagó {{item}}",
-    "member_added": "{{actor}} dio la bienvenida a {{item}}"
+    "member_added": "{{actor}} dio la bienvenida a {{item}}",
+    "savings_added": "{{actor}} apartó {{item}}"
   }
 }

@@ -99,7 +99,8 @@
     "deadline": "Deadline",
     "payment": "Payment",
     "appointment": "Appointment",
-    "income": "Income"
+    "income": "Income",
+    "savings": "Savings"
   },
   "money": {
     "eyebrow": "Finance",
@@ -127,7 +128,16 @@
     "auto": "Auto",
     "expectedActual": "Expected vs actual",
     "expected": "Expected",
-    "actual": "Actual"
+    "actual": "Actual",
+    "savingsBalance": "Savings balance",
+    "addToSavings": "Add to savings",
+    "addToSavingsHint": "Record money you've set aside. It's added to your savings balance right away.",
+    "ofGoal": "of {{goal}}",
+    "plannedMonthly": "Planned monthly",
+    "contribution": "Contribution",
+    "contributionNote": "Note",
+    "contributionNotePlaceholder": "e.g. Bonus, tax refund",
+    "contributionDate": "Date"
   },
   "freq": {
     "monthly": "Monthly",
@@ -267,7 +277,9 @@
     "tabNotifications": "Notifications",
     "tabData": "Data",
     "householdName": "Household name",
-    "householdNamePlaceholder": "The Smiths"
+    "householdNamePlaceholder": "The Smiths",
+    "currentSavings": "Current savings",
+    "currentSavingsHint": "What your household has saved so far. Deposits add to this."
   },
   "account": {
     "title": "My account",
@@ -288,6 +300,7 @@
     "event_added": "{{actor}} added {{item}}",
     "event_done": "{{actor}} finished {{item}}",
     "payment_paid": "{{actor}} paid {{item}}",
-    "member_added": "{{actor}} welcomed {{item}}"
+    "member_added": "{{actor}} welcomed {{item}}",
+    "savings_added": "{{actor}} set aside {{item}}"
   }
 }

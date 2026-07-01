@@ -100,7 +100,8 @@
     "deadline": "Date limite",
     "payment": "Paiement",
     "appointment": "Rendez-vous",
-    "income": "Revenu"
+    "income": "Revenu",
+    "savings": "Épargne"
   },
   "money": {
     "eyebrow": "Finances",
@@ -128,7 +129,16 @@
     "auto": "Auto",
     "expectedActual": "Prévu vs réel",
     "expected": "Prévu",
-    "actual": "Réel"
+    "actual": "Réel",
+    "savingsBalance": "Épargne totale",
+    "addToSavings": "Ajouter à l'épargne",
+    "addToSavingsHint": "Enregistrez l'argent mis de côté. Il est aussitôt ajouté à votre épargne.",
+    "ofGoal": "sur {{goal}}",
+    "plannedMonthly": "Prévu par mois",
+    "contribution": "Versement",
+    "contributionNote": "Note",
+    "contributionNotePlaceholder": "p. ex. prime, remboursement d'impôt",
+    "contributionDate": "Date"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -268,7 +278,9 @@
     "tabNotifications": "Notifications",
     "tabData": "Données",
     "householdName": "Nom du foyer",
-    "householdNamePlaceholder": "Famille Dupont"
+    "householdNamePlaceholder": "Famille Dupont",
+    "currentSavings": "Épargne actuelle",
+    "currentSavingsHint": "Ce que votre foyer a épargné jusqu'ici. Les versements s'y ajoutent."
   },
   "account": {
     "title": "Mon compte",
@@ -289,6 +301,7 @@
     "event_added": "{{actor}} a ajouté {{item}}",
     "event_done": "{{actor}} a terminé {{item}}",
     "payment_paid": "{{actor}} a payé {{item}}",
-    "member_added": "{{actor}} a accueilli {{item}}"
+    "member_added": "{{actor}} a accueilli {{item}}",
+    "savings_added": "{{actor}} a mis {{item}} de côté"
   }
 }

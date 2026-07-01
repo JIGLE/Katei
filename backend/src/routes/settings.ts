@@ -24,6 +24,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       timezone: (await getSetting('timezone')) ?? PREF_DEFAULTS.timezone,
       language,
       savings_goal: Number((await getSetting('savings_goal')) ?? 0),
+      savings_opening: Number((await getSetting('savings_opening')) ?? 0),
       theme: (await getSetting('theme')) === 'light' ? 'light' : 'dark',
       household_name: (await getSetting('household_name')) ?? '',
     };
@@ -31,7 +32,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; theme?: string; household_name?: string };
+    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; savings_opening?: number; theme?: string; household_name?: string };
   }>(
     '/preferences',
     {
@@ -46,6 +47,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             timezone: { type: 'string', minLength: 1, maxLength: 64 },
             language: { type: 'string', pattern: '^[A-Za-z]{2}$' },
             savings_goal: { type: 'number', minimum: 0 },
+            savings_opening: { type: 'number', minimum: 0 },
             theme: { type: 'string', enum: ['dark', 'light'] },
             household_name: { type: 'string', maxLength: 60 },
           },
@@ -61,6 +63,8 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('language', language);
       const savings_goal = req.body.savings_goal ?? 0;
       await setSetting('savings_goal', String(savings_goal));
+      const savings_opening = req.body.savings_opening ?? 0;
+      await setSetting('savings_opening', String(savings_opening));
       const theme = req.body.theme === 'light' ? 'light' : 'dark';
       await setSetting('theme', theme);
       const household_name = (req.body.household_name ?? '').trim();
@@ -72,6 +76,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
         timezone: req.body.timezone,
         language,
         savings_goal,
+        savings_opening,
         theme,
         household_name,
       };

@@ -70,6 +70,29 @@ CREATE TABLE activity (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Savings ledger — set-aside money accumulates here. Household savings balance =
+-- opening amount (app_settings 'savings_opening') + SUM(amount) of these entries.
+CREATE TABLE savings_entries (
+    id SERIAL PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,   -- a contribution (positive) or withdrawal (negative)
+    note TEXT,                        -- optional label, e.g. 'Bonus' or a recurring stream name
+    occurred_on DATE NOT NULL DEFAULT CURRENT_DATE,
+    money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Per-user in-app notifications (the header bell). ntfy is a parallel channel.
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(40) NOT NULL,        -- 'reminder' | 'birthday' | 'assignment' | ...
+    title TEXT NOT NULL,
+    body TEXT,
+    event_id INT REFERENCES household_events(id) ON DELETE SET NULL,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE assignments (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,

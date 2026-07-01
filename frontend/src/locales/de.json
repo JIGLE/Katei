@@ -100,7 +100,8 @@
     "deadline": "Frist",
     "payment": "Zahlung",
     "appointment": "Termin",
-    "income": "Einkommen"
+    "income": "Einkommen",
+    "savings": "Sparen"
   },
   "money": {
     "eyebrow": "Finanzen",
@@ -128,7 +129,16 @@
     "auto": "Auto",
     "expectedActual": "Soll vs. Ist",
     "expected": "Erwartet",
-    "actual": "Tatsächlich"
+    "actual": "Tatsächlich",
+    "savingsBalance": "Sparguthaben",
+    "addToSavings": "Zu Ersparnissen hinzufügen",
+    "addToSavingsHint": "Erfasse zurückgelegtes Geld. Es wird sofort deinem Sparguthaben hinzugefügt.",
+    "ofGoal": "von {{goal}}",
+    "plannedMonthly": "Monatlich geplant",
+    "contribution": "Einzahlung",
+    "contributionNote": "Notiz",
+    "contributionNotePlaceholder": "z. B. Bonus, Steuererstattung",
+    "contributionDate": "Datum"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -268,7 +278,9 @@
     "tabNotifications": "Mitteilungen",
     "tabData": "Daten",
     "householdName": "Haushaltsname",
-    "householdNamePlaceholder": "Familie Müller"
+    "householdNamePlaceholder": "Familie Müller",
+    "currentSavings": "Aktuelle Ersparnisse",
+    "currentSavingsHint": "Was dein Haushalt bisher gespart hat. Einzahlungen kommen hinzu."
   },
   "account": {
     "title": "Mein Konto",
@@ -289,6 +301,7 @@
     "event_added": "{{actor}} hat {{item}} hinzugefügt",
     "event_done": "{{actor}} hat {{item}} erledigt",
     "payment_paid": "{{actor}} hat {{item}} bezahlt",
-    "member_added": "{{actor}} hat {{item}} begrüßt"
+    "member_added": "{{actor}} hat {{item}} begrüßt",
+    "savings_added": "{{actor}} hat {{item}} zurückgelegt"
   }
 }

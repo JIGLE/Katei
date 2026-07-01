@@ -13,7 +13,7 @@ const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
-type Accent = 'amber' | 'emerald' | 'rose';
+type Accent = 'amber' | 'emerald' | 'rose' | 'teal';
 
 const typeConfig: Record<
   HouseholdEvent['event_type'],
@@ -23,12 +23,14 @@ const typeConfig: Record<
   payment: { accent: 'emerald', labelKey: 'eventType.payment' },
   appointment: { accent: 'amber', labelKey: 'eventType.appointment' },
   income: { accent: 'emerald', labelKey: 'eventType.income' },
+  savings: { accent: 'teal', labelKey: 'eventType.savings' },
 };
 
 const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = {
   amber: { date: 'text-amber-500', dot: 'bg-amber-500', badge: 'bg-amber-500/10 text-amber-500' },
   emerald: { date: 'text-emerald-500', dot: 'bg-emerald-500', badge: 'bg-emerald-500/10 text-emerald-500' },
   rose: { date: 'text-rose-500', dot: 'bg-rose-500', badge: 'bg-rose-500/10 text-rose-500' },
+  teal: { date: 'text-teal-300', dot: 'bg-teal-400', badge: 'bg-teal-500/10 text-teal-300' },
 };
 
 type View = 'upcoming' | 'all' | 'done';

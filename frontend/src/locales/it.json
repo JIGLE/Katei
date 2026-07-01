@@ -100,7 +100,8 @@
     "deadline": "Scadenza",
     "payment": "Pagamento",
     "appointment": "Appuntamento",
-    "income": "Entrata"
+    "income": "Entrata",
+    "savings": "Risparmio"
   },
   "money": {
     "eyebrow": "Finanze",
@@ -128,7 +129,16 @@
     "auto": "Auto",
     "expectedActual": "Previsto vs reale",
     "expected": "Previsto",
-    "actual": "Reale"
+    "actual": "Reale",
+    "savingsBalance": "Saldo risparmi",
+    "addToSavings": "Aggiungi ai risparmi",
+    "addToSavingsHint": "Registra il denaro messo da parte. Viene aggiunto subito al saldo risparmi.",
+    "ofGoal": "di {{goal}}",
+    "plannedMonthly": "Previsto al mese",
+    "contribution": "Versamento",
+    "contributionNote": "Nota",
+    "contributionNotePlaceholder": "es. bonus, rimborso fiscale",
+    "contributionDate": "Data"
   },
   "freq": {
     "monthly": "Mensile",
@@ -268,7 +278,9 @@
     "tabNotifications": "Notifiche",
     "tabData": "Dati",
     "householdName": "Nome della famiglia",
-    "householdNamePlaceholder": "Famiglia Rossi"
+    "householdNamePlaceholder": "Famiglia Rossi",
+    "currentSavings": "Risparmi attuali",
+    "currentSavingsHint": "Quanto ha risparmiato finora la tua famiglia. I versamenti si aggiungono."
   },
   "account": {
     "title": "Il mio account",
@@ -289,6 +301,7 @@
     "event_added": "{{actor}} ha aggiunto {{item}}",
     "event_done": "{{actor}} ha completato {{item}}",
     "payment_paid": "{{actor}} ha pagato {{item}}",
-    "member_added": "{{actor}} ha dato il benvenuto a {{item}}"
+    "member_added": "{{actor}} ha dato il benvenuto a {{item}}",
+    "savings_added": "{{actor}} ha messo da parte {{item}}"
   }
 }

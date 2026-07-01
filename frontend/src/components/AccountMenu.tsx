@@ -41,6 +41,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
         timezone: prefs.timezone,
         language: prefs.language,
         savings_goal: prefs.savings_goal,
+        savings_opening: prefs.savings_opening,
         theme,
         household_name: prefs.household_name,
       })

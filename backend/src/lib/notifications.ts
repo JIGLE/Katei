@@ -176,10 +176,10 @@ export function nextOccurrence(
 }
 
 /**
- * Ensure every recurring income/expense stream has a future incomplete event so
- * the user doesn't add "Rent due" / "Salary" by hand each month. Dates land on a
- * business day (see nextOccurrence). Savings streams are skipped (no obligation).
- * Returns the count created.
+ * Ensure every recurring income/expense/savings stream has a future incomplete
+ * event so the user doesn't add "Rent due" / "Salary" / a set-aside by hand each
+ * month. Dates land on a business day (see nextOccurrence). Confirming a savings
+ * event posts to the savings ledger. Returns the count created.
  */
 export async function generateRecurringEvents(
   log?: FastifyBaseLogger,
@@ -191,7 +191,7 @@ export async function generateRecurringEvents(
     `SELECT id, name, frequency, stream_type, due_day, due_shift
        FROM money_streams
       WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')
-        AND stream_type IN ('income', 'expense')
+        AND stream_type IN ('income', 'expense', 'savings')
         AND automated = FALSE`,
   );
   const country = (await q<{ value: string }>(
@@ -211,11 +211,18 @@ export async function generateRecurringEvents(
       { frequency: s.frequency, dueDay: s.due_day, dueShift: s.due_shift as DueShift },
       country,
     );
-    const isIncome = s.stream_type === 'income';
+    // Title + event_type read differently per stream kind: income arrives,
+    // expenses fall due, savings get set aside (confirming posts to the ledger).
+    const { title, eventType } =
+      s.stream_type === 'income'
+        ? { title: s.name, eventType: 'income' }
+        : s.stream_type === 'savings'
+          ? { title: s.name, eventType: 'savings' }
+          : { title: `${s.name} due`, eventType: 'payment' };
     await q(
       `INSERT INTO household_events (title, event_type, target_date, money_stream_id)
        VALUES ($1, $2, $3, $4)`,
-      [isIncome ? s.name : `${s.name} due`, isIncome ? 'income' : 'payment', date, s.id],
+      [title, eventType, date, s.id],
     );
     created += 1;
     log?.info(`Generated recurring event for stream "${s.name}"`);

@@ -51,7 +51,7 @@ export interface HouseholdEvent {
   id: number;
   title: string;
   description: string | null;
-  event_type: 'deadline' | 'payment' | 'appointment' | 'income';
+  event_type: 'deadline' | 'payment' | 'appointment' | 'income' | 'savings';
   target_date: string; // ISO date string
   is_completed: boolean;
   money_stream_id: number | null;
@@ -80,7 +80,8 @@ export type ActivityAction =
   | 'event_added'
   | 'event_done'
   | 'payment_paid'
-  | 'member_added';
+  | 'member_added'
+  | 'savings_added';
 
 export interface Activity {
   id: number;
@@ -90,6 +91,25 @@ export interface Activity {
   actor_id: number | null;
   actor_name: string | null;
   actor_avatar: string | null;
+}
+
+// A single savings ledger entry (contribution or withdrawal).
+export interface SavingsEntry {
+  id: number;
+  amount: string; // DECIMAL as string from pg
+  note: string | null;
+  occurred_on: string; // 'YYYY-MM-DD'
+  money_stream_id: number | null;
+  created_at: string;
+}
+
+// The household savings picture (GET /api/savings): opening balance the household
+// already had + everything contributed since = the running balance.
+export interface SavingsSummary {
+  opening: number;
+  contributed: number;
+  balance: number;
+  entries: SavingsEntry[];
 }
 
 // One month of completed-payment spend (GET /api/analytics/monthly-spend).
