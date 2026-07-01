@@ -94,7 +94,10 @@
     "amountPaid": "Amount paid",
     "amountPaidHint": "Edit if the actual amount differed from the usual.",
     "assignedToMe": "Assigned to me",
-    "noneAssigned": "Nothing assigned to you here."
+    "noneAssigned": "Nothing assigned to you here.",
+    "nothingUpcomingHint": "Add a bill, chore, or appointment to see it here.",
+    "nothingCompletedHint": "Finished items collect here.",
+    "noneAssignedHint": "Nothing's assigned to you right now."
   },
   "eventType": {
     "deadline": "Deadline",
@@ -138,7 +141,8 @@
     "contribution": "Contribution",
     "contributionNote": "Note",
     "contributionNotePlaceholder": "e.g. Bonus, tax refund",
-    "contributionDate": "Date"
+    "contributionDate": "Date",
+    "noStreamsHint": "Add your income, expenses, and savings to see the full picture."
   },
   "freq": {
     "monthly": "Monthly",
@@ -182,7 +186,8 @@
     "summaryPets_one": "{{count}} pet",
     "summaryPets_other": "{{count}} pets",
     "summaryBirthdays_one": "{{count}} birthday this month",
-    "summaryBirthdays_other": "{{count}} birthdays this month"
+    "summaryBirthdays_other": "{{count}} birthdays this month",
+    "noMembersHint": "Add the people (and pets) who share this home."
   },
   "form": {
     "amount": "Amount",

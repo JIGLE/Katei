@@ -95,7 +95,10 @@
     "amountPaid": "Montant payé",
     "amountPaidHint": "Modifiez si le montant réel diffère de l'habituel.",
     "assignedToMe": "Qui me sont attribués",
-    "noneAssigned": "Rien ne vous est attribué ici."
+    "noneAssigned": "Rien ne vous est attribué ici.",
+    "nothingUpcomingHint": "Ajoutez une facture, une tâche ou un rendez-vous.",
+    "nothingCompletedHint": "Les éléments terminés apparaissent ici.",
+    "noneAssignedHint": "Rien ne vous est attribué pour l'instant."
   },
   "eventType": {
     "deadline": "Date limite",
@@ -139,7 +142,8 @@
     "contribution": "Versement",
     "contributionNote": "Note",
     "contributionNotePlaceholder": "p. ex. prime, remboursement d'impôt",
-    "contributionDate": "Date"
+    "contributionDate": "Date",
+    "noStreamsHint": "Ajoutez vos revenus, dépenses et épargne pour tout voir."
   },
   "freq": {
     "monthly": "Mensuel",
@@ -183,7 +187,8 @@
     "summaryPets_one": "{{count}} animal",
     "summaryPets_other": "{{count}} animaux",
     "summaryBirthdays_one": "{{count}} anniversaire ce mois-ci",
-    "summaryBirthdays_other": "{{count}} anniversaires ce mois-ci"
+    "summaryBirthdays_other": "{{count}} anniversaires ce mois-ci",
+    "noMembersHint": "Ajoutez les personnes (et animaux) qui partagent ce foyer."
   },
   "form": {
     "amount": "Montant",

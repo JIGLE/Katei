@@ -95,7 +95,10 @@
     "amountPaid": "Importo pagato",
     "amountPaidHint": "Modifica se l'importo reale è diverso dal solito.",
     "assignedToMe": "Assegnati a me",
-    "noneAssigned": "Non hai nulla di assegnato qui."
+    "noneAssigned": "Non hai nulla di assegnato qui.",
+    "nothingUpcomingHint": "Aggiungi una bolletta, un compito o un appuntamento.",
+    "nothingCompletedHint": "Gli elementi completati compaiono qui.",
+    "noneAssignedHint": "Al momento non hai nulla assegnato."
   },
   "eventType": {
     "deadline": "Scadenza",
@@ -139,7 +142,8 @@
     "contribution": "Versamento",
     "contributionNote": "Nota",
     "contributionNotePlaceholder": "es. bonus, rimborso fiscale",
-    "contributionDate": "Data"
+    "contributionDate": "Data",
+    "noStreamsHint": "Aggiungi entrate, spese e risparmi per avere il quadro completo."
   },
   "freq": {
     "monthly": "Mensile",
@@ -183,7 +187,8 @@
     "summaryPets_one": "{{count}} animale",
     "summaryPets_other": "{{count}} animali",
     "summaryBirthdays_one": "{{count}} compleanno questo mese",
-    "summaryBirthdays_other": "{{count}} compleanni questo mese"
+    "summaryBirthdays_other": "{{count}} compleanni questo mese",
+    "noMembersHint": "Aggiungi le persone (e gli animali) che vivono qui."
   },
   "form": {
     "amount": "Importo",

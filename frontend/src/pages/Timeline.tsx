@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
+import { EmptyState } from '../components/EmptyState';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
@@ -206,37 +207,29 @@ export default function Timeline() {
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && visible.length === 0 && mineOnly && (
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">{t('timeline.noneAssigned')}</p>
-        </div>
+        <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
       )}
 
       {!loading && !error && events.length === 0 && !mineOnly && (
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          {view === 'done' ? (
-            <p className="text-sm text-zinc-500">{t('timeline.nothingCompleted')}</p>
-          ) : view === 'upcoming' ? (
-            <>
-              <p className="text-sm text-zinc-500">{t('timeline.nothingUpcoming')}</p>
-              <button
-                onClick={() => setShowForm(true)}
-                className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
-              >
-                {t('timeline.addEvent')}
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-zinc-500">{t('timeline.noEventsYet')}</p>
-              <button
-                onClick={() => setShowForm(true)}
-                className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
-              >
-                {t('timeline.addFirstEvent')}
-              </button>
-            </>
-          )}
-        </div>
+        view === 'done' ? (
+          <EmptyState icon="✅" title={t('timeline.nothingCompleted')} hint={t('timeline.nothingCompletedHint')} />
+        ) : view === 'upcoming' ? (
+          <EmptyState
+            icon="🌱"
+            title={t('timeline.nothingUpcoming')}
+            hint={t('timeline.nothingUpcomingHint')}
+            actionLabel={t('timeline.addEvent')}
+            onAction={() => setShowForm(true)}
+          />
+        ) : (
+          <EmptyState
+            icon="🌱"
+            title={t('timeline.noEventsYet')}
+            hint={t('timeline.nothingUpcomingHint')}
+            actionLabel={t('timeline.addFirstEvent')}
+            onAction={() => setShowForm(true)}
+          />
+        )
       )}
 
       {!loading && !error && visible.length > 0 && (

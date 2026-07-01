@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { SavingsRing } from '../components/SavingsRing';
+import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatMoney, formatMonthShort } from '../lib/format';
@@ -308,12 +309,13 @@ export default function MoneyFlow() {
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && streams.length === 0 && (
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">{t('money.noStreamsYet')}</p>
-          <button onClick={() => openAdd('expense')} className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100">
-            {t('money.addFirstStream')}
-          </button>
-        </div>
+        <EmptyState
+          icon="💸"
+          title={t('money.noStreamsYet')}
+          hint={t('money.noStreamsHint')}
+          actionLabel={t('money.addFirstStream')}
+          onAction={() => openAdd('expense')}
+        />
       )}
 
       {/* Streams grouped by type */}

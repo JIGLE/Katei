@@ -8,6 +8,7 @@ import { MemberForm } from '../components/MemberForm';
 import { AssignmentForm } from '../components/AssignmentForm';
 import { daysToBirthday } from '../lib/format';
 import { usePreferences } from '../lib/preferences';
+import { EmptyState } from '../components/EmptyState';
 
 function initials(name: string): string {
   return name
@@ -227,15 +228,13 @@ export default function Household() {
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       {!loading && !error && users.length === 0 && (
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-8 text-center">
-          <p className="text-sm text-zinc-500">{t('household.noMembers')}</p>
-          <button
-            onClick={() => setShowMemberForm(true)}
-            className="mt-3 text-sm text-zinc-300 underline-offset-2 hover:text-zinc-100"
-          >
-            {t('household.addFirstMember')}
-          </button>
-        </div>
+        <EmptyState
+          icon="🏠"
+          title={t('household.noMembers')}
+          hint={t('household.noMembersHint')}
+          actionLabel={t('household.addFirstMember')}
+          onAction={() => setShowMemberForm(true)}
+        />
       )}
 
       {/* People */}

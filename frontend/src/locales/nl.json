@@ -95,7 +95,10 @@
     "amountPaid": "Betaald bedrag",
     "amountPaidHint": "Pas aan als het werkelijke bedrag afweek.",
     "assignedToMe": "Aan mij toegewezen",
-    "noneAssigned": "Er is hier niets aan jou toegewezen."
+    "noneAssigned": "Er is hier niets aan jou toegewezen.",
+    "nothingUpcomingHint": "Voeg een rekening, klus of afspraak toe om die hier te zien.",
+    "nothingCompletedHint": "Afgeronde items verzamelen zich hier.",
+    "noneAssignedHint": "Er is je nu niets toegewezen."
   },
   "eventType": {
     "deadline": "Deadline",
@@ -139,7 +142,8 @@
     "contribution": "Bijdrage",
     "contributionNote": "Notitie",
     "contributionNotePlaceholder": "bijv. bonus, belastingteruggave",
-    "contributionDate": "Datum"
+    "contributionDate": "Datum",
+    "noStreamsHint": "Voeg inkomsten, uitgaven en spaargeld toe voor het volledige beeld."
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -183,7 +187,8 @@
     "summaryPets_one": "{{count}} huisdier",
     "summaryPets_other": "{{count}} huisdieren",
     "summaryBirthdays_one": "{{count}} verjaardag deze maand",
-    "summaryBirthdays_other": "{{count}} verjaardagen deze maand"
+    "summaryBirthdays_other": "{{count}} verjaardagen deze maand",
+    "noMembersHint": "Voeg de mensen (en huisdieren) toe die hier wonen."
   },
   "form": {
     "amount": "Bedrag",
