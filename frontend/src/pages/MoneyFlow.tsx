@@ -125,33 +125,38 @@ export default function MoneyFlow() {
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('money.title')}</h1>
       </header>
 
-      {/* Income / Expenses / Savings */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3">
-          <p className="text-xs text-zinc-500">{t('money.income')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">{loading ? '—' : fmtWrap(income)}</p>
-        </div>
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-3">
-          <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">{loading ? '—' : fmtWrap(expenses)}</p>
-        </div>
-        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-3">
-          <p className="text-xs text-zinc-500">{t('money.savings')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(savings)}</p>
+      {/* Net — the headline: what's left after expenses and savings. This is the
+          page's single focal point, so it leads as bare large type (no card),
+          with the savings rate as a subordinate caption. */}
+      <div>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.net')}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            {loading ? '—' : fmt(net)}
+          </p>
+          {!loading && income > 0 && (
+            <p className="text-xs text-zinc-500">
+              {t('money.savingsRate')} <span className="tabular-nums text-zinc-400">{savingsRate.toFixed(0)}%</span>
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Net + savings rate */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('money.net')}</p>
-          <p className={`mt-1 text-lg font-light ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            {loading ? '—' : fmt(net)}
-          </p>
+      {/* Income / Expenses / Savings — one panel of three related figures, split
+          by dividers rather than three competing cards. Colour lives in the
+          numbers (emerald / neutral / teal), not in card fills. */}
+      <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('money.income')}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">{loading ? '—' : fmtWrap(income)}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">{t('money.savingsRate')}</p>
-          <p className="mt-1 text-lg font-light text-zinc-300">{loading ? '—' : `${savingsRate.toFixed(0)}%`}</p>
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">{loading ? '—' : fmtWrap(expenses)}</p>
+        </div>
+        <div className="p-4">
+          <p className="text-xs text-zinc-500">{t('money.savings')}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(savings)}</p>
         </div>
       </div>
 
