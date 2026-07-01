@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry } from '../lib/types';
+import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
-import { SavingsRing } from '../components/SavingsRing';
+import { GoalForm } from '../components/GoalForm';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
@@ -79,8 +79,10 @@ export default function MoneyFlow() {
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [showSavingsForm, setShowSavingsForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<SavingsEntry | null>(null);
+  const [editingPot, setEditingPot] = useState<SavingsPot | null>(null);
+  const [showNewPot, setShowNewPot] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
-  const { currency, locale, savings_goal } = usePreferences();
+  const { currency, locale } = usePreferences();
   const { t } = useTranslation();
 
   const fetchStreams = () => {
@@ -106,7 +108,13 @@ export default function MoneyFlow() {
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
   const handleDeleted = () => { setEditing(null); fetchStreams(); };
-  const handleSavingsSaved = (s: SavingsSummary) => { setSavingsData(s); setShowSavingsForm(false); setEditingEntry(null); };
+  const handleSavingsSaved = (s: SavingsSummary) => {
+    setSavingsData(s);
+    setShowSavingsForm(false);
+    setEditingEntry(null);
+    setEditingPot(null);
+    setShowNewPot(false);
+  };
 
   const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
 
@@ -118,7 +126,7 @@ export default function MoneyFlow() {
   const net = income - expenses - plannedMonthly;
   const savingsRate = income > 0 ? (plannedMonthly / income) * 100 : 0;
   const balance = savingsData?.balance ?? 0;
-  const goalPct = savings_goal > 0 ? Math.min(100, (balance / savings_goal) * 100) : 0;
+  const pots = savingsData?.pots ?? [];
   // Net is the page's one hero figure (see the polish pass) — it counts up
   // once when the data first arrives, rather than just appearing.
   const animatedNet = useCountUp(net, !loading);
@@ -179,12 +187,12 @@ export default function MoneyFlow() {
         </div>
       </div>
 
-      {/* Savings — the accumulated balance the household has set aside. This is a
-          real running total (opening amount + every contribution), so a one-time
-          deposit moves the number. The goal ring is the page's signature element. */}
-      {!loading && (
+      {/* Savings — the accumulated balance, split across pots (goals). The total
+          is the hero; each pot below shows its own balance and progress, so a
+          deposit to "Trip" moves that pot without touching the rest. */}
+      {!loading && savingsData && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsBalance')}</p>
             <button
               type="button"
@@ -195,25 +203,52 @@ export default function MoneyFlow() {
             </button>
           </div>
 
-          <div className="flex items-center gap-5">
-            {savings_goal > 0 && <SavingsRing pct={goalPct} label={t('money.savingsGoal')} />}
-            <div className="min-w-0">
-              <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(balance)}</p>
-              {savings_goal > 0 && (
-                <p className="mt-1 text-xs tabular-nums text-zinc-500">
-                  {t('money.ofGoal', { goal: fmt(savings_goal) })}
-                </p>
-              )}
-              {plannedMonthly > 0 && (
-                <p className="mt-1 text-xs tabular-nums text-zinc-500">
-                  {t('money.plannedMonthly')} <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
-                </p>
-              )}
-            </div>
-          </div>
+          <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(balance)}</p>
+          {plannedMonthly > 0 && (
+            <p className="mt-1 text-xs tabular-nums text-zinc-500">
+              {t('money.plannedMonthly')} <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
+            </p>
+          )}
+
+          {/* Pots — tap one to rename / retarget / delete it. */}
+          <ul className="mt-4 space-y-3 border-t border-zinc-800/60 pt-4">
+            {pots.map((pot) => {
+              const pct = pot.target && pot.target > 0 ? Math.min(100, (pot.balance / pot.target) * 100) : null;
+              return (
+                <li key={pot.id}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPot(pot)}
+                    className="-mx-2 block w-full rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-zinc-800/40"
+                  >
+                    <div className="flex items-center gap-2 text-sm">
+                      <span aria-hidden>{pot.icon || '🐷'}</span>
+                      <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
+                      <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
+                      {pot.target ? <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target)}</span> : null}
+                    </div>
+                    {pct !== null && (
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+                        <div className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none" style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+            <li>
+              <button
+                type="button"
+                onClick={() => setShowNewPot(true)}
+                className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+              >
+                ＋ {t('money.newPot')}
+              </button>
+            </li>
+          </ul>
 
           {/* Recent contributions — tap one to correct or remove a mistake. */}
-          {savingsData && savingsData.entries.length > 0 && (
+          {savingsData.entries.length > 0 && (
             <ul className="mt-4 space-y-1 border-t border-zinc-800/60 pt-4">
               {savingsData.entries.slice(0, 4).map((e) => (
                 <li key={e.id}>
@@ -410,16 +445,32 @@ export default function MoneyFlow() {
       </Modal>
 
       <Modal open={showSavingsForm} title={t('money.addToSavings')} onClose={() => setShowSavingsForm(false)}>
-        <SavingsEntryForm onSaved={handleSavingsSaved} onCancel={() => setShowSavingsForm(false)} />
+        <SavingsEntryForm pots={pots} onSaved={handleSavingsSaved} onCancel={() => setShowSavingsForm(false)} />
       </Modal>
 
       <Modal open={!!editingEntry} title={t('money.editContribution')} onClose={() => setEditingEntry(null)}>
         {editingEntry && (
           <SavingsEntryForm
             initial={editingEntry}
+            pots={pots}
             onSaved={handleSavingsSaved}
             onDeleted={handleSavingsSaved}
             onCancel={() => setEditingEntry(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal open={showNewPot} title={t('money.newPot')} onClose={() => setShowNewPot(false)}>
+        <GoalForm onSaved={handleSavingsSaved} onCancel={() => setShowNewPot(false)} />
+      </Modal>
+
+      <Modal open={!!editingPot} title={t('money.editPot')} onClose={() => setEditingPot(null)}>
+        {editingPot && (
+          <GoalForm
+            initial={editingPot}
+            onSaved={handleSavingsSaved}
+            onDeleted={handleSavingsSaved}
+            onCancel={() => setEditingPot(null)}
           />
         )}
       </Modal>

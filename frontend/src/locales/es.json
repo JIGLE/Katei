@@ -147,7 +147,17 @@
     "contributionDate": "Fecha",
     "noStreamsHint": "Añade ingresos, gastos y ahorros para ver el panorama completo.",
     "editContribution": "Editar aportación",
-    "deleteContribution": "Eliminar esta aportación"
+    "deleteContribution": "Eliminar esta aportación",
+    "generalPot": "General",
+    "newPot": "Nuevo bote",
+    "editPot": "Editar bote",
+    "deletePot": "Eliminar este bote",
+    "pot": "Bote",
+    "potName": "Nombre",
+    "potNamePlaceholder": "p. ej. Vacaciones, Sofá",
+    "potIcon": "Icono",
+    "potTarget": "Meta (opcional)",
+    "potTargetPlaceholder": "0,00"
   },
   "freq": {
     "monthly": "Mensual",

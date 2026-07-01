@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { todayInTimezone } from '../lib/format';
-import type { SavingsSummary, SavingsEntry } from '../lib/types';
+import type { SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
 
 interface SavingsEntryFormProps {
   initial?: SavingsEntry;
+  pots: SavingsPot[];
   onSaved: (summary: SavingsSummary) => void;
   onCancel: () => void;
   onDeleted?: (summary: SavingsSummary) => void;
@@ -20,12 +21,14 @@ const fieldCls =
 // Record a one-time deposit (or withdrawal) into the savings ledger, or correct a
 // mistaken one. This is the answer to "adding savings doesn't update the total" —
 // every entry moves the balance, and a mistake can be edited or removed.
-export function SavingsEntryForm({ initial, onSaved, onCancel, onDeleted }: SavingsEntryFormProps) {
+export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }: SavingsEntryFormProps) {
   const { t } = useTranslation();
   const { currency, timezone } = usePreferences();
   const isEdit = Boolean(initial);
+  const defaultPotId = pots.find((p) => p.is_default)?.id ?? pots[0]?.id;
   const [amount, setAmount] = useState(initial ? String(Number(initial.amount)) : '');
   const [note, setNote] = useState(initial?.note ?? '');
+  const [goalId, setGoalId] = useState<number | undefined>(initial?.goal_id ?? defaultPotId);
   const [occurredOn, setOccurredOn] = useState(() => initial?.occurred_on?.slice(0, 10) ?? todayInTimezone(timezone));
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -41,7 +44,7 @@ export function SavingsEntryForm({ initial, onSaved, onCancel, onDeleted }: Savi
     setSubmitting(true);
     setError(null);
     try {
-      const body = { amount: parsed, note: note.trim() || null, occurred_on: occurredOn };
+      const body = { amount: parsed, note: note.trim() || null, occurred_on: occurredOn, goal_id: goalId ?? null };
       const summary = isEdit
         ? await api.patch<SavingsSummary>(`/savings/entries/${initial!.id}`, body)
         : await api.post<SavingsSummary>('/savings/entries', body);
@@ -84,6 +87,22 @@ export function SavingsEntryForm({ initial, onSaved, onCancel, onDeleted }: Savi
           className={fieldCls}
         />
       </div>
+
+      {pots.length > 1 && (
+        <div>
+          <label htmlFor="savings-pot" className={labelCls}>{t('money.pot')}</label>
+          <select
+            id="savings-pot"
+            value={goalId ?? ''}
+            onChange={(e) => setGoalId(e.target.value ? Number(e.target.value) : undefined)}
+            className={fieldCls}
+          >
+            {pots.map((p) => (
+              <option key={p.id} value={p.id}>{p.is_default ? t('money.generalPot') : p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="savings-note" className={labelCls}>{t('money.contributionNote')}</label>

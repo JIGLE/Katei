@@ -147,7 +147,17 @@
     "contributionDate": "Data",
     "noStreamsHint": "Aggiungi entrate, spese e risparmi per avere il quadro completo.",
     "editContribution": "Modifica versamento",
-    "deleteContribution": "Elimina questo versamento"
+    "deleteContribution": "Elimina questo versamento",
+    "generalPot": "Generale",
+    "newPot": "Nuovo salvadanaio",
+    "editPot": "Modifica salvadanaio",
+    "deletePot": "Elimina questo salvadanaio",
+    "pot": "Salvadanaio",
+    "potName": "Nome",
+    "potNamePlaceholder": "es. Vacanza, Divano",
+    "potIcon": "Icona",
+    "potTarget": "Obiettivo (facoltativo)",
+    "potTargetPlaceholder": "0,00"
   },
   "freq": {
     "monthly": "Mensile",

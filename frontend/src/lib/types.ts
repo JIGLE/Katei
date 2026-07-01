@@ -100,16 +100,29 @@ export interface SavingsEntry {
   note: string | null;
   occurred_on: string; // 'YYYY-MM-DD'
   money_stream_id: number | null;
+  goal_id: number | null;
   created_at: string;
 }
 
+// A savings pot — a named goal money is set aside toward.
+export interface SavingsPot {
+  id: number;
+  name: string;
+  target: number | null;
+  icon: string | null;
+  is_default: boolean;
+  balance: number;
+  entries: SavingsEntry[];
+}
+
 // The household savings picture (GET /api/savings): opening balance the household
-// already had + everything contributed since = the running balance.
+// already had + everything contributed since = the running balance, split across pots.
 export interface SavingsSummary {
   opening: number;
   contributed: number;
   balance: number;
   entries: SavingsEntry[];
+  pots: SavingsPot[];
 }
 
 // An in-app notification (the header bell), scoped to the current member.

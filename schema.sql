@@ -70,14 +70,26 @@ CREATE TABLE activity (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Savings pots — named goals a contribution can target (holiday, furniture, …).
+CREATE TABLE savings_goals (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(80) NOT NULL,
+    target_amount DECIMAL(10, 2),     -- optional target; null = open-ended
+    icon VARCHAR(16),                 -- optional emoji
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Savings ledger — set-aside money accumulates here. Household savings balance =
 -- opening amount (app_settings 'savings_opening') + SUM(amount) of these entries.
+-- Each entry may be allocated to a pot; null counts toward the default pot.
 CREATE TABLE savings_entries (
     id SERIAL PRIMARY KEY,
     amount DECIMAL(10, 2) NOT NULL,   -- a contribution (positive) or withdrawal (negative)
     note TEXT,                        -- optional label, e.g. 'Bonus' or a recurring stream name
     occurred_on DATE NOT NULL DEFAULT CURRENT_DATE,
     money_stream_id INT REFERENCES money_streams(id) ON DELETE SET NULL,
+    goal_id INT REFERENCES savings_goals(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -97,6 +97,28 @@ export async function migrate(): Promise<void> {
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+  // Savings pots — named goals (holiday, furniture, …) a contribution can target.
+  await query(
+    `CREATE TABLE IF NOT EXISTS savings_goals (
+       id SERIAL PRIMARY KEY,
+       name VARCHAR(80) NOT NULL,
+       target_amount DECIMAL(10, 2),
+       icon VARCHAR(16),
+       is_default BOOLEAN NOT NULL DEFAULT FALSE,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
+  await query(`ALTER TABLE savings_entries ADD COLUMN IF NOT EXISTS goal_id INT REFERENCES savings_goals(id) ON DELETE SET NULL`);
+  // Ensure exactly one default pot exists, seeded from the legacy single goal
+  // amount; existing entries fall under it (goal_id NULL is treated as default).
+  const { rows: defRows } = await query<{ id: number }>(`SELECT id FROM savings_goals WHERE is_default = TRUE LIMIT 1`);
+  if (!defRows.length) {
+    const target = await getSetting('savings_goal');
+    await query(
+      `INSERT INTO savings_goals (name, target_amount, icon, is_default) VALUES ($1, $2, $3, TRUE)`,
+      ['General', target && Number(target) > 0 ? Number(target) : null, '🐷'],
+    );
+  }
   // Per-user in-app notifications (the header bell). ntfy remains a parallel channel.
   await query(
     `CREATE TABLE IF NOT EXISTS notifications (
@@ -143,7 +165,7 @@ export async function migrate(): Promise<void> {
 // Tables with a SERIAL `id` whose sequence must track max(id).
 const SERIAL_TABLES = [
   'users', 'money_streams', 'household_events', 'assignments',
-  'invites', 'activity', 'notifications', 'savings_entries', 'push_subscriptions',
+  'invites', 'activity', 'notifications', 'savings_entries', 'savings_goals', 'push_subscriptions',
 ];
 
 /**

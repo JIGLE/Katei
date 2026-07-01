@@ -147,7 +147,17 @@
     "contributionDate": "Datum",
     "noStreamsHint": "Füge Einnahmen, Ausgaben und Ersparnisse hinzu, um alles zu sehen.",
     "editContribution": "Einzahlung bearbeiten",
-    "deleteContribution": "Diese Einzahlung löschen"
+    "deleteContribution": "Diese Einzahlung löschen",
+    "generalPot": "Allgemein",
+    "newPot": "Neuer Topf",
+    "editPot": "Topf bearbeiten",
+    "deletePot": "Diesen Topf löschen",
+    "pot": "Topf",
+    "potName": "Name",
+    "potNamePlaceholder": "z. B. Urlaub, Neues Sofa",
+    "potIcon": "Symbol",
+    "potTarget": "Ziel (optional)",
+    "potTargetPlaceholder": "0,00"
   },
   "freq": {
     "monthly": "Monatlich",

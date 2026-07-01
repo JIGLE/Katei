@@ -28,12 +28,52 @@ const putPrefs = (extra: Record<string, unknown>) =>
     payload: { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin', language: 'en', ...extra },
   });
 
-test('a fresh household has a zero savings balance', opts, async () => {
+test('a fresh household has a zero savings balance and one default pot', opts, async () => {
   const s = (await app.inject({ method: 'GET', url: '/api/savings', headers: { cookie } })).json();
   assert.equal(s.opening, 0);
   assert.equal(s.contributed, 0);
   assert.equal(s.balance, 0);
   assert.deepEqual(s.entries, []);
+  assert.equal(s.pots.length, 1);
+  assert.equal(s.pots[0].is_default, true);
+});
+
+test('pots isolate money and expose per-pot balances', opts, async () => {
+  await putPrefs({ savings_opening: 1000 }); // opening belongs to the default pot
+  const withGoal = (await app.inject({
+    method: 'POST', url: '/api/savings/goals', headers: { cookie },
+    payload: { name: 'Trip', target_amount: 1500, icon: '🏖' },
+  })).json();
+  const trip = withGoal.pots.find((p: { name: string }) => p.name === 'Trip');
+  // A deposit into the Trip pot only moves that pot.
+  const s = (await app.inject({
+    method: 'POST', url: '/api/savings/entries', headers: { cookie },
+    payload: { amount: 400, goal_id: trip.id },
+  })).json();
+  const dflt = s.pots.find((p: { is_default: boolean }) => p.is_default);
+  const tripAfter = s.pots.find((p: { name: string }) => p.name === 'Trip');
+  assert.equal(dflt.balance, 1000);       // untouched
+  assert.equal(tripAfter.balance, 400);   // the deposit landed here
+  assert.equal(tripAfter.target, 1500);
+  assert.equal(s.balance, 1400);          // total = opening + all entries
+});
+
+test('deleting a pot returns its money to the default; the default is protected', opts, async () => {
+  const created = (await app.inject({
+    method: 'POST', url: '/api/savings/goals', headers: { cookie }, payload: { name: 'TV', target_amount: 600 },
+  })).json();
+  const tv = created.pots.find((p: { name: string }) => p.name === 'TV');
+  await app.inject({ method: 'POST', url: '/api/savings/entries', headers: { cookie }, payload: { amount: 200, goal_id: tv.id } });
+
+  const afterDelete = (await app.inject({ method: 'DELETE', url: `/api/savings/goals/${tv.id}`, headers: { cookie } })).json();
+  assert.equal(afterDelete.pots.some((p: { name: string }) => p.name === 'TV'), false);
+  assert.equal(afterDelete.balance, 200);                 // money preserved
+  const dflt = afterDelete.pots.find((p: { is_default: boolean }) => p.is_default);
+  assert.equal(dflt.balance, 200);                        // fell back to default
+
+  const dfltId = dflt.id;
+  const blocked = await app.inject({ method: 'DELETE', url: `/api/savings/goals/${dfltId}`, headers: { cookie } });
+  assert.equal(blocked.statusCode, 400);
 });
 
 test('the opening balance is the savings a household already has', opts, async () => {

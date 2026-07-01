@@ -147,7 +147,17 @@
     "contributionDate": "Date",
     "noStreamsHint": "Ajoutez vos revenus, dépenses et épargne pour tout voir.",
     "editContribution": "Modifier le versement",
-    "deleteContribution": "Supprimer ce versement"
+    "deleteContribution": "Supprimer ce versement",
+    "generalPot": "Général",
+    "newPot": "Nouveau pot",
+    "editPot": "Modifier le pot",
+    "deletePot": "Supprimer ce pot",
+    "pot": "Pot",
+    "potName": "Nom",
+    "potNamePlaceholder": "p. ex. Vacances, Canapé",
+    "potIcon": "Icône",
+    "potTarget": "Objectif (facultatif)",
+    "potTargetPlaceholder": "0,00"
   },
   "freq": {
     "monthly": "Mensuel",

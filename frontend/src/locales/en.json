@@ -146,7 +146,17 @@
     "contributionDate": "Date",
     "noStreamsHint": "Add your income, expenses, and savings to see the full picture.",
     "editContribution": "Edit contribution",
-    "deleteContribution": "Delete this contribution"
+    "deleteContribution": "Delete this contribution",
+    "generalPot": "General",
+    "newPot": "New pot",
+    "editPot": "Edit pot",
+    "deletePot": "Delete this pot",
+    "pot": "Pot",
+    "potName": "Name",
+    "potNamePlaceholder": "e.g. Holiday, New sofa",
+    "potIcon": "Icon",
+    "potTarget": "Target (optional)",
+    "potTargetPlaceholder": "0.00"
   },
   "freq": {
     "monthly": "Monthly",

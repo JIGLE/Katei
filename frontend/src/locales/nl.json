@@ -147,7 +147,17 @@
     "contributionDate": "Datum",
     "noStreamsHint": "Voeg inkomsten, uitgaven en spaargeld toe voor het volledige beeld.",
     "editContribution": "Bijdrage bewerken",
-    "deleteContribution": "Deze bijdrage verwijderen"
+    "deleteContribution": "Deze bijdrage verwijderen",
+    "generalPot": "Algemeen",
+    "newPot": "Nieuw potje",
+    "editPot": "Potje bewerken",
+    "deletePot": "Dit potje verwijderen",
+    "pot": "Potje",
+    "potName": "Naam",
+    "potNamePlaceholder": "bijv. Vakantie, Bank",
+    "potIcon": "Pictogram",
+    "potTarget": "Doel (optioneel)",
+    "potTargetPlaceholder": "0,00"
   },
   "freq": {
     "monthly": "Maandelijks",
