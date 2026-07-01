@@ -114,7 +114,10 @@
     "trends": "Spending trends",
     "trendsHigh": "Peak",
     "trendsEmpty": "No completed payments yet — your monthly spending will chart here.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Expected vs actual",
+    "expected": "Expected",
+    "actual": "Actual"
   },
   "freq": {
     "monthly": "Monthly",
@@ -235,6 +238,11 @@
     "savingsGoal": "Monthly savings goal",
     "theme": "Appearance",
     "theme_dark": "Dark",
-    "theme_light": "Light"
+    "theme_light": "Light",
+    "calendar": "Calendar feed",
+    "calendarIntro": "Subscribe in your calendar app to see due dates and payments. Keep the link private; regenerate it to revoke access.",
+    "calendarUrl": "Subscribe URL (tap to copy)",
+    "calendarCopied": "Copied to clipboard",
+    "calendarRegenerate": "Regenerate"
   }
 }

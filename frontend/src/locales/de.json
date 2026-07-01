@@ -115,7 +115,10 @@
     "trends": "Ausgabentrend",
     "trendsHigh": "Spitze",
     "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Soll vs. Ist",
+    "expected": "Erwartet",
+    "actual": "Tatsächlich"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -236,6 +239,11 @@
     "savingsGoal": "Monatliches Sparziel",
     "theme": "Darstellung",
     "theme_dark": "Dunkel",
-    "theme_light": "Hell"
+    "theme_light": "Hell",
+    "calendar": "Kalender-Feed",
+    "calendarIntro": "Abonniere den Feed in deiner Kalender-App, um Fälligkeiten und Zahlungen zu sehen. Halte den Link privat; neu erstellen widerruft den Zugriff.",
+    "calendarUrl": "Abo-URL (zum Kopieren tippen)",
+    "calendarCopied": "In Zwischenablage kopiert",
+    "calendarRegenerate": "Neu erstellen"
   }
 }

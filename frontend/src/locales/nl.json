@@ -115,7 +115,10 @@
     "trends": "Uitgaventrend",
     "trendsHigh": "Piek",
     "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Verwacht vs werkelijk",
+    "expected": "Verwacht",
+    "actual": "Werkelijk"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -236,6 +239,11 @@
     "savingsGoal": "Maandelijks spaardoel",
     "theme": "Weergave",
     "theme_dark": "Donker",
-    "theme_light": "Licht"
+    "theme_light": "Licht",
+    "calendar": "Agenda-feed",
+    "calendarIntro": "Abonneer je in je agenda-app om vervaldata en betalingen te zien. Houd de link privé; genereer opnieuw om toegang in te trekken.",
+    "calendarUrl": "Abonnee-URL (tik om te kopiëren)",
+    "calendarCopied": "Gekopieerd naar klembord",
+    "calendarRegenerate": "Opnieuw genereren"
   }
 }

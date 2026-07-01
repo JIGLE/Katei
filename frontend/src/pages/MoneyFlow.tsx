@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType, MonthlySpend } from '../lib/types';
+import type { MoneyStream, StreamType, MonthlySpend, MonthVariance } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +66,7 @@ const TYPE_HEADER_KEY: Record<StreamType, string> = {
 export default function MoneyFlow() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [trends, setTrends] = useState<MonthlySpend[]>([]);
+  const [variance, setVariance] = useState<MonthVariance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -88,6 +89,7 @@ export default function MoneyFlow() {
     fetchStreams();
     // Spend history is independent of the stream list — a soft, non-blocking load.
     api.get<MonthlySpend[]>('/analytics/monthly-spend?months=6').then(setTrends).catch(() => {});
+    api.get<MonthVariance[]>('/analytics/variance?months=6').then(setVariance).catch(() => {});
   }, []);
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
@@ -107,6 +109,7 @@ export default function MoneyFlow() {
   const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
 
   const maxSpend = Math.max(0, ...trends.map((d) => d.total));
+  const latestVar = [...variance].reverse().find((m) => m.expected > 0 || m.actual > 0);
 
   const fmt = (n: number) => formatMoney(n, currency, locale);
   // In the cramped 3-up summary cards, large localized amounts (e.g. Danish
@@ -161,6 +164,33 @@ export default function MoneyFlow() {
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
             <div className="h-full rounded-full bg-teal-400" style={{ width: `${goalPct}%` }} />
+          </div>
+        </section>
+      )}
+
+      {/* Expected vs actual — did the paid bills match their usual amounts? */}
+      {!loading && !error && latestVar && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.expectedActual')}</p>
+            <p className="text-xs tabular-nums text-zinc-500">{formatMonthShort(latestVar.month, locale)}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-zinc-500">{t('money.expected')}</p>
+              <p className="mt-1 text-sm font-light tabular-nums text-zinc-200">{fmt(latestVar.expected)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-zinc-500">{t('money.actual')}</p>
+              <p className={`mt-1 text-sm font-light tabular-nums ${latestVar.actual > latestVar.expected ? 'text-rose-500' : 'text-emerald-500'}`}>
+                {fmt(latestVar.actual)}
+                {latestVar.actual !== latestVar.expected && (
+                  <span className="ml-1 text-xs">
+                    ({latestVar.actual > latestVar.expected ? '+' : '−'}{fmt(Math.abs(latestVar.actual - latestVar.expected))})
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </section>
       )}

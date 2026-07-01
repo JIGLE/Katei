@@ -37,6 +37,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [backingUp, setBackingUp] = useState(false);
+  const [calToken, setCalToken] = useState<string | null>(null);
+  const [calCopied, setCalCopied] = useState(false);
 
   // Household preferences (country drives currency / locale / timezone defaults).
   const prefs = usePreferences();
@@ -96,7 +98,23 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
       .catch(() => {})
       .finally(() => setLoading(false));
     loadBackups();
+    api.get<{ token: string }>('/settings/calendar').then((r) => setCalToken(r.token)).catch(() => {});
   }, []);
+
+  const calUrl = calToken ? `${window.location.origin}/api/calendar/${calToken}.ics` : '';
+  const copyCal = async () => {
+    if (!calUrl) return;
+    try { await navigator.clipboard.writeText(calUrl); setCalCopied(true); } catch { /* clipboard blocked */ }
+  };
+  const regenCal = async () => {
+    try {
+      const r = await api.post<{ token: string }>('/settings/calendar/rotate', {});
+      setCalToken(r.token);
+      setCalCopied(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const backupNow = async () => {
     setBackingUp(true);
@@ -346,6 +364,31 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Calendar feed */}
+      <div className="border-t border-zinc-800/60 pt-4">
+        <div className="mb-2 flex items-center justify-between">
+          <label className={`${labelCls} mb-0`}>{t('settings.calendar')}</label>
+          <button
+            type="button"
+            onClick={regenCal}
+            className="text-xs text-zinc-400 underline-offset-2 transition-colors hover:text-zinc-200"
+          >
+            {t('settings.calendarRegenerate')}
+          </button>
+        </div>
+        <p className="mb-3 text-xs leading-relaxed text-zinc-500">{t('settings.calendarIntro')}</p>
+        {calUrl && (
+          <button
+            type="button"
+            onClick={copyCal}
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-left"
+          >
+            <p className="mb-1 text-xs text-zinc-500">{calCopied ? t('settings.calendarCopied') : t('settings.calendarUrl')}</p>
+            <p className="break-all text-xs text-zinc-300">{calUrl}</p>
+          </button>
         )}
       </div>
 

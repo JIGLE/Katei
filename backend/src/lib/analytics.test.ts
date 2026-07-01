@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { monthKeys, windowStart, buildMonthlySpend } from './analytics.js';
+import { monthKeys, windowStart, buildMonthlySpend, buildVariance } from './analytics.js';
 
 const FROM = new Date(Date.UTC(2026, 5, 15)); // 2026-06-15
 
@@ -40,6 +40,14 @@ test('buildMonthlySpend produces a dense series, filling missing months with 0',
     { month: '2026-04', total: 1200 },
     { month: '2026-05', total: 0 },
     { month: '2026-06', total: 1500 },
+  ]);
+});
+
+test('buildVariance produces a dense expected/actual series', () => {
+  const rows = [{ month: '2026-06', expected: '100', actual: 142.84 }];
+  assert.deepEqual(buildVariance(rows, 2, FROM), [
+    { month: '2026-05', expected: 0, actual: 0 },
+    { month: '2026-06', expected: 100, actual: 142.84 },
   ]);
 });
 

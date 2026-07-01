@@ -73,3 +73,10 @@ export interface MonthlySpend {
   month: string; // 'YYYY-MM'
   total: number;
 }
+
+// Expected vs actual for paid bills, per month (GET /api/analytics/variance).
+export interface MonthVariance {
+  month: string;
+  expected: number;
+  actual: number;
+}

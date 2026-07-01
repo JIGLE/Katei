@@ -115,7 +115,10 @@
     "trends": "Andamento spese",
     "trendsHigh": "Max",
     "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Previsto vs reale",
+    "expected": "Previsto",
+    "actual": "Reale"
   },
   "freq": {
     "monthly": "Mensile",
@@ -236,6 +239,11 @@
     "savingsGoal": "Obiettivo di risparmio mensile",
     "theme": "Aspetto",
     "theme_dark": "Scuro",
-    "theme_light": "Chiaro"
+    "theme_light": "Chiaro",
+    "calendar": "Feed calendario",
+    "calendarIntro": "Iscriviti nella tua app calendario per vedere scadenze e pagamenti. Tieni privato il link; rigeneralo per revocare l'accesso.",
+    "calendarUrl": "URL di iscrizione (tocca per copiare)",
+    "calendarCopied": "Copiato negli appunti",
+    "calendarRegenerate": "Rigenera"
   }
 }

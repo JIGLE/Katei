@@ -115,7 +115,10 @@
     "trends": "Tendances des dépenses",
     "trendsHigh": "Max",
     "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Prévu vs réel",
+    "expected": "Prévu",
+    "actual": "Réel"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -236,6 +239,11 @@
     "savingsGoal": "Objectif d'épargne mensuel",
     "theme": "Apparence",
     "theme_dark": "Sombre",
-    "theme_light": "Clair"
+    "theme_light": "Clair",
+    "calendar": "Flux calendrier",
+    "calendarIntro": "Abonnez-vous dans votre application calendrier pour voir échéances et paiements. Gardez le lien privé ; régénérez-le pour révoquer l'accès.",
+    "calendarUrl": "URL d'abonnement (toucher pour copier)",
+    "calendarCopied": "Copié dans le presse-papiers",
+    "calendarRegenerate": "Régénérer"
   }
 }

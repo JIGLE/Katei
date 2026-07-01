@@ -6,6 +6,7 @@ import { createReadStream, existsSync } from 'node:fs';
 import { getSettings, saveSettings, sendNtfy, checkAndNotify } from '../lib/notifications.js';
 import { listBackups, backupPath, runBackup } from '../lib/backups.js';
 import { getSetting, setSetting } from '../db.js';
+import { randomBytes } from 'node:crypto';
 
 // EU-leaning defaults when a household hasn't set preferences yet.
 const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
@@ -71,6 +72,23 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       };
     },
   );
+
+  // GET /api/settings/calendar — the household's iCal feed token (created lazily).
+  app.get('/calendar', async () => {
+    let token = await getSetting('calendar_token');
+    if (!token) {
+      token = randomBytes(24).toString('base64url');
+      await setSetting('calendar_token', token);
+    }
+    return { token };
+  });
+
+  // POST /api/settings/calendar/rotate — invalidate the old feed URL.
+  app.post('/calendar/rotate', async () => {
+    const token = randomBytes(24).toString('base64url');
+    await setSetting('calendar_token', token);
+    return { token };
+  });
 
   // GET /api/settings/notifications
   app.get('/notifications', async () => getSettings());

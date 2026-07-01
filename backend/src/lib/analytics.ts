@@ -35,3 +35,21 @@ export function buildMonthlySpend(
   const totals = new Map(rows.map((r) => [r.month, Number(r.total) || 0]));
   return monthKeys(months, fromDate).map((month) => ({ month, total: totals.get(month) ?? 0 }));
 }
+
+export interface MonthVariance {
+  month: string; // 'YYYY-MM'
+  expected: number; // what the linked streams said the paid bills should cost
+  actual: number; // what was actually paid (actual_amount, falling back to expected)
+}
+
+/** Dense expected-vs-actual series across the window (paid payments only). */
+export function buildVariance(
+  rows: { month: string; expected: number | string; actual: number | string }[],
+  months: number,
+  fromDate: Date = new Date(),
+): MonthVariance[] {
+  const m = new Map(
+    rows.map((r) => [r.month, { expected: Number(r.expected) || 0, actual: Number(r.actual) || 0 }]),
+  );
+  return monthKeys(months, fromDate).map((month) => ({ month, ...(m.get(month) ?? { expected: 0, actual: 0 }) }));
+}

@@ -15,6 +15,7 @@ import { verifyConnection } from './db.js';
 import { apiRoutes } from './routes/index.js';
 import { authRoutes } from './routes/auth.js';
 import { settingsRoutes } from './routes/settings.js';
+import { calendarRoutes } from './routes/calendar.js';
 
 export interface BuildAppOptions {
   jwtSecret: string;
@@ -56,6 +57,9 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
 
   // Public auth endpoints (login, register, logout, me, status).
   await app.register(authRoutes, { prefix: '/api/auth' });
+
+  // Public iCalendar feed — token-gated, no session (calendar apps can't send one).
+  await app.register(calendarRoutes, { prefix: '/api/calendar' });
 
   // All domain routers live under /api and require an authenticated session.
   await app.register(async (instance) => {

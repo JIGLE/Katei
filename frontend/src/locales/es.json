@@ -115,7 +115,10 @@
     "trends": "Tendencia de gastos",
     "trendsHigh": "Máx.",
     "trendsEmpty": "Aún no hay pagos completados — tus gastos mensuales se mostrarán aquí.",
-    "auto": "Auto"
+    "auto": "Auto",
+    "expectedActual": "Previsto vs real",
+    "expected": "Previsto",
+    "actual": "Real"
   },
   "freq": {
     "monthly": "Mensual",
@@ -236,6 +239,11 @@
     "savingsGoal": "Meta de ahorro mensual",
     "theme": "Apariencia",
     "theme_dark": "Oscuro",
-    "theme_light": "Claro"
+    "theme_light": "Claro",
+    "calendar": "Feed de calendario",
+    "calendarIntro": "Suscríbete en tu app de calendario para ver vencimientos y pagos. Mantén el enlace privado; regenéralo para revocar el acceso.",
+    "calendarUrl": "URL de suscripción (toca para copiar)",
+    "calendarCopied": "Copiado al portapapeles",
+    "calendarRegenerate": "Regenerar"
   }
 }
