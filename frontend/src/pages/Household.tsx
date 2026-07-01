@@ -7,6 +7,7 @@ import { Modal } from '../components/Modal';
 import { MemberForm } from '../components/MemberForm';
 import { AssignmentForm } from '../components/AssignmentForm';
 import { daysToBirthday } from '../lib/format';
+import { usePreferences } from '../lib/preferences';
 
 function initials(name: string): string {
   return name
@@ -30,6 +31,7 @@ function roleColor(role: string): string {
 export default function Household() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { household_name } = usePreferences();
   const isAdmin = user?.role === 'admin';
   const [users, setUsers] = useState<User[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -117,17 +119,104 @@ export default function Household() {
     }
   };
 
+  // People and pets are shown as separate, warmer groups — a household is
+  // everyone who lives here, not one flat roster.
+  const people = users.filter((u) => u.kind !== 'pet');
+  const pets = users.filter((u) => u.kind === 'pet');
+  const upcomingBirthdays = users.filter((u) => {
+    const d = daysToBirthday(u.birthday);
+    return d !== null && d <= 30;
+  }).length;
+
+  // A human, one-line summary of who's home — the page's signature element.
+  const summaryParts = users.length
+    ? [
+        t('household.summaryPeople', { count: people.length }),
+        ...(pets.length ? [t('household.summaryPets', { count: pets.length })] : []),
+        ...(upcomingBirthdays ? [t('household.summaryBirthdays', { count: upcomingBirthdays })] : []),
+      ]
+    : [];
+
+  // A single member card — tap to edit; birthday nudge takes the caption slot
+  // when someone's day is near, otherwise their assignment count.
+  const renderMember = (u: User) => {
+    const userAssignments = assignmentsByUser(u.id);
+    const days = daysToBirthday(u.birthday);
+    const nearBirthday = days !== null && days <= 30;
+    return (
+      <div key={u.id} className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+        <button
+          type="button"
+          onClick={() => setEditingMember(u)}
+          className="flex w-full items-center gap-4 text-left"
+        >
+          {u.avatar_url ? (
+            <img src={u.avatar_url} alt={u.name} className="h-11 w-11 flex-shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-sm font-medium text-zinc-300">
+              {initials(u.name)}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 text-sm text-zinc-100">
+              <span className="truncate">{u.name}</span>
+              {u.role === 'admin' && (
+                <span className="flex-shrink-0 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-amber-500">
+                  {t('household.admin')}
+                </span>
+              )}
+            </p>
+            <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-teal-300' : 'text-zinc-500'}`}>
+              {nearBirthday
+                ? days === 0
+                  ? `🎂 ${t('household.birthdayToday')}`
+                  : `🎂 ${t('household.birthdayIn', { count: days })}`
+                : t('household.assignmentCount', { count: userAssignments.length })}
+            </p>
+          </div>
+        </button>
+
+        {userAssignments.length > 0 && (
+          <ul className="mt-3 space-y-1 border-t border-zinc-800/60 pt-3">
+            {userAssignments.map((a) => (
+              <li key={a.id} className="flex items-center gap-2 text-xs text-zinc-400">
+                <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                {a.event_id != null && <span>{eventTitle(a.event_id)}</span>}
+                {a.money_stream_id != null && <span>{streamName(a.money_stream_id)}</span>}
+                <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>{a.role}</span>
+                <button
+                  type="button"
+                  onClick={() => (confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id))}
+                  className={[
+                    'rounded-md px-1.5 transition-colors',
+                    confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-600 hover:text-zinc-400',
+                  ].join(' ')}
+                  aria-label={t('household.removeAssignmentAria')}
+                >
+                  {confirmRemove === a.id ? t('common.confirm') : '×'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      <header className="flex items-end justify-between">
-        <div>
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-widest text-zinc-500">{t('household.eyebrow')}</p>
-          <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('household.title')}</h1>
+          <h1 className="mt-1 truncate text-2xl font-light text-zinc-100">{household_name || t('household.title')}</h1>
+          {summaryParts.length > 0 && (
+            <p className="mt-2 text-sm text-zinc-400">{summaryParts.join(' · ')}</p>
+          )}
         </div>
         {users.length > 0 && (
           <button
             onClick={() => setShowAssignForm(true)}
-            className="text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
+            className="flex-shrink-0 text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
           >
             + {t('household.assign')}
           </button>
@@ -149,94 +238,19 @@ export default function Household() {
         </div>
       )}
 
-      {/* Member list */}
-      {!loading && !error && users.length > 0 && (
+      {/* People */}
+      {!loading && !error && people.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.members')}</p>
-          {users.map((u) => {
-            const userAssignments = assignmentsByUser(u.id);
-            return (
-              <div
-                key={u.id}
-                className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4"
-              >
-                {/* Member row — tap to edit */}
-                <button
-                  type="button"
-                  onClick={() => setEditingMember(u)}
-                  className="flex w-full items-center gap-4 text-left"
-                >
-                  {u.avatar_url ? (
-                    <img
-                      src={u.avatar_url}
-                      alt={u.name}
-                      className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-zinc-300">
-                      {initials(u.name)}
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <p className="flex items-center gap-2 text-sm text-zinc-100">
-                      <span className="truncate">{u.name}</span>
-                      {u.kind === 'pet' && (
-                        <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
-                          {t('household.pet')}
-                        </span>
-                      )}
-                      {u.role === 'admin' && (
-                        <span className="flex-shrink-0 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-amber-500">
-                          {t('household.admin')}
-                        </span>
-                      )}
-                    </p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
-                      {(() => {
-                        const days = daysToBirthday(u.birthday);
-                        if (days !== null && days <= 30) {
-                          return days === 0
-                            ? `🎂 ${t('household.birthdayToday')}`
-                            : `🎂 ${t('household.birthdayIn', { count: days })}`;
-                        }
-                        return t('household.assignmentCount', { count: userAssignments.length });
-                      })()}
-                    </p>
-                  </div>
-                </button>
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.people')}</p>
+          {people.map(renderMember)}
+        </section>
+      )}
 
-                {/* Assignments for this user */}
-                {userAssignments.length > 0 && (
-                  <ul className="mt-3 space-y-1 border-t border-zinc-800/60 pt-3">
-                    {userAssignments.map((a) => (
-                      <li
-                        key={a.id}
-                        className="flex items-center gap-2 text-xs text-zinc-400"
-                      >
-                        <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                        {a.event_id != null && <span>{eventTitle(a.event_id)}</span>}
-                        {a.money_stream_id != null && <span>{streamName(a.money_stream_id)}</span>}
-                        <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>
-                          {a.role}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => (confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id))}
-                          className={[
-                            'rounded-md px-1.5 transition-colors',
-                            confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-600 hover:text-zinc-400',
-                          ].join(' ')}
-                          aria-label={t('household.removeAssignmentAria')}
-                        >
-                          {confirmRemove === a.id ? t('common.confirm') : '×'}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
+      {/* Pets — the rest of the household */}
+      {!loading && !error && pets.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">{t('household.pets')}</p>
+          {pets.map(renderMember)}
         </section>
       )}
 

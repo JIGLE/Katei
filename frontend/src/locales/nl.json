@@ -146,7 +146,7 @@
     "oneOff": "Eenmalig"
   },
   "household": {
-    "eyebrow": "Beheer",
+    "eyebrow": "Thuis",
     "title": "Huishouden",
     "members": "Leden",
     "responsibleFor": "Verantwoordelijk voor",
@@ -174,7 +174,15 @@
     "pet": "Huisdier",
     "birthdayToday": "Vandaag jarig",
     "birthdayIn_one": "Jarig over {{count}} dag",
-    "birthdayIn_other": "Jarig over {{count}} dagen"
+    "birthdayIn_other": "Jarig over {{count}} dagen",
+    "people": "Personen",
+    "pets": "Huisdieren",
+    "summaryPeople_one": "{{count}} persoon",
+    "summaryPeople_other": "{{count}} personen",
+    "summaryPets_one": "{{count}} huisdier",
+    "summaryPets_other": "{{count}} huisdieren",
+    "summaryBirthdays_one": "{{count}} verjaardag deze maand",
+    "summaryBirthdays_other": "{{count}} verjaardagen deze maand"
   },
   "form": {
     "amount": "Bedrag",

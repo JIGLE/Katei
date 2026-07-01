@@ -145,7 +145,7 @@
     "oneOff": "One-off"
   },
   "household": {
-    "eyebrow": "Management",
+    "eyebrow": "Home",
     "title": "Household",
     "members": "Members",
     "responsibleFor": "Responsible for",
@@ -173,7 +173,15 @@
     "pet": "Pet",
     "birthdayToday": "Birthday today",
     "birthdayIn_one": "Birthday in {{count}} day",
-    "birthdayIn_other": "Birthday in {{count}} days"
+    "birthdayIn_other": "Birthday in {{count}} days",
+    "people": "People",
+    "pets": "Pets",
+    "summaryPeople_one": "{{count}} person",
+    "summaryPeople_other": "{{count}} people",
+    "summaryPets_one": "{{count}} pet",
+    "summaryPets_other": "{{count}} pets",
+    "summaryBirthdays_one": "{{count}} birthday this month",
+    "summaryBirthdays_other": "{{count}} birthdays this month"
   },
   "form": {
     "amount": "Amount",

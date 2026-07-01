@@ -146,7 +146,7 @@
     "oneOff": "Einmalig"
   },
   "household": {
-    "eyebrow": "Verwaltung",
+    "eyebrow": "Zuhause",
     "title": "Haushalt",
     "members": "Mitglieder",
     "responsibleFor": "Zuständig für",
@@ -174,7 +174,15 @@
     "pet": "Tier",
     "birthdayToday": "Heute Geburtstag",
     "birthdayIn_one": "Geburtstag in {{count}} Tag",
-    "birthdayIn_other": "Geburtstag in {{count}} Tagen"
+    "birthdayIn_other": "Geburtstag in {{count}} Tagen",
+    "people": "Personen",
+    "pets": "Haustiere",
+    "summaryPeople_one": "{{count}} Person",
+    "summaryPeople_other": "{{count}} Personen",
+    "summaryPets_one": "{{count}} Haustier",
+    "summaryPets_other": "{{count}} Haustiere",
+    "summaryBirthdays_one": "{{count}} Geburtstag diesen Monat",
+    "summaryBirthdays_other": "{{count}} Geburtstage diesen Monat"
   },
   "form": {
     "amount": "Betrag",

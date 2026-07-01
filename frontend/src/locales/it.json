@@ -146,7 +146,7 @@
     "oneOff": "Una tantum"
   },
   "household": {
-    "eyebrow": "Gestione",
+    "eyebrow": "Casa",
     "title": "Casa",
     "members": "Membri",
     "responsibleFor": "Responsabile di",
@@ -174,7 +174,15 @@
     "pet": "Animale",
     "birthdayToday": "Compleanno oggi",
     "birthdayIn_one": "Compleanno tra {{count}} giorno",
-    "birthdayIn_other": "Compleanno tra {{count}} giorni"
+    "birthdayIn_other": "Compleanno tra {{count}} giorni",
+    "people": "Persone",
+    "pets": "Animali",
+    "summaryPeople_one": "{{count}} persona",
+    "summaryPeople_other": "{{count}} persone",
+    "summaryPets_one": "{{count}} animale",
+    "summaryPets_other": "{{count}} animali",
+    "summaryBirthdays_one": "{{count}} compleanno questo mese",
+    "summaryBirthdays_other": "{{count}} compleanni questo mese"
   },
   "form": {
     "amount": "Importo",

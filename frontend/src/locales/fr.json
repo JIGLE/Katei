@@ -146,7 +146,7 @@
     "oneOff": "Ponctuel"
   },
   "household": {
-    "eyebrow": "Gestion",
+    "eyebrow": "Foyer",
     "title": "Foyer",
     "members": "Membres",
     "responsibleFor": "Responsable de",
@@ -174,7 +174,15 @@
     "pet": "Animal",
     "birthdayToday": "Anniversaire aujourd'hui",
     "birthdayIn_one": "Anniversaire dans {{count}} jour",
-    "birthdayIn_other": "Anniversaire dans {{count}} jours"
+    "birthdayIn_other": "Anniversaire dans {{count}} jours",
+    "people": "Personnes",
+    "pets": "Animaux",
+    "summaryPeople_one": "{{count}} personne",
+    "summaryPeople_other": "{{count}} personnes",
+    "summaryPets_one": "{{count}} animal",
+    "summaryPets_other": "{{count}} animaux",
+    "summaryBirthdays_one": "{{count}} anniversaire ce mois-ci",
+    "summaryBirthdays_other": "{{count}} anniversaires ce mois-ci"
   },
   "form": {
     "amount": "Montant",

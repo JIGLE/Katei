@@ -146,7 +146,7 @@
     "oneOff": "Único"
   },
   "household": {
-    "eyebrow": "Gestión",
+    "eyebrow": "Hogar",
     "title": "Hogar",
     "members": "Miembros",
     "responsibleFor": "Responsable de",
@@ -174,7 +174,15 @@
     "pet": "Mascota",
     "birthdayToday": "Cumpleaños hoy",
     "birthdayIn_one": "Cumpleaños en {{count}} día",
-    "birthdayIn_other": "Cumpleaños en {{count}} días"
+    "birthdayIn_other": "Cumpleaños en {{count}} días",
+    "people": "Personas",
+    "pets": "Mascotas",
+    "summaryPeople_one": "{{count}} persona",
+    "summaryPeople_other": "{{count}} personas",
+    "summaryPets_one": "{{count}} mascota",
+    "summaryPets_other": "{{count}} mascotas",
+    "summaryBirthdays_one": "{{count}} cumpleaños este mes",
+    "summaryBirthdays_other": "{{count}} cumpleaños este mes"
   },
   "form": {
     "amount": "Importe",
