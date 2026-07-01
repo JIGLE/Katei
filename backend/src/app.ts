@@ -43,6 +43,34 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
     }
   });
 
+  // Turn unhandled errors into clean, logged responses rather than opaque 500s.
+  // Postgres errors carry a 5-char SQLSTATE `code`; map the common ones to a 4xx
+  // with a friendly message so the UI can show something useful (and we log the
+  // real cause). Anything else stays a generic 500.
+  const PG_ERRORS: Record<string, [number, string]> = {
+    '23505': [409, 'That already exists.'],
+    '23503': [400, 'A linked item no longer exists.'],
+    '23502': [400, 'A required value is missing.'],
+    '22P02': [400, 'That value is not valid.'],
+  };
+  app.setErrorHandler((error, req, reply) => {
+    // Fastify schema validation failures are already client errors.
+    if (error.validation) {
+      return reply.code(400).send({ error: error.message });
+    }
+    const pgCode = (error as { code?: unknown }).code;
+    if (typeof pgCode === 'string' && PG_ERRORS[pgCode]) {
+      const [status, message] = PG_ERRORS[pgCode];
+      req.log.error({ err: error, pgCode }, 'Database error');
+      return reply.code(status).send({ error: message });
+    }
+    const status = typeof error.statusCode === 'number' && error.statusCode >= 400 ? error.statusCode : 500;
+    if (status >= 500) req.log.error({ err: error }, 'Unhandled error');
+    return reply
+      .code(status)
+      .send({ error: status >= 500 ? 'Something went wrong. Please try again.' : error.message });
+  });
+
   // Liveness + database connectivity probe.
   app.get('/health', async () => {
     let db = 'disconnected';

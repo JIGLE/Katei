@@ -122,6 +122,38 @@ export async function migrate(): Promise<void> {
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+
+  await resyncSequences();
+}
+
+// Tables with a SERIAL `id` whose sequence must track max(id).
+const SERIAL_TABLES = [
+  'users', 'money_streams', 'household_events', 'assignments',
+  'invites', 'activity', 'notifications', 'savings_entries',
+];
+
+/**
+ * Realign each SERIAL id sequence to max(id). Restoring a dump with `pg_restore`
+ * (or a manual data load) inserts rows without advancing the sequence, so the
+ * next INSERT reuses an existing id and fails with a duplicate-key error — which
+ * looks like "adding anything fails with a server error". Running this on every
+ * boot self-heals a restored database. Idempotent and safe on a fresh one.
+ */
+export async function resyncSequences(): Promise<void> {
+  for (const table of SERIAL_TABLES) {
+    try {
+      await query(
+        `SELECT setval(
+           pg_get_serial_sequence($1, 'id'),
+           GREATEST(COALESCE((SELECT max(id) FROM ${table}), 0), 1),
+           (SELECT count(*) > 0 FROM ${table})
+         )`,
+        [table],
+      );
+    } catch {
+      // A table may not exist yet on a partially-migrated DB — skip it.
+    }
+  }
 }
 
 /** Read a single app setting, or null if unset. */

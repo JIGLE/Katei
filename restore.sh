@@ -46,4 +46,28 @@ esac
 
 echo "[katei] Restoring $FILE ..."
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$FILE"
+
+# Realign SERIAL id sequences to max(id). A data load that doesn't advance the
+# sequences would otherwise make the next INSERT reuse an id and fail with a
+# duplicate-key error (the app also self-heals this on boot, but do it here too).
+echo "[katei] Realigning id sequences ..."
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT c.relname AS table_name, a.attname AS column_name,
+           pg_get_serial_sequence(quote_ident(c.relname), a.attname) AS seq
+    FROM pg_class c
+    JOIN pg_attribute a ON a.attrelid = c.oid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'r'
+      AND pg_get_serial_sequence(quote_ident(c.relname), a.attname) IS NOT NULL
+  LOOP
+    EXECUTE format(
+      'SELECT setval(%L, GREATEST(COALESCE((SELECT max(%I) FROM %I),0),1), (SELECT count(*)>0 FROM %I))',
+      r.seq, r.column_name, r.table_name, r.table_name);
+  END LOOP;
+END $$;
+SQL
 echo "[katei] Restore complete."
