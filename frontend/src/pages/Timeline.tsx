@@ -238,7 +238,7 @@ export default function Timeline() {
       )}
 
       {!loading && !error && visible.length > 0 && (
-        <section className="space-y-2">
+        <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
           {visible.map((evt) => {
             const cfg = typeConfig[evt.event_type];
             const styles = accentMap[cfg.accent];
@@ -246,8 +246,8 @@ export default function Timeline() {
               <div
                 key={evt.id}
                 className={[
-                  'flex items-center gap-4 rounded-2xl border bg-zinc-900 p-4 transition-opacity',
-                  evt.is_completed ? 'border-zinc-800/30 opacity-50' : 'border-zinc-800/60',
+                  'flex items-center gap-4 p-4 transition-opacity',
+                  evt.is_completed ? 'opacity-50' : '',
                 ].join(' ')}
               >
                 {/* Date */}
