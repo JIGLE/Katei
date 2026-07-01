@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { todayInTimezone } from '../lib/format';
-import type { SavingsSummary } from '../lib/types';
+import type { SavingsSummary, SavingsEntry } from '../lib/types';
 
 interface SavingsEntryFormProps {
+  initial?: SavingsEntry;
   onSaved: (summary: SavingsSummary) => void;
   onCancel: () => void;
+  onDeleted?: (summary: SavingsSummary) => void;
 }
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -15,15 +17,18 @@ const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
 
-// Record a one-time deposit (or withdrawal) into the savings ledger. This is the
-// answer to "adding savings doesn't update the total" — every entry moves the balance.
-export function SavingsEntryForm({ onSaved, onCancel }: SavingsEntryFormProps) {
+// Record a one-time deposit (or withdrawal) into the savings ledger, or correct a
+// mistaken one. This is the answer to "adding savings doesn't update the total" —
+// every entry moves the balance, and a mistake can be edited or removed.
+export function SavingsEntryForm({ initial, onSaved, onCancel, onDeleted }: SavingsEntryFormProps) {
   const { t } = useTranslation();
   const { currency, timezone } = usePreferences();
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  const [occurredOn, setOccurredOn] = useState(() => todayInTimezone(timezone));
+  const isEdit = Boolean(initial);
+  const [amount, setAmount] = useState(initial ? String(Number(initial.amount)) : '');
+  const [note, setNote] = useState(initial?.note ?? '');
+  const [occurredOn, setOccurredOn] = useState(() => initial?.occurred_on?.slice(0, 10) ?? todayInTimezone(timezone));
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,12 +41,23 @@ export function SavingsEntryForm({ onSaved, onCancel }: SavingsEntryFormProps) {
     setSubmitting(true);
     setError(null);
     try {
-      const summary = await api.post<SavingsSummary>('/savings/entries', {
-        amount: parsed,
-        note: note.trim() || undefined,
-        occurred_on: occurredOn,
-      });
+      const body = { amount: parsed, note: note.trim() || null, occurred_on: occurredOn };
+      const summary = isEdit
+        ? await api.patch<SavingsSummary>(`/savings/entries/${initial!.id}`, body)
+        : await api.post<SavingsSummary>('/savings/entries', body);
       onSaved(summary);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('form.errSaveStream'));
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initial || !onDeleted) return;
+    setSubmitting(true);
+    try {
+      const summary = await api.delete<SavingsSummary>(`/savings/entries/${initial.id}`);
+      onDeleted(summary);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('form.errSaveStream'));
       setSubmitting(false);
@@ -108,9 +124,20 @@ export function SavingsEntryForm({ onSaved, onCancel }: SavingsEntryFormProps) {
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? t('common.saving') : t('money.addToSavings')}
+          {submitting ? t('common.saving') : isEdit ? t('common.saveChanges') : t('money.addToSavings')}
         </button>
       </div>
+
+      {isEdit && onDeleted && (
+        <button
+          type="button"
+          onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+          disabled={submitting}
+          className="w-full pt-1 text-center text-xs text-rose-500/80 transition-colors hover:text-rose-400 disabled:opacity-50"
+        >
+          {confirmDelete ? t('form.confirmDelete') : t('money.deleteContribution')}
+        </button>
+      )}
     </form>
   );
 }

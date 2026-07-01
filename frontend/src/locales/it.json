@@ -145,7 +145,9 @@
     "contributionNote": "Nota",
     "contributionNotePlaceholder": "es. bonus, rimborso fiscale",
     "contributionDate": "Data",
-    "noStreamsHint": "Aggiungi entrate, spese e risparmi per avere il quadro completo."
+    "noStreamsHint": "Aggiungi entrate, spese e risparmi per avere il quadro completo.",
+    "editContribution": "Modifica versamento",
+    "deleteContribution": "Elimina questo versamento"
   },
   "freq": {
     "monthly": "Mensile",

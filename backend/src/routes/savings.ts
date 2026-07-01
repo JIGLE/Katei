@@ -52,6 +52,43 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
+  // PATCH /api/savings/entries/:id — correct a mistaken contribution.
+  app.patch<{ Params: { id: string }; Body: { amount?: number; note?: string; occurred_on?: string } }>(
+    '/entries/:id',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          properties: {
+            amount: { type: 'number' },
+            note: { type: ['string', 'null'], maxLength: 120 },
+            occurred_on: { type: 'string', format: 'date' },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const allowed = ['amount', 'note', 'occurred_on'] as const;
+      const fields: string[] = [];
+      const values: unknown[] = [];
+      let i = 1;
+      for (const key of allowed) {
+        if (req.body[key] !== undefined) {
+          fields.push(`${key} = $${i++}`);
+          values.push(req.body[key]);
+        }
+      }
+      if (!fields.length) return reply.code(400).send({ error: 'Nothing to update' });
+      values.push(req.params.id);
+      const { rowCount } = await query(
+        `UPDATE savings_entries SET ${fields.join(', ')} WHERE id = $${i}`,
+        values,
+      );
+      if (!rowCount) return reply.code(404).send({ error: 'Savings entry not found' });
+      return summary();
+    },
+  );
+
   // DELETE /api/savings/entries/:id — remove a contribution.
   app.delete<{ Params: { id: string } }>('/entries/:id', async (req, reply) => {
     const { rowCount } = await query('DELETE FROM savings_entries WHERE id = $1', [req.params.id]);

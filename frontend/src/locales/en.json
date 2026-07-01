@@ -144,7 +144,9 @@
     "contributionNote": "Note",
     "contributionNotePlaceholder": "e.g. Bonus, tax refund",
     "contributionDate": "Date",
-    "noStreamsHint": "Add your income, expenses, and savings to see the full picture."
+    "noStreamsHint": "Add your income, expenses, and savings to see the full picture.",
+    "editContribution": "Edit contribution",
+    "deleteContribution": "Delete this contribution"
   },
   "freq": {
     "monthly": "Monthly",

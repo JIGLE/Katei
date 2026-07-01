@@ -55,6 +55,21 @@ test('a one-time deposit updates the total (the reported bug)', opts, async () =
   assert.equal(posted.entries[0].note, 'Bonus');
 });
 
+test('editing a contribution corrects the balance', opts, async () => {
+  const posted = (await app.inject({
+    method: 'POST', url: '/api/savings/entries', headers: { cookie },
+    payload: { amount: 500, note: 'Bonuss' },
+  })).json();
+  const id = posted.entries[0].id;
+  const edited = (await app.inject({
+    method: 'PATCH', url: `/api/savings/entries/${id}`, headers: { cookie },
+    payload: { amount: 650, note: 'Bonus' },
+  })).json();
+  assert.equal(edited.balance, 650);
+  assert.equal(edited.entries[0].note, 'Bonus');
+  assert.equal(Number(edited.entries[0].amount), 650);
+});
+
 test('deleting a contribution reverts the balance', opts, async () => {
   const posted = (await app.inject({
     method: 'POST', url: '/api/savings/entries', headers: { cookie },

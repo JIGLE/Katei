@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary } from '../lib/types';
+import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
@@ -78,6 +78,7 @@ export default function MoneyFlow() {
   const [newType, setNewType] = useState<StreamType>('expense');
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [showSavingsForm, setShowSavingsForm] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<SavingsEntry | null>(null);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
   const { currency, locale, savings_goal } = usePreferences();
   const { t } = useTranslation();
@@ -105,7 +106,7 @@ export default function MoneyFlow() {
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
   const handleDeleted = () => { setEditing(null); fetchStreams(); };
-  const handleSavingsSaved = (s: SavingsSummary) => { setSavingsData(s); setShowSavingsForm(false); };
+  const handleSavingsSaved = (s: SavingsSummary) => { setSavingsData(s); setShowSavingsForm(false); setEditingEntry(null); };
 
   const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
 
@@ -211,13 +212,19 @@ export default function MoneyFlow() {
             </div>
           </div>
 
-          {/* Recent contributions — the last few ledger entries, newest first. */}
+          {/* Recent contributions — tap one to correct or remove a mistake. */}
           {savingsData && savingsData.entries.length > 0 && (
-            <ul className="mt-4 space-y-2 border-t border-zinc-800/60 pt-4">
+            <ul className="mt-4 space-y-1 border-t border-zinc-800/60 pt-4">
               {savingsData.entries.slice(0, 4).map((e) => (
-                <li key={e.id} className="flex items-center gap-3 text-sm">
-                  <span className="flex-1 truncate text-zinc-300">{e.note?.trim() || t('money.contribution')}</span>
-                  <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
+                <li key={e.id}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingEntry(e)}
+                    className="-mx-2 flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-zinc-800/40"
+                  >
+                    <span className="flex-1 truncate text-zinc-300">{e.note?.trim() || t('money.contribution')}</span>
+                    <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -404,6 +411,17 @@ export default function MoneyFlow() {
 
       <Modal open={showSavingsForm} title={t('money.addToSavings')} onClose={() => setShowSavingsForm(false)}>
         <SavingsEntryForm onSaved={handleSavingsSaved} onCancel={() => setShowSavingsForm(false)} />
+      </Modal>
+
+      <Modal open={!!editingEntry} title={t('money.editContribution')} onClose={() => setEditingEntry(null)}>
+        {editingEntry && (
+          <SavingsEntryForm
+            initial={editingEntry}
+            onSaved={handleSavingsSaved}
+            onDeleted={handleSavingsSaved}
+            onCancel={() => setEditingEntry(null)}
+          />
+        )}
       </Modal>
     </div>
   );

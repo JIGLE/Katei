@@ -145,7 +145,9 @@
     "contributionNote": "Notiz",
     "contributionNotePlaceholder": "z. B. Bonus, Steuererstattung",
     "contributionDate": "Datum",
-    "noStreamsHint": "Füge Einnahmen, Ausgaben und Ersparnisse hinzu, um alles zu sehen."
+    "noStreamsHint": "Füge Einnahmen, Ausgaben und Ersparnisse hinzu, um alles zu sehen.",
+    "editContribution": "Einzahlung bearbeiten",
+    "deleteContribution": "Diese Einzahlung löschen"
   },
   "freq": {
     "monthly": "Monatlich",
