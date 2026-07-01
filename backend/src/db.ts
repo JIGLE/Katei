@@ -58,6 +58,17 @@ export async function migrate(): Promise<void> {
   await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS actual_amount DECIMAL(10, 2)`);
   // Per-member roles + one-time invite codes (Phase 2: real household accounts).
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'member'`);
+  // Backfill: the role column defaults to 'member', so accounts that predate it
+  // (including the original owner) came out as members and got locked out of
+  // household management. If no admin exists, promote the earliest real account
+  // so someone can always manage members and invites. Idempotent + self-healing.
+  await query(
+    `UPDATE users SET role = 'admin'
+      WHERE id = (
+        SELECT id FROM users WHERE password_hash IS NOT NULL ORDER BY id ASC LIMIT 1
+      )
+      AND NOT EXISTS (SELECT 1 FROM users WHERE role = 'admin')`,
+  );
   // Optional email for identity / future recovery.
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT`);
   // Non-human members (pets) + birthdays — a household is everyone who lives there.
