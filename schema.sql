@@ -6,6 +6,7 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    email TEXT, -- optional; used for identity and (future) recovery
     avatar_url TEXT,
     password_hash TEXT,
     ntfy_url TEXT, -- per-member push notification topic URL (optional)

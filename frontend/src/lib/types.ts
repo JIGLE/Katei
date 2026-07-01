@@ -5,6 +5,7 @@ export type Role = 'admin' | 'member';
 export interface User {
   id: number;
   name: string;
+  email: string | null;
   avatar_url: string | null;
   ntfy_url: string | null;
   role: Role;

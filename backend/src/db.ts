@@ -58,6 +58,8 @@ export async function migrate(): Promise<void> {
   await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS actual_amount DECIMAL(10, 2)`);
   // Per-member roles + one-time invite codes (Phase 2: real household accounts).
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'member'`);
+  // Optional email for identity / future recovery.
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT`);
   await query(
     `CREATE TABLE IF NOT EXISTS invites (
        id SERIAL PRIMARY KEY,

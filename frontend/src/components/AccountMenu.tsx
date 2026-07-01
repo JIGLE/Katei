@@ -7,13 +7,14 @@ import type { User } from '../lib/types';
 
 interface AccountMenuProps {
   user: User;
+  onOpenAccount: () => void;
   onOpenSettings: () => void;
 }
 
 // Right-aligned account control: avatar + name that opens a small popover menu
 // for Settings, a quick appearance toggle, and sign out. Closes on outside
 // click, Escape, or item selection.
-export function AccountMenu({ user, onOpenSettings }: AccountMenuProps) {
+export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenuProps) {
   const { t } = useTranslation();
   const { logout } = useAuth();
   const prefs = usePreferences();
@@ -48,6 +49,11 @@ export function AccountMenu({ user, onOpenSettings }: AccountMenuProps) {
   const openSettings = () => {
     setOpen(false);
     onOpenSettings();
+  };
+
+  const openAccount = () => {
+    setOpen(false);
+    onOpenAccount();
   };
 
   return (
@@ -93,6 +99,17 @@ export function AccountMenu({ user, onOpenSettings }: AccountMenuProps) {
             </div>
 
             <div className="p-1.5">
+              <button
+                role="menuitem"
+                onClick={openAccount}
+                className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800/60"
+              >
+                <svg className="h-4 w-4 flex-shrink-0 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                {t('account.title')}
+              </button>
+
               <button
                 role="menuitem"
                 onClick={openSettings}

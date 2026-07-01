@@ -7,6 +7,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
+import { hit, clear } from '../lib/ratelimit.js';
 
 const COOKIE_NAME = 'katei_session';
 
@@ -21,13 +22,14 @@ const cookieOptions = {
 interface UserRow {
   id: number;
   name: string;
+  email: string | null;
   avatar_url: string | null;
   created_at: string;
   password_hash: string | null;
   role: string;
 }
 
-const USER_COLS = 'id, name, avatar_url, created_at, password_hash, role';
+const USER_COLS = 'id, name, email, avatar_url, created_at, password_hash, role';
 
 async function accountCount(): Promise<number> {
   const { rows } = await query<{ c: number }>(
@@ -53,7 +55,14 @@ async function validInvite(code: string): Promise<InviteRow | null> {
 }
 
 function publicUser(u: UserRow) {
-  return { id: u.id, name: u.name, avatar_url: u.avatar_url, role: u.role, created_at: u.created_at };
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    avatar_url: u.avatar_url,
+    role: u.role,
+    created_at: u.created_at,
+  };
 }
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
@@ -176,6 +185,13 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     },
     async (req, reply) => {
       const { name, password } = req.body;
+      // Throttle brute force: bucket by name + client IP.
+      const key = `login:${name.toLowerCase()}:${req.ip}`;
+      const gate = hit(key);
+      if (!gate.ok) {
+        reply.header('Retry-After', String(gate.retryAfterSec));
+        return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
+      }
       const { rows } = await query<UserRow>(
         `SELECT ${USER_COLS} FROM users WHERE name = $1`,
         [name],
@@ -184,9 +200,48 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
         return reply.code(401).send({ error: 'Invalid name or password' });
       }
+      clear(key); // successful login resets the counter
       const token = app.jwt.sign({ id: user.id, name: user.name, role: user.role });
       reply.setCookie(COOKIE_NAME, token, cookieOptions);
       return publicUser(user);
+    },
+  );
+
+  // Change the logged-in user's password (requires the current one).
+  app.post<{ Body: { current_password: string; new_password: string } }>(
+    '/password',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['current_password', 'new_password'],
+          properties: {
+            current_password: { type: 'string', minLength: 1, maxLength: 200 },
+            new_password: { type: 'string', minLength: 8, maxLength: 200 },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      try {
+        await req.jwtVerify();
+      } catch {
+        return reply.code(401).send({ error: 'Not authenticated' });
+      }
+      const { rows } = await query<UserRow>(
+        `SELECT ${USER_COLS} FROM users WHERE id = $1`,
+        [req.user.id],
+      );
+      const user = rows[0];
+      if (!user || !user.password_hash) {
+        return reply.code(401).send({ error: 'Not authenticated' });
+      }
+      if (!(await verifyPassword(req.body.current_password, user.password_hash))) {
+        return reply.code(403).send({ error: 'Current password is incorrect' });
+      }
+      const hash = await hashPassword(req.body.new_password);
+      await query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [hash, user.id]);
+      return { ok: true };
     },
   );
 

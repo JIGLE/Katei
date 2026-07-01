@@ -1,9 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
-import { requireAdmin } from '../lib/authz.js';
+import { requireAdmin, isAdmin } from '../lib/authz.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
-  const COLS = 'id, name, avatar_url, ntfy_url, role, created_at';
+  const COLS = 'id, name, email, avatar_url, ntfy_url, role, created_at';
 
   // GET /api/users
   app.get('/', async () => {
@@ -50,8 +50,9 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  // PATCH /api/users/:id
-  app.patch<{ Params: { id: string }; Body: { name?: string; avatar_url?: string; ntfy_url?: string } }>(
+  // PATCH /api/users/:id — a member may edit only their own profile; admins may
+  // edit anyone. (Previously any member could rename any other member.)
+  app.patch<{ Params: { id: string }; Body: { name?: string; email?: string; avatar_url?: string; ntfy_url?: string } }>(
     '/:id',
     {
       schema: {
@@ -59,6 +60,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 100 },
+            email: { type: 'string', maxLength: 254 },
             avatar_url: { type: 'string' },
             ntfy_url: { type: 'string', maxLength: 500 },
           },
@@ -66,7 +68,11 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const allowed = ['name', 'avatar_url', 'ntfy_url'] as const;
+      const targetId = Number(req.params.id);
+      if (req.user.id !== targetId && !(await isAdmin(req.user.id))) {
+        return reply.code(403).send({ error: 'You can only edit your own profile' });
+      }
+      const allowed = ['name', 'email', 'avatar_url', 'ntfy_url'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;

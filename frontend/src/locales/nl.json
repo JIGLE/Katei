@@ -256,5 +256,18 @@
     "tabGeneral": "Algemeen",
     "tabNotifications": "Meldingen",
     "tabData": "Gegevens"
+  },
+  "account": {
+    "title": "Mijn account",
+    "email": "E-mail",
+    "emailHint": "Voor identiteit en accountherstel. Optioneel.",
+    "avatarUrl": "Avatar-URL",
+    "saveProfile": "Profiel opslaan",
+    "profileSaved": "Profiel opgeslagen.",
+    "changePassword": "Wachtwoord wijzigen",
+    "currentPassword": "Huidig wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "passwordChanged": "Wachtwoord gewijzigd.",
+    "saveFailed": "Opslaan mislukt."
   }
 }

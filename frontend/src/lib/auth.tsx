@@ -9,6 +9,7 @@ interface AuthContextValue {
   login: (name: string, password: string) => Promise<void>;
   register: (name: string, password: string, inviteCode?: string) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,8 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  // Re-pull the current user (after a profile edit) so the header/menu update.
+  const refresh = async () => {
+    const me = await api.get<User>('/auth/me').catch(() => null);
+    if (me) setUser(me);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, needsSetup, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, needsSetup, login, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

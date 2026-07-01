@@ -256,5 +256,18 @@
     "tabGeneral": "Generale",
     "tabNotifications": "Notifiche",
     "tabData": "Dati"
+  },
+  "account": {
+    "title": "Il mio account",
+    "email": "Email",
+    "emailHint": "Per identità e recupero dell'account. Facoltativo.",
+    "avatarUrl": "URL avatar",
+    "saveProfile": "Salva profilo",
+    "profileSaved": "Profilo salvato.",
+    "changePassword": "Cambia password",
+    "currentPassword": "Password attuale",
+    "newPassword": "Nuova password",
+    "passwordChanged": "Password cambiata.",
+    "saveFailed": "Salvataggio non riuscito."
   }
 }

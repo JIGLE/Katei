@@ -256,5 +256,18 @@
     "tabGeneral": "Général",
     "tabNotifications": "Notifications",
     "tabData": "Données"
+  },
+  "account": {
+    "title": "Mon compte",
+    "email": "E-mail",
+    "emailHint": "Pour l'identité et la récupération du compte. Facultatif.",
+    "avatarUrl": "URL de l'avatar",
+    "saveProfile": "Enregistrer le profil",
+    "profileSaved": "Profil enregistré.",
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "passwordChanged": "Mot de passe changé.",
+    "saveFailed": "Échec de l'enregistrement."
   }
 }

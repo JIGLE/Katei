@@ -255,5 +255,18 @@
     "tabGeneral": "General",
     "tabNotifications": "Notifications",
     "tabData": "Data"
+  },
+  "account": {
+    "title": "My account",
+    "email": "Email",
+    "emailHint": "Used for identity and account recovery. Optional.",
+    "avatarUrl": "Avatar URL",
+    "saveProfile": "Save profile",
+    "profileSaved": "Profile saved.",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordChanged": "Password changed.",
+    "saveFailed": "Couldn't save."
   }
 }

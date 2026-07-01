@@ -5,6 +5,7 @@ import { BottomNav } from './components/BottomNav';
 import { AuthGate } from './components/AuthGate';
 import { Modal } from './components/Modal';
 import { SettingsForm } from './components/SettingsForm';
+import { AccountForm } from './components/AccountForm';
 import { Splash } from './components/Splash';
 import { AccountMenu } from './components/AccountMenu';
 import { useAuth } from './lib/auth';
@@ -22,6 +23,7 @@ export default function App() {
   const { loading: prefsLoading } = usePreferences();
   const { t } = useTranslation();
   const [showSettings, setShowSettings] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
 
   // Splash lifecycle: shown on first load, fades once data is ready and the
   // minimum display time has elapsed, then unmounts.
@@ -50,7 +52,11 @@ export default function App() {
       {/* Slim account header */}
       <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
         <span className="text-base font-light tracking-widest text-zinc-300">家庭</span>
-        <AccountMenu user={user} onOpenSettings={() => setShowSettings(true)} />
+        <AccountMenu
+          user={user}
+          onOpenAccount={() => setShowAccount(true)}
+          onOpenSettings={() => setShowSettings(true)}
+        />
       </header>
 
       {/* Scrollable content area — padded above the fixed bottom nav */}
@@ -66,6 +72,10 @@ export default function App() {
       </main>
 
       <BottomNav />
+
+      <Modal open={showAccount} title={t('account.title')} onClose={() => setShowAccount(false)}>
+        <AccountForm onClose={() => setShowAccount(false)} />
+      </Modal>
 
       <Modal open={showSettings} title={t('common.settings')} onClose={() => setShowSettings(false)}>
         <SettingsForm onClose={() => setShowSettings(false)} />
