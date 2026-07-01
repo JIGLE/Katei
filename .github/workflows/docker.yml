@@ -95,6 +95,10 @@ jobs:
       # builder bootstrap + build so a transient Docker Hub blip doesn't block a ship.
       - name: Build & push (with retry on transient Docker Hub flakes)
         uses: nick-fields/retry@v3
+        env:
+          # Pass the (newline-separated) tags as an env var so the shell doesn't
+          # choke on the multiline value; expand each line to a --tag flag below.
+          TAGS: ${{ steps.meta.outputs.tags }}
         with:
           timeout_minutes: 25
           max_attempts: 3
@@ -103,11 +107,9 @@ jobs:
             docker buildx inspect katei >/dev/null 2>&1 \
               || docker buildx create --name katei --driver docker-container --use --bootstrap
             docker buildx use katei
-            TAG_ARGS=""
-            for t in ${{ steps.meta.outputs.tags }}; do TAG_ARGS="$TAG_ARGS --tag $t"; done
             docker buildx build \
               --push \
-              $TAG_ARGS \
+              $(printf '%s\n' "$TAGS" | sed 's/^/--tag /') \
               --cache-from type=gha \
               --cache-to type=gha,mode=max \
               --file Dockerfile \
