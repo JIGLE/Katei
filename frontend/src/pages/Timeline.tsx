@@ -239,14 +239,15 @@ export default function Timeline() {
 
       {!loading && !error && visible.length > 0 && (
         <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-          {visible.map((evt) => {
+          {visible.map((evt, i) => {
             const cfg = typeConfig[evt.event_type];
             const styles = accentMap[cfg.accent];
             return (
               <div
                 key={evt.id}
+                style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
                 className={[
-                  'flex items-center gap-4 p-4 transition-opacity',
+                  'flex items-center gap-4 p-4 transition-opacity animate-fade-slide-in',
                   evt.is_completed ? 'opacity-50' : '',
                 ].join(' ')}
               >
@@ -292,7 +293,16 @@ export default function Timeline() {
                 >
                   {evt.is_completed && (
                     <svg className="m-auto h-3 w-3 text-zinc-900" viewBox="0 0 12 12" fill="currentColor">
-                      <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                      <path
+                        className="check-draw"
+                        pathLength={1}
+                        d="M10 3L5 8.5 2 5.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
                     </svg>
                   )}
                 </button>

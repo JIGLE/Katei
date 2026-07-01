@@ -37,6 +37,20 @@
   --zinc-950: 247 246 243;
 }
 
+/*
+ * Motion tokens — the single source of durations/easings for the whole app
+ * (see ui-animation guidance folded into CLAUDE.md). Same in both themes.
+ * enter: enter/appear transforms · move: slides & drawers/sheets.
+ */
+:root {
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-move: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+}
+
 @layer base {
   html,
   body,
@@ -106,5 +120,51 @@
   .splash-underline {
     animation: none;
     width: 4rem;
+  }
+}
+
+/*
+ * Fade + slight rise — used for content that appears in response to a user
+ * action (tab switch, list mount on navigation), not ambient/looping motion.
+ * Transform + opacity only, per the anti-pattern against animating layout.
+ */
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-in {
+  animation: fade-slide-in var(--dur-base) var(--ease-enter) both;
+}
+
+/* Checkmark draws in on completion — a small, deliberate confirmation. */
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.check-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: check-draw var(--dur-base) var(--ease-enter) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-slide-in {
+    animation: none;
+  }
+  .check-draw {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }

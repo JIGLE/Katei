@@ -185,7 +185,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
       {/* General — region, language, savings goal, appearance */}
       {tab === 'general' && (
-      <div className="space-y-3">
+      <div className="animate-fade-slide-in space-y-3">
         <div>
           <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">{t('settings.country')}</label>
           <select
@@ -291,7 +291,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
       {/* Notifications */}
       {tab === 'notifications' && (
-      <div className="space-y-4">
+      <div className="animate-fade-slide-in space-y-4">
       <p className="text-xs leading-relaxed text-zinc-500">
         {t('settings.notificationsIntro')}
       </p>
@@ -344,7 +344,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
       {/* Data — calendar feed + backups */}
       {tab === 'data' && (
-      <div className="space-y-4">
+      <div className="animate-fade-slide-in space-y-4">
       {/* Backups */}
       <div>
         <div className="mb-2 flex items-center justify-between">

@@ -3,9 +3,11 @@ import { api } from '../lib/api';
 import type { MoneyStream, StreamType, MonthlySpend, MonthVariance } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
+import { SavingsRing } from '../components/SavingsRing';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatMoney, formatMonthShort } from '../lib/format';
+import { useCountUp } from '../lib/useCountUp';
 
 const freqKey: Record<string, string> = {
   monthly: 'freq.monthly',
@@ -103,6 +105,9 @@ export default function MoneyFlow() {
   const net = income - expenses - savings;
   const savingsRate = income > 0 ? (savings / income) * 100 : 0;
   const goalPct = savings_goal > 0 ? Math.min(100, (savings / savings_goal) * 100) : 0;
+  // Net is the page's one hero figure (see the polish pass) — it counts up
+  // once when the data first arrives, rather than just appearing.
+  const animatedNet = useCountUp(net, !loading);
 
   const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
@@ -132,7 +137,7 @@ export default function MoneyFlow() {
         <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.net')}</p>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <p className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            {loading ? '—' : fmt(net)}
+            {loading ? '—' : fmt(animatedNet)}
           </p>
           {!loading && income > 0 && (
             <p className="text-xs text-zinc-500">
@@ -160,15 +165,14 @@ export default function MoneyFlow() {
         </div>
       </div>
 
-      {/* Savings goal progress */}
+      {/* Savings goal progress — the one deliberately distinctive element on
+          this page: a filling ring rather than a generic linear bar. */}
       {!loading && savings_goal > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <div className="mb-2 flex items-baseline justify-between">
+        <section className="flex items-center gap-5 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <SavingsRing pct={goalPct} label={t('money.savingsGoal')} />
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsGoal')}</p>
-            <p className="text-xs tabular-nums text-zinc-500">{fmt(savings)} / {fmt(savings_goal)}</p>
-          </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
-            <div className="h-full rounded-full bg-teal-400" style={{ width: `${goalPct}%` }} />
+            <p className="mt-1 text-sm tabular-nums text-zinc-300">{fmt(savings)} <span className="text-zinc-600">/</span> {fmt(savings_goal)}</p>
           </div>
         </section>
       )}
