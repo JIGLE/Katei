@@ -157,7 +157,11 @@
     "inviteActive": "active",
     "revokeInvite": "Revoke invite",
     "noInvites": "No active invites.",
-    "invitesHint": "Share an invite link so a member can set their own name and password. Each link works once."
+    "invitesHint": "Share an invite link so a member can set their own name and password. Each link works once.",
+    "pet": "Pet",
+    "birthdayToday": "Birthday today",
+    "birthdayIn_one": "Birthday in {{count}} day",
+    "birthdayIn_other": "Birthday in {{count}} days"
   },
   "form": {
     "amount": "Amount",
@@ -213,7 +217,12 @@
     "dueShiftPrev": "Move earlier",
     "dueShiftNext": "Next working day",
     "automated": "Paid automatically",
-    "automatedHint": "Direct debit / standing order — no reminder or to-do."
+    "automatedHint": "Direct debit / standing order — no reminder or to-do.",
+    "memberKind": "Who is this?",
+    "kind_human": "Person",
+    "kind_pet": "Pet",
+    "petNamePlaceholder": "e.g. Buddy",
+    "birthday": "Birthday (optional)"
   },
   "settings": {
     "notificationsTitle": "Notifications",

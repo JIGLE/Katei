@@ -158,7 +158,11 @@
     "inviteActive": "actief",
     "revokeInvite": "Uitnodiging intrekken",
     "noInvites": "Geen actieve uitnodigingen.",
-    "invitesHint": "Deel een uitnodigingslink zodat een lid zelf naam en wachtwoord kiest. Elke link werkt één keer."
+    "invitesHint": "Deel een uitnodigingslink zodat een lid zelf naam en wachtwoord kiest. Elke link werkt één keer.",
+    "pet": "Huisdier",
+    "birthdayToday": "Vandaag jarig",
+    "birthdayIn_one": "Jarig over {{count}} dag",
+    "birthdayIn_other": "Jarig over {{count}} dagen"
   },
   "form": {
     "amount": "Bedrag",
@@ -214,7 +218,12 @@
     "dueShiftPrev": "Eerder",
     "dueShiftNext": "Volgende werkdag",
     "automated": "Automatisch betaald",
-    "automatedHint": "Automatische incasso / periodieke overboeking — geen herinnering of taak."
+    "automatedHint": "Automatische incasso / periodieke overboeking — geen herinnering of taak.",
+    "memberKind": "Wie is dit?",
+    "kind_human": "Persoon",
+    "kind_pet": "Huisdier",
+    "petNamePlaceholder": "bijv. Max",
+    "birthday": "Verjaardag (optioneel)"
   },
   "settings": {
     "notificationsTitle": "Notificaties",

@@ -158,7 +158,11 @@
     "inviteActive": "active",
     "revokeInvite": "Révoquer l'invitation",
     "noInvites": "Aucune invitation active.",
-    "invitesHint": "Partagez un lien d'invitation pour qu'un membre choisisse son nom et mot de passe. Chaque lien fonctionne une fois."
+    "invitesHint": "Partagez un lien d'invitation pour qu'un membre choisisse son nom et mot de passe. Chaque lien fonctionne une fois.",
+    "pet": "Animal",
+    "birthdayToday": "Anniversaire aujourd'hui",
+    "birthdayIn_one": "Anniversaire dans {{count}} jour",
+    "birthdayIn_other": "Anniversaire dans {{count}} jours"
   },
   "form": {
     "amount": "Montant",
@@ -214,7 +218,12 @@
     "dueShiftPrev": "Avancer",
     "dueShiftNext": "Jour ouvré suivant",
     "automated": "Payé automatiquement",
-    "automatedHint": "Prélèvement / virement permanent — aucun rappel ni tâche."
+    "automatedHint": "Prélèvement / virement permanent — aucun rappel ni tâche.",
+    "memberKind": "Qui est-ce ?",
+    "kind_human": "Personne",
+    "kind_pet": "Animal",
+    "petNamePlaceholder": "ex. Médor",
+    "birthday": "Anniversaire (facultatif)"
   },
   "settings": {
     "notificationsTitle": "Notifications",

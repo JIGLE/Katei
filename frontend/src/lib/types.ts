@@ -2,12 +2,16 @@
 
 export type Role = 'admin' | 'member';
 
+export type MemberKind = 'human' | 'pet';
+
 export interface User {
   id: number;
   name: string;
   email: string | null;
   avatar_url: string | null;
   ntfy_url: string | null;
+  kind: MemberKind;
+  birthday: string | null; // 'YYYY-MM-DD'
   role: Role;
   created_at: string;
 }

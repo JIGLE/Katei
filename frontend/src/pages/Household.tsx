@@ -26,6 +26,18 @@ function roleColor(role: string): string {
   return roleColors[role.toLowerCase()] ?? 'text-zinc-400';
 }
 
+// Days until the next occurrence of a 'YYYY-MM-DD' birthday, or null.
+function daysToBirthday(birthday: string | null): number | null {
+  if (!birthday) return null;
+  const [, m, d] = birthday.split('-').map(Number);
+  if (!m || !d) return null;
+  const today = new Date();
+  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let next = new Date(today.getFullYear(), m - 1, d);
+  if (next < t0) next = new Date(today.getFullYear() + 1, m - 1, d);
+  return Math.round((next.getTime() - t0.getTime()) / 86_400_000);
+}
+
 export default function Household() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -179,6 +191,11 @@ export default function Household() {
                   <div className="flex-1">
                     <p className="flex items-center gap-2 text-sm text-zinc-100">
                       <span className="truncate">{u.name}</span>
+                      {u.kind === 'pet' && (
+                        <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
+                          {t('household.pet')}
+                        </span>
+                      )}
                       {u.role === 'admin' && (
                         <span className="flex-shrink-0 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-amber-500">
                           {t('household.admin')}
@@ -186,7 +203,15 @@ export default function Household() {
                       )}
                     </p>
                     <p className="mt-0.5 text-xs text-zinc-500">
-                      {t('household.assignmentCount', { count: userAssignments.length })}
+                      {(() => {
+                        const days = daysToBirthday(u.birthday);
+                        if (days !== null && days <= 30) {
+                          return days === 0
+                            ? `🎂 ${t('household.birthdayToday')}`
+                            : `🎂 ${t('household.birthdayIn', { count: days })}`;
+                        }
+                        return t('household.assignmentCount', { count: userAssignments.length });
+                      })()}
                     </p>
                   </div>
                 </button>

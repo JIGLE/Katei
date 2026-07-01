@@ -158,7 +158,11 @@
     "inviteActive": "activa",
     "revokeInvite": "Revocar invitación",
     "noInvites": "No hay invitaciones activas.",
-    "invitesHint": "Comparte un enlace de invitación para que un miembro elija su nombre y contraseña. Cada enlace funciona una vez."
+    "invitesHint": "Comparte un enlace de invitación para que un miembro elija su nombre y contraseña. Cada enlace funciona una vez.",
+    "pet": "Mascota",
+    "birthdayToday": "Cumpleaños hoy",
+    "birthdayIn_one": "Cumpleaños en {{count}} día",
+    "birthdayIn_other": "Cumpleaños en {{count}} días"
   },
   "form": {
     "amount": "Importe",
@@ -214,7 +218,12 @@
     "dueShiftPrev": "Adelantar",
     "dueShiftNext": "Día hábil siguiente",
     "automated": "Pago automático",
-    "automatedHint": "Domiciliación / transferencia periódica — sin recordatorio ni tarea."
+    "automatedHint": "Domiciliación / transferencia periódica — sin recordatorio ni tarea.",
+    "memberKind": "¿Quién es?",
+    "kind_human": "Persona",
+    "kind_pet": "Mascota",
+    "petNamePlaceholder": "p. ej. Toby",
+    "birthday": "Cumpleaños (opcional)"
   },
   "settings": {
     "notificationsTitle": "Notificaciones",

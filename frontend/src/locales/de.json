@@ -158,7 +158,11 @@
     "inviteActive": "aktiv",
     "revokeInvite": "Einladung widerrufen",
     "noInvites": "Keine aktiven Einladungen.",
-    "invitesHint": "Teile einen Einladungslink, damit ein Mitglied Name und Passwort selbst festlegt. Jeder Link funktioniert einmal."
+    "invitesHint": "Teile einen Einladungslink, damit ein Mitglied Name und Passwort selbst festlegt. Jeder Link funktioniert einmal.",
+    "pet": "Tier",
+    "birthdayToday": "Heute Geburtstag",
+    "birthdayIn_one": "Geburtstag in {{count}} Tag",
+    "birthdayIn_other": "Geburtstag in {{count}} Tagen"
   },
   "form": {
     "amount": "Betrag",
@@ -214,7 +218,12 @@
     "dueShiftPrev": "Vorverlegen",
     "dueShiftNext": "Nächster Werktag",
     "automated": "Automatisch bezahlt",
-    "automatedHint": "Lastschrift / Dauerauftrag — keine Erinnerung oder Aufgabe."
+    "automatedHint": "Lastschrift / Dauerauftrag — keine Erinnerung oder Aufgabe.",
+    "memberKind": "Wer ist das?",
+    "kind_human": "Person",
+    "kind_pet": "Haustier",
+    "petNamePlaceholder": "z. B. Bello",
+    "birthday": "Geburtstag (optional)"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",

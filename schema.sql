@@ -10,6 +10,8 @@ CREATE TABLE users (
     avatar_url TEXT,
     password_hash TEXT,
     ntfy_url TEXT, -- per-member push notification topic URL (optional)
+    kind VARCHAR(10) NOT NULL DEFAULT 'human', -- 'human' | 'pet' (pets never log in)
+    birthday DATE, -- optional; drives birthday reminders for people & pets
     role VARCHAR(20) NOT NULL DEFAULT 'member', -- 'admin' | 'member'; first account is admin
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
