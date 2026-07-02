@@ -19,6 +19,13 @@ export const config = {
   // but never override what the household later changes in the UI
   // (see seedSettingsFromEnv).
   jwtSecret: process.env.JWT_SECRET || undefined,
+  // Comma-separated origins allowed to make credentialed cross-origin API
+  // calls. Empty (the default) means same-origin only — correct for the
+  // single-image deployment where the SPA is served by this server.
+  corsOrigins: (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   leadDays: process.env.LEAD_DAYS || undefined,
   // Optional EU-leaning locale/currency seeds for the household preferences.
   country: process.env.COUNTRY || undefined,

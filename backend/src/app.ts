@@ -23,12 +23,22 @@ export interface BuildAppOptions {
   logger?: boolean;
   /** Serve the bundled SPA from ./public when present (production image). */
   serveStatic?: boolean;
+  /** Origins allowed to make credentialed cross-origin calls (CORS_ORIGINS). */
+  corsOrigins?: string[];
 }
 
 export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> {
   const app = Fastify({ logger: opts.logger ?? false });
 
-  await app.register(cors, { origin: true, credentials: true });
+  // Same-origin by default: the production image serves the SPA itself, so no
+  // cross-origin caller is expected. With an empty allowlist the plugin sends
+  // no Access-Control headers at all — a cookie-authed API must never reflect
+  // arbitrary origins with credentials.
+  const corsOrigins = opts.corsOrigins ?? [];
+  await app.register(
+    cors,
+    corsOrigins.length ? { origin: corsOrigins, credentials: true } : { origin: false },
+  );
   await app.register(cookie);
   // Avatar uploads — cap at 2 MB, one file per request.
   await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024, files: 1 } });

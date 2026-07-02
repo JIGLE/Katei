@@ -16,7 +16,7 @@ await migrate();
 await seedSettingsFromEnv();
 const authSecret = await getOrCreateAuthSecret();
 
-const app = await buildApp({ jwtSecret: authSecret, logger: true });
+const app = await buildApp({ jwtSecret: authSecret, logger: true, corsOrigins: config.corsOrigins });
 
 const start = async () => {
   try {
