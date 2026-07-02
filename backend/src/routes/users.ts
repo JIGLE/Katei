@@ -3,6 +3,7 @@ import { query } from '../db.js';
 import { requireAdmin, isAdmin } from '../lib/authz.js';
 import { logActivity } from '../lib/activity.js';
 import { saveAvatar } from '../lib/avatars.js';
+import { hit } from '../lib/ratelimit.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   const COLS = "id, name, email, avatar_url, ntfy_url, kind, to_char(birthday, 'YYYY-MM-DD') AS birthday, role, created_at";
@@ -113,6 +114,12 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     const uid = req.user?.id;
     if (uid !== id && !(await isAdmin(uid ?? -1))) {
       return reply.code(403).send({ error: 'You can only change your own picture.' });
+    }
+    // A person changes their picture a handful of times, not dozens an hour.
+    const gate = hit(`avatar:${uid}`, 20, 60 * 60 * 1000);
+    if (!gate.ok) {
+      reply.header('Retry-After', String(gate.retryAfterSec));
+      return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
     }
     const file = await req.file();
     if (!file) return reply.code(400).send({ error: 'No image provided' });

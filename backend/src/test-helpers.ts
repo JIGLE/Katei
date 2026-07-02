@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from './app.js';
 import { pool, migrate } from './db.js';
+import { _reset as resetRateLimits } from './lib/ratelimit.js';
 
 const TEST_JWT_SECRET = 'integration-test-secret';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,9 +31,11 @@ export async function setupTestDb(): Promise<void> {
   await migrate();
 }
 
-/** Empty all domain tables between tests. */
+/** Empty all domain tables between tests (and the in-memory rate limiter —
+ * every inject() shares one client IP, so buckets bleed across tests). */
 export async function truncateAll(): Promise<void> {
   await pool.query(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY CASCADE`);
+  resetRateLimits();
 }
 
 export async function makeApp(): Promise<FastifyInstance> {

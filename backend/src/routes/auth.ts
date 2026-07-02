@@ -85,7 +85,13 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // Public: validate an invite code so the join screen can show its state.
-  app.get<{ Params: { code: string } }>('/invite/:code', async (req) => {
+  // Throttled per IP — this is otherwise a free invite-code oracle.
+  app.get<{ Params: { code: string } }>('/invite/:code', async (req, reply) => {
+    const gate = hit(`invitecheck:${req.ip}`, 20);
+    if (!gate.ok) {
+      reply.header('Retry-After', String(gate.retryAfterSec));
+      return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
+    }
     const invite = await validInvite(req.params.code);
     return invite ? { valid: true, role: invite.role } : { valid: false };
   });
@@ -110,6 +116,14 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
+      // Throttle per IP: registration doubles as the invite-code redeemer, so
+      // unthrottled it is the other half of the invite brute-force surface.
+      const regGate = hit(`register:${req.ip}`, 10);
+      if (!regGate.ok) {
+        reply.header('Retry-After', String(regGate.retryAfterSec));
+        return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
+      }
+
       const setup = (await accountCount()) === 0;
 
       let role = 'admin'; // first account
@@ -236,9 +250,17 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       if (!user || !user.password_hash) {
         return reply.code(401).send({ error: 'Not authenticated' });
       }
+      // Throttle current-password guessing from a stolen session.
+      const key = `pwchange:${user.id}`;
+      const gate = hit(key);
+      if (!gate.ok) {
+        reply.header('Retry-After', String(gate.retryAfterSec));
+        return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
+      }
       if (!(await verifyPassword(req.body.current_password, user.password_hash))) {
         return reply.code(403).send({ error: 'Current password is incorrect' });
       }
+      clear(key);
       const hash = await hashPassword(req.body.new_password);
       await query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [hash, user.id]);
       return { ok: true };

@@ -47,6 +47,57 @@ test('resyncSequences() self-heals a drifted sequence so inserts resume', opts, 
   assert.equal((await addEvent('Third')).statusCode, 201);
 });
 
+// --- Rate limiting on abuse-prone routes (S4) ---
+
+test('invite-code checks are throttled per IP', opts, async () => {
+  let last = 0;
+  for (let i = 0; i < 20; i++) {
+    last = (await app.inject({ method: 'GET', url: '/api/auth/invite/nope' })).statusCode;
+  }
+  assert.equal(last, 200); // still inside the window
+  const blocked = await app.inject({ method: 'GET', url: '/api/auth/invite/nope' });
+  assert.equal(blocked.statusCode, 429);
+  assert.ok(Number(blocked.headers['retry-after']) > 0);
+});
+
+test('registration attempts are throttled per IP', opts, async () => {
+  // The admin registration in beforeEach already used one attempt.
+  let saw429 = false;
+  for (let i = 0; i < 12; i++) {
+    const res = await app.inject({
+      method: 'POST', url: '/api/auth/register',
+      payload: { name: `Guess${i}`, password: 'password123', invite_code: 'wrong' },
+    });
+    if (res.statusCode === 429) { saw429 = true; break; }
+    assert.equal(res.statusCode, 403); // invalid invite until the limiter kicks in
+  }
+  assert.ok(saw429, 'expected a 429 within 12 invalid-invite registrations');
+});
+
+test('wrong calendar tokens are throttled, the valid feed never is', opts, async () => {
+  const tok = (await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })).json().token;
+  // Burn the failure budget with bad guesses…
+  let last = 0;
+  for (let i = 0; i < 31; i++) {
+    last = (await app.inject({ method: 'GET', url: `/api/calendar/guess${i}.ics` })).statusCode;
+  }
+  assert.equal(last, 429);
+  // …and the real subscriber still gets the feed.
+  const ok = await app.inject({ method: 'GET', url: `/api/calendar/${tok}.ics` });
+  assert.equal(ok.statusCode, 200);
+});
+
+test('current-password guesses on /auth/password are throttled', opts, async () => {
+  let last;
+  for (let i = 0; i < 9; i++) {
+    last = await app.inject({
+      method: 'POST', url: '/api/auth/password', headers: { cookie },
+      payload: { current_password: 'wrong-guess', new_password: 'newpassword123' },
+    });
+  }
+  assert.equal(last!.statusCode, 429);
+});
+
 // --- Security headers (S3) ---
 
 test('responses carry the helmet security headers', opts, async () => {
