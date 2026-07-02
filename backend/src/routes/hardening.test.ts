@@ -47,6 +47,17 @@ test('resyncSequences() self-heals a drifted sequence so inserts resume', opts, 
   assert.equal((await addEvent('Third')).statusCode, 201);
 });
 
+// --- Security headers (S3) ---
+
+test('responses carry the helmet security headers', opts, async () => {
+  const res = await app.inject({ method: 'GET', url: '/health' });
+  assert.equal(res.headers['x-content-type-options'], 'nosniff');
+  assert.match(String(res.headers['content-security-policy']), /default-src 'self'/);
+  assert.match(String(res.headers['content-security-policy']), /frame-ancestors 'none'/);
+  assert.match(String(res.headers['content-security-policy']), /script-src 'self'/);
+  assert.ok(res.headers['strict-transport-security']);
+});
+
 // --- CORS: a cookie-authed API must never reflect arbitrary origins (S2) ---
 
 test('a foreign Origin is not reflected by default (same-origin only)', opts, async () => {

@@ -4,6 +4,7 @@
 // bootstrap (index.ts) computes the JWT secret, calls this, then listens.
 
 import Fastify, { type FastifyInstance } from 'fastify';
+import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
@@ -34,6 +35,38 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   // cross-origin caller is expected. With an empty allowlist the plugin sends
   // no Access-Control headers at all — a cookie-authed API must never reflect
   // arbitrary origins with credentials.
+  // Security headers. The CSP is written for what the SPA actually loads:
+  // own scripts only (the theme bootstrap is an external file for this),
+  // Inter from Google Fonts, same-origin images/avatars (+ data: icons), and
+  // inline style *attributes* (stagger delays, progress widths) — hence
+  // 'unsafe-inline' on style-src but never on script-src. HSTS is emitted
+  // unconditionally; browsers ignore it over plain HTTP.
+  await app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        workerSrc: ["'self'"],
+        manifestSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        // Self-hosted on a LAN, typically reached over plain HTTP — the
+        // default upgrade-insecure-requests would rewrite every asset fetch
+        // to https:// and break the app. Drop it.
+        upgradeInsecureRequests: null,
+      },
+    },
+    // All resources are same-origin, but COEP breaks nothing *today* only by
+    // luck; keep it off so a future cross-origin image/font doesn't hard-fail.
+    crossOriginEmbedderPolicy: false,
+  });
+
   const corsOrigins = opts.corsOrigins ?? [];
   await app.register(
     cors,
