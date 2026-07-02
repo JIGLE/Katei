@@ -63,7 +63,9 @@
     "summaryClear": "Alles is bij.",
     "birthdays": "Aankomende verjaardagen",
     "activity": "In huis",
-    "greetingName": "{{greeting}}, {{name}}"
+    "greetingName": "{{greeting}}, {{name}}",
+    "saved": "Gespaard",
+    "goals": "Spaardoelen"
   },
   "onboarding": {
     "title": "Aan de slag",

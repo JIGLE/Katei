@@ -63,7 +63,9 @@
     "summaryClear": "Todo al día.",
     "birthdays": "Próximos cumpleaños",
     "activity": "En casa",
-    "greetingName": "{{greeting}}, {{name}}"
+    "greetingName": "{{greeting}}, {{name}}",
+    "saved": "Ahorrado",
+    "goals": "Metas de ahorro"
   },
   "onboarding": {
     "title": "Primeros pasos",

@@ -63,7 +63,9 @@
     "summaryClear": "Tout est à jour.",
     "birthdays": "Anniversaires à venir",
     "activity": "À la maison",
-    "greetingName": "{{greeting}}, {{name}}"
+    "greetingName": "{{greeting}}, {{name}}",
+    "saved": "Épargné",
+    "goals": "Objectifs d'épargne"
   },
   "onboarding": {
     "title": "Pour commencer",

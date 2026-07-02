@@ -63,7 +63,9 @@
     "summaryClear": "Alles erledigt.",
     "birthdays": "Anstehende Geburtstage",
     "activity": "Im Haushalt",
-    "greetingName": "{{greeting}}, {{name}}"
+    "greetingName": "{{greeting}}, {{name}}",
+    "saved": "Gespart",
+    "goals": "Sparziele"
   },
   "onboarding": {
     "title": "Erste Schritte",

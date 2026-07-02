@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
-import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, User } from '../lib/types';
+import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
 
 type Accent = 'amber' | 'rose' | 'emerald' | 'teal';
 
@@ -25,10 +25,10 @@ const accentMap: Record<Accent, { pill: string; dot: string }> = {
   teal: { pill: 'bg-teal-500/10 text-teal-300', dot: 'bg-teal-400' },
 };
 
-// Monthly-equivalent of recurring expenses (monthly as-is, yearly ÷12).
-function monthlyOutflow(streams: MoneyStream[]): number {
+// Monthly-equivalent of a recurring stream type (monthly as-is, yearly ÷12).
+function monthlyOf(streams: MoneyStream[], type: MoneyStream['stream_type']): number {
   return streams
-    .filter((s) => s.is_recurring && s.stream_type === 'expense')
+    .filter((s) => s.is_recurring && s.stream_type === type)
     .reduce((sum, s) => {
       const a = parseFloat(s.amount);
       return sum + (s.frequency === 'monthly' ? a : s.frequency === 'yearly' ? a / 12 : 0);
@@ -88,6 +88,7 @@ export default function Overview() {
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [activity, setActivity] = useState<Activity[]>([]);
+  const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +115,8 @@ export default function Overview() {
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
+    // Savings pots are a soft, non-blocking glance.
+    api.get<SavingsSummary>('/savings').then(setSavings).catch(() => {});
   }, []);
 
   const usersCount = members.length;
@@ -146,6 +149,16 @@ export default function Overview() {
   const overdue = dated.filter((d) => d.days < 0);
   const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
   const later = dated.filter((d) => d.days > 7);
+
+  // Money at a glance: monthly-equivalents from the streams + the pots' balance.
+  const net = monthlyOf(streams, 'income') - monthlyOf(streams, 'expense') - monthlyOf(streams, 'savings');
+  const outflow = monthlyOf(streams, 'expense');
+  const fmt = (n: number) => formatMoney(n, currency, locale);
+  // Long localized amounts use a non-breaking separator; normalize so they wrap
+  // cleanly inside the cramped 3-up cells.
+  const fmtWrap = (n: number) => fmt(n).replace(/[\u00a0\u202f]/g, ' ');
+  // Goals worth glancing at: pots with a target, soonest-created first.
+  const goalPots = (savings?.pots ?? []).filter((p) => p.target && p.target > 0).slice(0, 3);
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -184,28 +197,7 @@ export default function Overview() {
         />
       )}
 
-      {/* At-a-glance strip — a quiet, unified summary (one panel split by
-          dividers, matching the Money page) so the "Needs attention" list below
-          is the focal point rather than spend. Outflow's non-breaking currency
-          separator is normalized so long amounts wrap cleanly in the cell. */}
-      <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('overview.overdue')}</p>
-          <p className="mt-1 text-lg font-light tabular-nums text-rose-500">{loading ? '—' : overdue.length}</p>
-        </div>
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('overview.thisWeek')}</p>
-          <p className="mt-1 text-lg font-light tabular-nums text-amber-500">{loading ? '—' : thisWeek.length}</p>
-        </div>
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">
-            {loading ? '—' : formatMoney(monthlyOutflow(streams), currency, locale).replace(/[  ]/g, ' ')}
-          </p>
-        </div>
-      </div>
-
-      {/* Attention list */}
+      {/* Attention list — the focal point: what the house needs from you. */}
       <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
         <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
           {t('overview.needsAttention')}
@@ -258,6 +250,60 @@ export default function Overview() {
           </div>
         )}
       </section>
+
+      {/* Money at a glance — saved so far, monthly net, monthly outflow. */}
+      {!loading && !error && streams.length > 0 && (
+        <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+          <div className="p-4">
+            <p className="text-xs text-zinc-500">{t('overview.saved')}</p>
+            <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
+              {savings ? fmtWrap(savings.balance) : '—'}
+            </p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-zinc-500">{t('money.net')}</p>
+            <p className={`mt-1 text-sm font-light leading-tight tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              {fmtWrap(net)}
+            </p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
+            <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">
+              {fmtWrap(outflow)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Savings goals — the pots being saved toward, at a glance. */}
+      {!loading && goalPots.length > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('overview.goals')}
+          </p>
+          <ul className="space-y-3">
+            {goalPots.map((pot) => {
+              const pct = pot.target && pot.target > 0 ? Math.min(100, (pot.balance / pot.target) * 100) : 0;
+              return (
+                <li key={pot.id}>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span aria-hidden>{pot.icon || '🐷'}</span>
+                    <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
+                    <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
+                    <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target ?? 0)}</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+                    <div
+                      className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
       {!loading && birthdays.length > 0 && (

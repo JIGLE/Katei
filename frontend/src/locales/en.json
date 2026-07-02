@@ -62,7 +62,9 @@
     "summaryClear": "You're all caught up.",
     "birthdays": "Upcoming birthdays",
     "activity": "Around the house",
-    "greetingName": "{{greeting}}, {{name}}"
+    "greetingName": "{{greeting}}, {{name}}",
+    "saved": "Saved",
+    "goals": "Savings goals"
   },
   "onboarding": {
     "title": "Getting started",
