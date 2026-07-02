@@ -66,8 +66,10 @@ export default function App() {
 
       {/* Scrollable content area — padded above the fixed bottom nav */}
       <main className="flex-1 overflow-y-auto pb-28">
-        {/* Keyed on the path so each tab change re-runs the calm reveal. */}
-        <div key={location.pathname} className="animate-fade-slide-in mx-auto max-w-lg px-4 pt-8">
+        {/* Keyed on the path so each tab change re-runs the calm reveal.
+            Opacity-only: a transform here would become the containing block
+            for the pages' position:fixed add buttons and un-float them. */}
+        <div key={location.pathname} className="animate-fade-in mx-auto max-w-lg px-4 pt-8">
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/timeline" element={<Timeline />} />

@@ -143,6 +143,25 @@
   animation: fade-slide-in var(--dur-base) var(--ease-enter) both;
 }
 
+/*
+ * Opacity-only fade — for containers that hold position:fixed children (the
+ * route wrapper with its floating add buttons). fade-slide-in's persisted
+ * transform would make such a container the fixed-positioning containing
+ * block and un-float them; opacity never does.
+ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--dur-base) var(--ease-enter) both;
+}
+
 /* Checkmark draws in on completion — a small, deliberate confirmation. */
 @keyframes check-draw {
   from {
@@ -161,6 +180,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-slide-in {
+    animation: none;
+  }
+  .animate-fade-in {
     animation: none;
   }
   .check-draw {
