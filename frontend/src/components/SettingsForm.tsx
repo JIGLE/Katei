@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { useAuth } from '../lib/auth';
 import { usePreferences, applyTheme, type Theme } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
@@ -32,6 +33,11 @@ const fieldCls =
 
 export function SettingsForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  // Household-wide config and infrastructure (backups, calendar token, reminder
+  // window) are admin-only on the server; hide those controls from members so
+  // they never hit a 403. Members keep appearance + their own device's push.
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [leadDays, setLeadDays] = useState('3');
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
@@ -106,8 +112,11 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
       .catch(() => {})
       .finally(() => setLoading(false));
     if (pushSupported) isSubscribed().then(setPushOn).catch(() => {});
-    loadBackups();
-    api.get<{ token: string }>('/settings/calendar').then((r) => setCalToken(r.token)).catch(() => {});
+    // Backups + the calendar token are admin-only on the server.
+    if (isAdmin) {
+      loadBackups();
+      api.get<{ token: string }>('/settings/calendar').then((r) => setCalToken(r.token)).catch(() => {});
+    }
   }, []);
 
   const calUrl = calToken ? `${window.location.origin}/api/calendar/${calToken}.ics` : '';
@@ -189,7 +198,11 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     <div className="space-y-4">
       {/* Tabs — split the long form into focused sections. */}
       <div role="tablist" aria-label={t('common.settings')} className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-950 p-1">
-        {([['general', 'settings.tabGeneral'], ['notifications', 'settings.tabNotifications'], ['data', 'settings.tabData']] as const).map(([key, label]) => (
+        {([
+          ['general', 'settings.tabGeneral'],
+          ['notifications', 'settings.tabNotifications'],
+          ...(isAdmin ? [['data', 'settings.tabData'] as const] : []),
+        ] as const).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -207,6 +220,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           long form reads as a few small decisions instead of one wall of fields. */}
       {tab === 'general' && (
       <div className="animate-fade-slide-in space-y-5">
+        {isAdmin && (<>
         <section className="space-y-3">
           <p className={sectionCls}>{t('settings.sectionHousehold')}</p>
           <div>
@@ -305,8 +319,9 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           {/* Savings targets now live on each pot (Money → tap a pot). */}
           <p className="text-xs text-zinc-600">{t('settings.potsHint')}</p>
         </section>
+        </>)}
 
-        <section className="space-y-3 border-t border-zinc-800/60 pt-4">
+        <section className={`space-y-3 ${isAdmin ? 'border-t border-zinc-800/60 pt-4' : ''}`}>
           <p className={sectionCls}>{t('settings.sectionAppearance')}</p>
           <div>
             <span className={gLabelCls}>{t('settings.theme')}</span>
@@ -331,14 +346,20 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           </div>
         </section>
 
-        <button
-          type="button"
-          onClick={savePrefs}
-          disabled={savingPrefs}
-          className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {savingPrefs ? t('common.saving') : t('settings.savePreferences')}
-        </button>
+        {isAdmin ? (
+          <button
+            type="button"
+            onClick={savePrefs}
+            disabled={savingPrefs}
+            className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {savingPrefs ? t('common.saving') : t('settings.savePreferences')}
+          </button>
+        ) : (
+          // Members have no server-side prefs to save; theme applies live and is
+          // remembered on this device.
+          <p className="text-xs text-zinc-600">{t('settings.themeDeviceHint')}</p>
+        )}
       </div>
       )}
 
@@ -374,6 +395,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         </p>
       )}
 
+      {/* The reminder window is a household-wide setting → admin only. */}
+      {isAdmin && (
       <div>
         <label htmlFor="lead_days" className={labelCls}>{t('settings.remindDaysAhead')}</label>
         <input
@@ -386,6 +409,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           className={`${fieldCls}`}
         />
       </div>
+      )}
 
       <div className="flex gap-3 pt-1">
         <button
@@ -396,14 +420,16 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         >
           {testing ? t('settings.sending') : t('settings.sendTest')}
         </button>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving || testing}
-          className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {saving ? t('common.saving') : t('settings.save')}
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || testing}
+            className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? t('common.saving') : t('settings.save')}
+          </button>
+        )}
       </div>
       </div>
       )}

@@ -330,7 +330,8 @@
     "sectionRegion": "Region & Sprache",
     "sectionMoney": "Geld",
     "sectionAppearance": "Darstellung",
-    "potsHint": "Sparziele gehören zu den Töpfen – öffne Geld und tippe auf einen Topf."
+    "potsHint": "Sparziele gehören zu den Töpfen – öffne Geld und tippe auf einen Topf.",
+    "themeDeviceHint": "Dieses Gerät merkt sich deine Themenauswahl."
   },
   "account": {
     "title": "Mein Konto",

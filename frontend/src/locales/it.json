@@ -330,7 +330,8 @@
     "sectionRegion": "Regione e lingua",
     "sectionMoney": "Denaro",
     "sectionAppearance": "Aspetto",
-    "potsHint": "Gli obiettivi vivono su ogni salvadanaio: apri Denaro e toccane uno."
+    "potsHint": "Gli obiettivi vivono su ogni salvadanaio: apri Denaro e toccane uno.",
+    "themeDeviceHint": "Questo dispositivo ricorda la tua scelta del tema."
   },
   "account": {
     "title": "Il mio account",

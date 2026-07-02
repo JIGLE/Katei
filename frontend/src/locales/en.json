@@ -329,7 +329,8 @@
     "sectionRegion": "Region & language",
     "sectionMoney": "Money",
     "sectionAppearance": "Appearance",
-    "potsHint": "Savings targets live on each pot — open Money and tap a pot to set one."
+    "potsHint": "Savings targets live on each pot — open Money and tap a pot to set one.",
+    "themeDeviceHint": "This device remembers your theme choice."
   },
   "account": {
     "title": "My account",

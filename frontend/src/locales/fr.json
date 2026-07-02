@@ -330,7 +330,8 @@
     "sectionRegion": "Région et langue",
     "sectionMoney": "Argent",
     "sectionAppearance": "Apparence",
-    "potsHint": "Les objectifs d'épargne se règlent sur chaque pot — ouvrez Argent et touchez un pot."
+    "potsHint": "Les objectifs d'épargne se règlent sur chaque pot — ouvrez Argent et touchez un pot.",
+    "themeDeviceHint": "Cet appareil mémorise votre choix de thème."
   },
   "account": {
     "title": "Mon compte",

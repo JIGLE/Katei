@@ -330,7 +330,8 @@
     "sectionRegion": "Región e idioma",
     "sectionMoney": "Dinero",
     "sectionAppearance": "Apariencia",
-    "potsHint": "Las metas de ahorro viven en cada bote: abre Dinero y toca un bote."
+    "potsHint": "Las metas de ahorro viven en cada bote: abre Dinero y toca un bote.",
+    "themeDeviceHint": "Este dispositivo recuerda tu elección de tema."
   },
   "account": {
     "title": "Mi cuenta",

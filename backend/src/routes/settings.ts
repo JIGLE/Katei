@@ -7,7 +7,15 @@ import { getSettings, saveSettings, checkAndNotify, sendPush } from '../lib/noti
 import type { PushSubRow } from '../lib/notifications.js';
 import { listBackups, backupPath, runBackup } from '../lib/backups.js';
 import { getSetting, setSetting, query } from '../db.js';
+import { requireAdmin } from '../lib/authz.js';
 import { randomBytes } from 'node:crypto';
+
+// Guarding sensitive settings routes. Household-wide writes and infrastructure
+// (backups, calendar token, notification sweeps) are admin-only; the reads the
+// app needs to render for every member (preferences, lead-days) and each
+// member's own push test stay open. Applied per-route so the split is explicit
+// and greppable rather than a blanket hook with exemptions.
+const adminOnly = { preHandler: requireAdmin } as const;
 
 // EU-leaning defaults when a household hasn't set preferences yet.
 const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
@@ -37,6 +45,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
   }>(
     '/preferences',
     {
+      preHandler: requireAdmin,
       schema: {
         body: {
           type: 'object',
@@ -85,7 +94,8 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // GET /api/settings/calendar — the household's iCal feed token (created lazily).
-  app.get('/calendar', async () => {
+  // Admin-only: this token is a bearer secret to every household event.
+  app.get('/calendar', adminOnly, async () => {
     let token = await getSetting('calendar_token');
     if (!token) {
       token = randomBytes(24).toString('base64url');
@@ -95,7 +105,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/settings/calendar/rotate — invalidate the old feed URL.
-  app.post('/calendar/rotate', async () => {
+  app.post('/calendar/rotate', adminOnly, async () => {
     const token = randomBytes(24).toString('base64url');
     await setSetting('calendar_token', token);
     return { token };
@@ -108,6 +118,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
   app.put<{ Body: { lead_days: number } }>(
     '/notifications',
     {
+      preHandler: requireAdmin,
       schema: {
         body: {
           type: 'object',
@@ -142,20 +153,21 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/settings/notifications/run — trigger a due-soon sweep now.
-  app.post('/notifications/run', async () => ({ sent: await checkAndNotify() }));
+  app.post('/notifications/run', adminOnly, async () => ({ sent: await checkAndNotify() }));
 
   // GET /api/settings/backups — list available database backups.
-  app.get('/backups', async () => listBackups());
+  app.get('/backups', adminOnly, async () => listBackups());
 
   // POST /api/settings/backups/run — take a backup now.
-  app.post('/backups/run', async (_req, reply) => {
+  app.post('/backups/run', adminOnly, async (_req, reply) => {
     const file = await runBackup(app.log);
     if (!file) return reply.code(500).send({ error: 'Backup failed' });
     return { file: file.split('/').pop() };
   });
 
   // GET /api/settings/backups/:name — download a backup file.
-  app.get<{ Params: { name: string } }>('/backups/:name', async (req, reply) => {
+  // Admin-only: these SQL dumps contain every user's password hash.
+  app.get<{ Params: { name: string } }>('/backups/:name', adminOnly, async (req, reply) => {
     const full = backupPath(req.params.name);
     if (!full) return reply.code(400).send({ error: 'Invalid backup name' });
     if (!existsSync(full)) return reply.code(404).send({ error: 'Backup not found' });

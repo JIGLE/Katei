@@ -330,7 +330,8 @@
     "sectionRegion": "Regio & taal",
     "sectionMoney": "Geld",
     "sectionAppearance": "Weergave",
-    "potsHint": "Spaardoelen horen bij elk potje — open Geld en tik op een potje."
+    "potsHint": "Spaardoelen horen bij elk potje — open Geld en tik op een potje.",
+    "themeDeviceHint": "Dit apparaat onthoudt je themakeuze."
   },
   "account": {
     "title": "Mijn account",
