@@ -27,4 +27,15 @@ export const api = {
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  // multipart upload — let the browser set the Content-Type boundary.
+  upload: async <T>(path: string, file: File): Promise<T> => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${BASE}${path}`, { method: 'POST', credentials: 'include', body: form });
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new Error(`${res.status} ${text}`);
+    }
+    return res.json() as Promise<T>;
+  },
 };

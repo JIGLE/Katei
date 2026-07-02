@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { Avatar } from './Avatar';
+import { AvatarPicker } from './AvatarPicker';
 import type { User } from '../lib/types';
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -19,7 +20,7 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
 
   const [name, setName] = useState(user?.name ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [currentPw, setCurrentPw] = useState('');
@@ -41,8 +42,8 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       await api.patch<User>(`/users/${user.id}`, {
         name: name.trim(),
         email: email.trim(),
-        avatar_url: avatarUrl.trim(),
       });
+      if (avatarFile) await api.upload<User>(`/users/${user.id}/avatar`, avatarFile);
       await refresh();
       setMessage({ kind: 'ok', text: t('account.profileSaved') });
     } catch (err) {
@@ -75,7 +76,7 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
     <div className="space-y-5">
       {/* Identity preview */}
       <div className="flex items-center gap-3">
-        <Avatar name={name || user.name} url={avatarUrl || user.avatar_url} size="md" />
+        <Avatar name={name || user.name} url={user.avatar_url} size="md" />
         <div className="min-w-0">
           <p className="truncate text-sm text-zinc-100">{name || user.name}</p>
           <p className="text-xs text-zinc-500">
@@ -104,15 +105,8 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
           <p className="mt-1.5 text-xs text-zinc-600">{t('account.emailHint')}</p>
         </div>
         <div>
-          <label htmlFor="acct_avatar" className={labelCls}>{t('account.avatarUrl')}</label>
-          <input
-            id="acct_avatar"
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://…"
-            className={fieldCls}
-          />
+          <span className={labelCls}>{t('form.photo')}</span>
+          <AvatarPicker name={name || user.name} url={user.avatar_url} file={avatarFile} onPick={setAvatarFile} />
         </div>
         <button
           type="button"

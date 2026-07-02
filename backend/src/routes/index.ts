@@ -11,6 +11,7 @@ import { activityRoutes } from './activity.js';
 import { savingsRoutes } from './savings.js';
 import { notificationsRoutes } from './notifications.js';
 import { pushRoutes } from './push.js';
+import { avatarsRoutes } from './avatars.js';
 
 export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(usersRoutes, { prefix: '/users' });
@@ -23,4 +24,5 @@ export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(savingsRoutes, { prefix: '/savings' });
   await app.register(notificationsRoutes, { prefix: '/notifications' });
   await app.register(pushRoutes, { prefix: '/push' });
+  await app.register(avatarsRoutes, { prefix: '/avatars' });
 };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { AvatarPicker } from './AvatarPicker';
 import type { User, MemberKind } from '../lib/types';
 
 interface MemberFormProps {
@@ -21,7 +22,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
   const [name, setName] = useState(initial?.name ?? '');
   const [kind, setKind] = useState<MemberKind>(initial?.kind ?? 'human');
   const [birthday, setBirthday] = useState(initial?.birthday ?? '');
-  const [avatarUrl, setAvatarUrl] = useState(initial?.avatar_url ?? '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,11 +39,12 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
     try {
       const body: Record<string, unknown> = { name: name.trim(), kind };
       body.birthday = birthday || null;
-      if (avatarUrl.trim()) body.avatar_url = avatarUrl.trim();
       const saved = isEdit
         ? await api.patch<User>(`/users/${initial!.id}`, body)
         : await api.post<User>('/users', body);
-      onSaved(saved);
+      // Upload the photo once the member exists to receive it.
+      const finalUser = avatarFile ? await api.upload<User>(`/users/${saved.id}/avatar`, avatarFile) : saved;
+      onSaved(finalUser);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('form.errSaveMember'));
       setSubmitting(false);
@@ -110,15 +112,8 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
       </div>
 
       <div>
-        <label htmlFor="avatar_url" className={labelCls}>{t('form.avatarUrl')}</label>
-        <input
-          id="avatar_url"
-          type="url"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder={t('form.avatarPlaceholder')}
-          className={fieldCls}
-        />
+        <span className={labelCls}>{t('form.photo')}</span>
+        <AvatarPicker name={name} url={initial?.avatar_url ?? null} file={avatarFile} onPick={setAvatarFile} />
       </div>
 
       {error && <p className="text-sm text-rose-400">{error}</p>}

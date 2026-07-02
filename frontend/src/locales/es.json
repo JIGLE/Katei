@@ -263,7 +263,11 @@
     "kind_human": "Persona",
     "kind_pet": "Mascota",
     "petNamePlaceholder": "p. ej. Toby",
-    "birthday": "Cumpleaños (opcional)"
+    "birthday": "Cumpleaños (opcional)",
+    "photo": "Foto",
+    "choosePhoto": "Elegir foto",
+    "changePhoto": "Cambiar foto",
+    "photoHint": "JPG o PNG, hasta 2 MB"
   },
   "settings": {
     "notificationsTitle": "Notificaciones",

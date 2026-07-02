@@ -263,7 +263,11 @@
     "kind_human": "Person",
     "kind_pet": "Haustier",
     "petNamePlaceholder": "z. B. Bello",
-    "birthday": "Geburtstag (optional)"
+    "birthday": "Geburtstag (optional)",
+    "photo": "Foto",
+    "choosePhoto": "Foto wählen",
+    "changePhoto": "Foto ändern",
+    "photoHint": "JPG oder PNG, bis 2 MB"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",

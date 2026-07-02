@@ -263,7 +263,11 @@
     "kind_human": "Personne",
     "kind_pet": "Animal",
     "petNamePlaceholder": "ex. Médor",
-    "birthday": "Anniversaire (facultatif)"
+    "birthday": "Anniversaire (facultatif)",
+    "photo": "Photo",
+    "choosePhoto": "Choisir une photo",
+    "changePhoto": "Changer la photo",
+    "photoHint": "JPG ou PNG, jusqu’à 2 Mo"
   },
   "settings": {
     "notificationsTitle": "Notifications",

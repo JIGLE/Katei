@@ -263,7 +263,11 @@
     "kind_human": "Persona",
     "kind_pet": "Animale",
     "petNamePlaceholder": "es. Fido",
-    "birthday": "Compleanno (facoltativo)"
+    "birthday": "Compleanno (facoltativo)",
+    "photo": "Foto",
+    "choosePhoto": "Scegli foto",
+    "changePhoto": "Cambia foto",
+    "photoHint": "JPG o PNG, fino a 2 MB"
   },
   "settings": {
     "notificationsTitle": "Notifiche",

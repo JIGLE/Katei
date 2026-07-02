@@ -7,6 +7,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
+import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -29,6 +30,8 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
 
   await app.register(cors, { origin: true, credentials: true });
   await app.register(cookie);
+  // Avatar uploads — cap at 2 MB, one file per request.
+  await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024, files: 1 } });
   await app.register(jwt, {
     secret: opts.jwtSecret,
     cookie: { cookieName: 'katei_session', signed: false },

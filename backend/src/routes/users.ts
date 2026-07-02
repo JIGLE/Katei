@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { requireAdmin, isAdmin } from '../lib/authz.js';
 import { logActivity } from '../lib/activity.js';
+import { saveAvatar } from '../lib/avatars.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   const COLS = "id, name, email, avatar_url, ntfy_url, kind, to_char(birthday, 'YYYY-MM-DD') AS birthday, role, created_at";
@@ -104,5 +105,27 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     const { rowCount } = await query('DELETE FROM users WHERE id = $1', [req.params.id]);
     if (!rowCount) return reply.code(404).send({ error: 'User not found' });
     return reply.code(204).send();
+  });
+
+  // POST /api/users/:id/avatar — upload a JPG/PNG (≤2 MB). Self or admin.
+  app.post<{ Params: { id: string } }>('/:id/avatar', async (req, reply) => {
+    const id = Number(req.params.id);
+    const uid = req.user?.id;
+    if (uid !== id && !(await isAdmin(uid ?? -1))) {
+      return reply.code(403).send({ error: 'You can only change your own picture.' });
+    }
+    const file = await req.file();
+    if (!file) return reply.code(400).send({ error: 'No image provided' });
+    const ext = file.mimetype === 'image/png' ? 'png' : file.mimetype === 'image/jpeg' ? 'jpg' : null;
+    if (!ext) return reply.code(400).send({ error: 'Please choose a JPG or PNG image.' });
+    // toBuffer() enforces the 2 MB limit registered on the multipart plugin.
+    const buf = await file.toBuffer();
+    const url = await saveAvatar(id, buf, ext);
+    const { rows } = await query(
+      `UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING ${COLS}`,
+      [url, id],
+    );
+    if (!rows.length) return reply.code(404).send({ error: 'User not found' });
+    return rows[0];
   });
 };

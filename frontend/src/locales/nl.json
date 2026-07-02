@@ -263,7 +263,11 @@
     "kind_human": "Persoon",
     "kind_pet": "Huisdier",
     "petNamePlaceholder": "bijv. Max",
-    "birthday": "Verjaardag (optioneel)"
+    "birthday": "Verjaardag (optioneel)",
+    "photo": "Foto",
+    "choosePhoto": "Foto kiezen",
+    "changePhoto": "Foto wijzigen",
+    "photoHint": "JPG of PNG, tot 2 MB"
   },
   "settings": {
     "notificationsTitle": "Notificaties",

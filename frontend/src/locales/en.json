@@ -262,7 +262,11 @@
     "kind_human": "Person",
     "kind_pet": "Pet",
     "petNamePlaceholder": "e.g. Buddy",
-    "birthday": "Birthday (optional)"
+    "birthday": "Birthday (optional)",
+    "photo": "Photo",
+    "choosePhoto": "Choose photo",
+    "changePhoto": "Change photo",
+    "photoHint": "JPG or PNG, up to 2 MB"
   },
   "settings": {
     "notificationsTitle": "Notifications",
