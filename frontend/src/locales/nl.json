@@ -164,7 +164,8 @@
     "potNamePlaceholder": "bijv. Vakantie, Bank",
     "potIcon": "Pictogram",
     "potTarget": "Doel (optioneel)",
-    "potTargetPlaceholder": "0,00"
+    "potTargetPlaceholder": "0,00",
+    "goalReached": "Gehaald"
   },
   "freq": {
     "monthly": "Maandelijks",

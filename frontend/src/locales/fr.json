@@ -164,7 +164,8 @@
     "potNamePlaceholder": "p. ex. Vacances, Canapé",
     "potIcon": "Icône",
     "potTarget": "Objectif (facultatif)",
-    "potTargetPlaceholder": "0,00"
+    "potTargetPlaceholder": "0,00",
+    "goalReached": "Atteint"
   },
   "freq": {
     "monthly": "Mensuel",

@@ -164,7 +164,8 @@
     "potNamePlaceholder": "es. Vacanza, Divano",
     "potIcon": "Icona",
     "potTarget": "Obiettivo (facoltativo)",
-    "potTargetPlaceholder": "0,00"
+    "potTargetPlaceholder": "0,00",
+    "goalReached": "Raggiunto"
   },
   "freq": {
     "monthly": "Mensile",

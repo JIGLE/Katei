@@ -227,6 +227,11 @@ export default function MoneyFlow() {
                       <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
                       <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
                       {pot.target ? <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target)}</span> : null}
+                      {pct !== null && pct >= 100 && (
+                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
+                        {t('money.goalReached')}
+                      </span>
+                    )}
                     </div>
                     {pct !== null && (
                       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">

@@ -44,13 +44,16 @@ function EventRow({
   tone,
   members,
   lang,
+  onComplete,
 }: {
   evt: HouseholdEvent;
   days: number;
   tone: 'overdue' | 'week' | 'later';
   members: AssignmentDetail[];
   lang: string;
+  onComplete: (evt: HouseholdEvent) => void;
 }) {
+  const { t } = useTranslation();
   const accent = accentMap[eventAccent[evt.event_type]];
   const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
   const title =
@@ -69,6 +72,12 @@ function EventRow({
       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
         {formatRelativeDay(days, lang)}
       </span>
+      <button
+        type="button"
+        onClick={() => onComplete(evt)}
+        aria-label={t('timeline.markComplete')}
+        className="h-5 w-5 flex-shrink-0 rounded-full border-2 border-zinc-600 transition-colors hover:border-emerald-500"
+      />
     </li>
   );
 }
@@ -119,6 +128,17 @@ export default function Overview() {
     // Savings pots are a soft, non-blocking glance.
     api.get<SavingsSummary>('/savings').then(setSavings).catch(() => {});
   }, []);
+
+  // Quick-complete from the dashboard — payments are "paid", chores "done".
+  // The detailed mark-as-paid flow (actual amount) still lives on the Timeline.
+  const completeEvent = async (evt: HouseholdEvent) => {
+    try {
+      await api.patch(`/events/${evt.id}/complete`, { is_completed: true });
+      setEvents((prev) => prev.filter((e) => e.id !== evt.id));
+    } catch {
+      // Leave the row; the Timeline offers the full flow.
+    }
+  };
 
   const usersCount = members.length;
 
@@ -221,7 +241,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {overdue.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
                   ))}
                 </ul>
               </div>
@@ -233,7 +253,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {thisWeek.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
                   ))}
                 </ul>
               </div>
@@ -245,7 +265,7 @@ export default function Overview() {
                 </p>
                 <ul className="space-y-3">
                   {later.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} lang={lang} />
+                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
                   ))}
                 </ul>
               </div>
@@ -294,6 +314,11 @@ export default function Overview() {
                     <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
                     <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
                     <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target ?? 0)}</span>
+                    {pct >= 100 && (
+                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
+                        {t('money.goalReached')}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
                     <div

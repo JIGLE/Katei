@@ -164,7 +164,8 @@
     "potNamePlaceholder": "z. B. Urlaub, Neues Sofa",
     "potIcon": "Symbol",
     "potTarget": "Ziel (optional)",
-    "potTargetPlaceholder": "0,00"
+    "potTargetPlaceholder": "0,00",
+    "goalReached": "Erreicht"
   },
   "freq": {
     "monthly": "Monatlich",

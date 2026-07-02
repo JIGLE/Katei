@@ -163,7 +163,8 @@
     "potNamePlaceholder": "e.g. Holiday, New sofa",
     "potIcon": "Icon",
     "potTarget": "Target (optional)",
-    "potTargetPlaceholder": "0.00"
+    "potTargetPlaceholder": "0.00",
+    "goalReached": "Reached"
   },
   "freq": {
     "monthly": "Monthly",
