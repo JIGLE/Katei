@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from './components/BottomNav';
 import { AuthGate } from './components/AuthGate';
@@ -23,6 +23,7 @@ export default function App() {
   const { user, loading } = useAuth();
   const { loading: prefsLoading } = usePreferences();
   const { t } = useTranslation();
+  const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
 
@@ -65,7 +66,8 @@ export default function App() {
 
       {/* Scrollable content area — padded above the fixed bottom nav */}
       <main className="flex-1 overflow-y-auto pb-28">
-        <div className="mx-auto max-w-lg px-4 pt-8">
+        {/* Keyed on the path so each tab change re-runs the calm reveal. */}
+        <div key={location.pathname} className="animate-fade-slide-in mx-auto max-w-lg px-4 pt-8">
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/timeline" element={<Timeline />} />

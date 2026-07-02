@@ -130,6 +130,7 @@ export default function MoneyFlow() {
   // Net is the page's one hero figure (see the polish pass) — it counts up
   // once when the data first arrives, rather than just appearing.
   const animatedNet = useCountUp(net, !loading);
+  const animatedBalance = useCountUp(balance, !loading && savingsData !== null);
 
   const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
@@ -203,7 +204,7 @@ export default function MoneyFlow() {
             </button>
           </div>
 
-          <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(balance)}</p>
+          <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(animatedBalance)}</p>
           {plannedMonthly > 0 && (
             <p className="mt-1 text-xs tabular-nums text-zinc-500">
               {t('money.plannedMonthly')} <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
@@ -367,12 +368,13 @@ export default function MoneyFlow() {
         return (
           <section key={type} className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t(TYPE_HEADER_KEY[type])}</p>
-            {group.map((s) => (
+            {group.map((s, i) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setEditing(s)}
-                className="flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+                style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+                className="animate-fade-slide-in flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
               >
                 <div className="flex-1 min-w-0">
                   <p className="flex items-center gap-2 text-sm text-zinc-100">

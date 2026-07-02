@@ -5,6 +5,7 @@ import { OnboardingCard } from '../components/OnboardingCard';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
+import { useCountUp } from '../lib/useCountUp';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
 import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
 
@@ -157,6 +158,8 @@ export default function Overview() {
   // Long localized amounts use a non-breaking separator; normalize so they wrap
   // cleanly inside the cramped 3-up cells.
   const fmtWrap = (n: number) => fmt(n).replace(/[\u00a0\u202f]/g, ' ');
+  // The one money figure that counts up — the household's saved balance.
+  const animatedSaved = useCountUp(savings?.balance ?? 0, savings !== null);
   // Goals worth glancing at: pots with a target, soonest-created first.
   const goalPots = (savings?.pots ?? []).filter((p) => p.target && p.target > 0).slice(0, 3);
 
@@ -257,7 +260,7 @@ export default function Overview() {
           <div className="p-4">
             <p className="text-xs text-zinc-500">{t('overview.saved')}</p>
             <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
-              {savings ? fmtWrap(savings.balance) : '—'}
+              {savings ? fmtWrap(animatedSaved) : '—'}
             </p>
           </div>
           <div className="p-4">

@@ -140,12 +140,12 @@ export default function Household() {
 
   // A single member card — tap to edit; birthday nudge takes the caption slot
   // when someone's day is near, otherwise their assignment count.
-  const renderMember = (u: User) => {
+  const renderMember = (u: User, i = 0) => {
     const userAssignments = assignmentsByUser(u.id);
     const days = daysToBirthday(u.birthday);
     const nearBirthday = days !== null && days <= 30;
     return (
-      <div key={u.id} className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+      <div key={u.id} style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }} className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
         <button
           type="button"
           onClick={() => setEditingMember(u)}
@@ -241,7 +241,7 @@ export default function Household() {
       {!loading && !error && people.length > 0 && (
         <section className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.people')}</p>
-          {people.map(renderMember)}
+          {people.map((u, i) => renderMember(u, i))}
         </section>
       )}
 
@@ -249,7 +249,7 @@ export default function Household() {
       {!loading && !error && pets.length > 0 && (
         <section className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">{t('household.pets')}</p>
-          {pets.map(renderMember)}
+          {pets.map((u, i) => renderMember(u, i))}
         </section>
       )}
 
