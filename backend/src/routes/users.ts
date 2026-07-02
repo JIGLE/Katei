@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { requireAdmin, isAdmin } from '../lib/authz.js';
 import { logActivity } from '../lib/activity.js';
-import { saveAvatar } from '../lib/avatars.js';
+import { saveAvatar, sniffImageType } from '../lib/avatars.js';
 import { hit } from '../lib/ratelimit.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
@@ -123,10 +123,12 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     }
     const file = await req.file();
     if (!file) return reply.code(400).send({ error: 'No image provided' });
-    const ext = file.mimetype === 'image/png' ? 'png' : file.mimetype === 'image/jpeg' ? 'jpg' : null;
-    if (!ext) return reply.code(400).send({ error: 'Please choose a JPG or PNG image.' });
     // toBuffer() enforces the 2 MB limit registered on the multipart plugin.
     const buf = await file.toBuffer();
+    // Trust the bytes, not the client's mimetype: sniff the magic numbers and
+    // store under the sniffed extension.
+    const ext = sniffImageType(buf);
+    if (!ext) return reply.code(400).send({ error: 'Please choose a JPG or PNG image.' });
     const url = await saveAvatar(id, buf, ext);
     const { rows } = await query(
       `UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING ${COLS}`,
