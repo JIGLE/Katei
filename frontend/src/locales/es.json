@@ -100,7 +100,12 @@
     "noneAssigned": "No tienes nada asignado aquí.",
     "nothingUpcomingHint": "Añade una factura, tarea o cita para verla aquí.",
     "nothingCompletedHint": "Lo completado se recoge aquí.",
-    "noneAssignedHint": "No tienes nada asignado ahora mismo."
+    "noneAssignedHint": "No tienes nada asignado ahora mismo.",
+    "viewList": "Lista",
+    "viewMonth": "Mes",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "noEventsThisDay": "Nada este día."
   },
   "eventType": {
     "deadline": "Fecha límite",

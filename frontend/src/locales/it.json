@@ -100,7 +100,12 @@
     "noneAssigned": "Non hai nulla di assegnato qui.",
     "nothingUpcomingHint": "Aggiungi una bolletta, un compito o un appuntamento.",
     "nothingCompletedHint": "Gli elementi completati compaiono qui.",
-    "noneAssignedHint": "Al momento non hai nulla assegnato."
+    "noneAssignedHint": "Al momento non hai nulla assegnato.",
+    "viewList": "Elenco",
+    "viewMonth": "Mese",
+    "prevMonth": "Mese precedente",
+    "nextMonth": "Mese successivo",
+    "noEventsThisDay": "Niente in questo giorno."
   },
   "eventType": {
     "deadline": "Scadenza",

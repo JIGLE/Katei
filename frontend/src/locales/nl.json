@@ -100,7 +100,12 @@
     "noneAssigned": "Er is hier niets aan jou toegewezen.",
     "nothingUpcomingHint": "Voeg een rekening, klus of afspraak toe om die hier te zien.",
     "nothingCompletedHint": "Afgeronde items verzamelen zich hier.",
-    "noneAssignedHint": "Er is je nu niets toegewezen."
+    "noneAssignedHint": "Er is je nu niets toegewezen.",
+    "viewList": "Lijst",
+    "viewMonth": "Maand",
+    "prevMonth": "Vorige maand",
+    "nextMonth": "Volgende maand",
+    "noEventsThisDay": "Niets op deze dag."
   },
   "eventType": {
     "deadline": "Deadline",

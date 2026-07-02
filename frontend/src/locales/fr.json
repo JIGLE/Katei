@@ -100,7 +100,12 @@
     "noneAssigned": "Rien ne vous est attribué ici.",
     "nothingUpcomingHint": "Ajoutez une facture, une tâche ou un rendez-vous.",
     "nothingCompletedHint": "Les éléments terminés apparaissent ici.",
-    "noneAssignedHint": "Rien ne vous est attribué pour l'instant."
+    "noneAssignedHint": "Rien ne vous est attribué pour l'instant.",
+    "viewList": "Liste",
+    "viewMonth": "Mois",
+    "prevMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "noEventsThisDay": "Rien ce jour-là."
   },
   "eventType": {
     "deadline": "Date limite",

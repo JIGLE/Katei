@@ -100,7 +100,12 @@
     "noneAssigned": "Dir ist hier nichts zugewiesen.",
     "nothingUpcomingHint": "Füge eine Rechnung, Aufgabe oder einen Termin hinzu.",
     "nothingCompletedHint": "Erledigtes sammelt sich hier.",
-    "noneAssignedHint": "Dir ist gerade nichts zugewiesen."
+    "noneAssignedHint": "Dir ist gerade nichts zugewiesen.",
+    "viewList": "Liste",
+    "viewMonth": "Monat",
+    "prevMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "noEventsThisDay": "Nichts an diesem Tag."
   },
   "eventType": {
     "deadline": "Frist",

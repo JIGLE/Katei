@@ -99,7 +99,12 @@
     "noneAssigned": "Nothing assigned to you here.",
     "nothingUpcomingHint": "Add a bill, chore, or appointment to see it here.",
     "nothingCompletedHint": "Finished items collect here.",
-    "noneAssignedHint": "Nothing's assigned to you right now."
+    "noneAssignedHint": "Nothing's assigned to you right now.",
+    "viewList": "List",
+    "viewMonth": "Month",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "noEventsThisDay": "Nothing on this day."
   },
   "eventType": {
     "deadline": "Deadline",

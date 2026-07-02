@@ -4,6 +4,7 @@ import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { EmptyState } from '../components/EmptyState';
+import { CalendarMonth } from '../components/CalendarMonth';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
@@ -44,11 +45,12 @@ const VIEWS: { key: View; labelKey: string }[] = [
 export default function Timeline() {
   const { locale, timezone, currency } = usePreferences();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
   const [view, setView] = useState<View>('upcoming');
+  const [mode, setMode] = useState<'list' | 'calendar'>('list');
   const [mineOnly, setMineOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,8 @@ export default function Timeline() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchEvents(view); }, [view]);
+  // The calendar needs every event; the list uses the selected view filter.
+  useEffect(() => { fetchEvents(mode === 'calendar' ? 'all' : view); }, [view, mode]);
 
   // Assignments are independent of the upcoming/all toggle — load once.
   useEffect(() => {
@@ -168,49 +171,77 @@ export default function Timeline() {
   return (
     <div className="space-y-6">
       <header className="space-y-4">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
-          <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
+            <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
+          </div>
+          {/* List / Calendar mode */}
+          <div className="flex flex-shrink-0 gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
+            {(['list', 'calendar'] as const).map((mk) => (
+              <button
+                key={mk}
+                type="button"
+                onClick={() => setMode(mk)}
+                aria-pressed={mode === mk}
+                className={[
+                  'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                  mode === mk ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t(mk === 'list' ? 'timeline.viewList' : 'timeline.viewMonth')}
+              </button>
+            ))}
+          </div>
         </div>
-        {/* View filter */}
-        <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
-          {VIEWS.map((v) => (
+
+        {mode === 'list' && (
+          <>
+            {/* View filter */}
+            <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
+              {VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  onClick={() => setView(v.key)}
+                  className={[
+                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                    view === v.key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
+                  ].join(' ')}
+                >
+                  {t(v.labelKey)}
+                </button>
+              ))}
+            </div>
+            {/* Personal filter — only events assigned to me. */}
             <button
-              key={v.key}
-              onClick={() => setView(v.key)}
+              type="button"
+              onClick={() => setMineOnly((v) => !v)}
+              aria-pressed={mineOnly}
               className={[
-                'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-                view === v.key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
+                'self-start rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                mineOnly
+                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
-              {t(v.labelKey)}
+              {t('timeline.assignedToMe')}
             </button>
-          ))}
-        </div>
-        {/* Personal filter — only events assigned to me. */}
-        <button
-          type="button"
-          onClick={() => setMineOnly((v) => !v)}
-          aria-pressed={mineOnly}
-          className={[
-            'self-start rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-            mineOnly
-              ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-              : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-          ].join(' ')}
-        >
-          {t('timeline.assignedToMe')}
-        </button>
+          </>
+        )}
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
+      {mode === 'calendar' && !error && (
+        <CalendarMonth events={events} lang={i18n.language} timezone={timezone} onSelectEvent={setEditing} />
+      )}
+
+      {mode === 'list' && loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      {!loading && !error && visible.length === 0 && mineOnly && (
+      {mode === 'list' && !loading && !error && visible.length === 0 && mineOnly && (
         <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
       )}
 
-      {!loading && !error && events.length === 0 && !mineOnly && (
+      {mode === 'list' && !loading && !error && events.length === 0 && !mineOnly && (
         view === 'done' ? (
           <EmptyState icon="✅" title={t('timeline.nothingCompleted')} hint={t('timeline.nothingCompletedHint')} />
         ) : view === 'upcoming' ? (
@@ -232,7 +263,7 @@ export default function Timeline() {
         )
       )}
 
-      {!loading && !error && visible.length > 0 && (
+      {mode === 'list' && !loading && !error && visible.length > 0 && (
         <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
           {visible.map((evt, i) => {
             const cfg = typeConfig[evt.event_type];
