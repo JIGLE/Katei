@@ -324,7 +324,12 @@
     "pushEnabled": "Activado: recibirás avisos aquí.",
     "pushDisabled": "Desactivado: toca para activar.",
     "pushUnsupported": "Este navegador no admite notificaciones.",
-    "pushFailed": "No se pudieron cambiar las notificaciones."
+    "pushFailed": "No se pudieron cambiar las notificaciones.",
+    "sectionHousehold": "Hogar",
+    "sectionRegion": "Región e idioma",
+    "sectionMoney": "Dinero",
+    "sectionAppearance": "Apariencia",
+    "potsHint": "Las metas de ahorro viven en cada bote: abre Dinero y toca un bote."
   },
   "account": {
     "title": "Mi cuenta",

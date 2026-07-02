@@ -324,7 +324,12 @@
     "pushEnabled": "Activé — vous recevrez les rappels ici.",
     "pushDisabled": "Désactivé — appuyez pour activer.",
     "pushUnsupported": "Ce navigateur ne prend pas en charge les notifications.",
-    "pushFailed": "Impossible de modifier les notifications."
+    "pushFailed": "Impossible de modifier les notifications.",
+    "sectionHousehold": "Foyer",
+    "sectionRegion": "Région et langue",
+    "sectionMoney": "Argent",
+    "sectionAppearance": "Apparence",
+    "potsHint": "Les objectifs d'épargne se règlent sur chaque pot — ouvrez Argent et touchez un pot."
   },
   "account": {
     "title": "Mon compte",

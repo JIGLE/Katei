@@ -23,6 +23,9 @@ function formatSize(bytes: number): string {
 }
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
+// Section headers group fields; field labels inside stay quiet so the two read differently.
+const sectionCls = 'text-xs font-medium uppercase tracking-widest text-zinc-500';
+const gLabelCls = 'mb-1.5 block text-xs text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
@@ -50,7 +53,6 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [locale, setLocale] = useState(prefs.locale);
   const [timezone, setTimezone] = useState(prefs.timezone);
   const [language, setLanguage] = useState(prefs.language);
-  const [savingsGoal, setSavingsGoal] = useState(String(prefs.savings_goal || ''));
   const [savingsOpening, setSavingsOpening] = useState(String(prefs.savings_opening || ''));
   const [theme, setTheme] = useState<Theme>(prefs.theme);
   const [savingPrefs, setSavingPrefs] = useState(false);
@@ -64,7 +66,6 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setLocale(prefs.locale);
     setTimezone(prefs.timezone);
     setLanguage(prefs.language);
-    setSavingsGoal(String(prefs.savings_goal || ''));
     setSavingsOpening(String(prefs.savings_opening || ''));
     setTheme(prefs.theme);
   }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.savings_opening, prefs.theme]);
@@ -85,7 +86,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: Number(savingsGoal) || 0, savings_opening: Number(savingsOpening) || 0, theme });
+      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: prefs.savings_goal, savings_opening: Number(savingsOpening) || 0, theme });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -187,11 +188,13 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       {/* Tabs — split the long form into focused sections. */}
-      <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-950 p-1">
+      <div role="tablist" aria-label={t('common.settings')} className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-950 p-1">
         {([['general', 'settings.tabGeneral'], ['notifications', 'settings.tabNotifications'], ['data', 'settings.tabData']] as const).map(([key, label]) => (
           <button
             key={key}
             type="button"
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={['flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors', tab === key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'].join(' ')}
           >
@@ -200,132 +203,139 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         ))}
       </div>
 
-      {/* General — region, language, savings goal, appearance */}
+      {/* General — grouped into Household / Region / Money / Appearance so the
+          long form reads as a few small decisions instead of one wall of fields. */}
       {tab === 'general' && (
-      <div className="animate-fade-slide-in space-y-3">
-        <div>
-          <label htmlFor="household_name" className="mb-1.5 block text-xs text-zinc-500">{t('settings.householdName')}</label>
-          <input
-            id="household_name"
-            type="text"
-            maxLength={60}
-            value={householdName}
-            onChange={(e) => setHouseholdName(e.target.value)}
-            placeholder={t('settings.householdNamePlaceholder')}
-            className={`${fieldCls}`}
-          />
-        </div>
-        <div>
-          <label htmlFor="country" className="mb-1.5 block text-xs text-zinc-500">{t('settings.country')}</label>
-          <select
-            id="country"
-            value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-            className={`${fieldCls}`}
-          >
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label htmlFor="pref_currency" className="mb-1.5 block text-xs text-zinc-500">{t('settings.currency')}</label>
+      <div className="animate-fade-slide-in space-y-5">
+        <section className="space-y-3">
+          <p className={sectionCls}>{t('settings.sectionHousehold')}</p>
+          <div>
+            <label htmlFor="household_name" className={gLabelCls}>{t('settings.householdName')}</label>
+            <input
+              id="household_name"
+              type="text"
+              maxLength={60}
+              value={householdName}
+              onChange={(e) => setHouseholdName(e.target.value)}
+              placeholder={t('settings.householdNamePlaceholder')}
+              className={`${fieldCls}`}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-3 border-t border-zinc-800/60 pt-4">
+          <p className={sectionCls}>{t('settings.sectionRegion')}</p>
+          <div>
+            <label htmlFor="country" className={gLabelCls}>{t('settings.country')}</label>
             <select
-              id="pref_currency"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              id="country"
+              value={country}
+              onChange={(e) => onCountryChange(e.target.value)}
               className={`${fieldCls}`}
             >
-              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
             </select>
           </div>
-          <div className="flex-1">
-            <label htmlFor="pref_locale" className="mb-1.5 block text-xs text-zinc-500">{t('settings.locale')}</label>
-            <select
-              id="pref_locale"
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className={`${fieldCls}`}
-            >
-              {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label htmlFor="pref_tz" className="mb-1.5 block text-xs text-zinc-500">{t('settings.timezone')}</label>
-          <select
-            id="pref_tz"
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-            className={`${fieldCls}`}
-          >
-            {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="pref_language" className="mb-1.5 block text-xs text-zinc-500">{t('settings.language')}</label>
-          <select
-            id="pref_language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className={`${fieldCls}`}
-          >
-            {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="pref_savings_opening" className="mb-1.5 block text-xs text-zinc-500">{t('settings.currentSavings')}</label>
-          <input
-            id="pref_savings_opening"
-            type="number"
-            min="0"
-            step="0.01"
-            value={savingsOpening}
-            onChange={(e) => setSavingsOpening(e.target.value)}
-            placeholder="0.00"
-            className={`${fieldCls}`}
-          />
-          <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
-        </div>
-        <div>
-          <label htmlFor="pref_savings_goal" className="mb-1.5 block text-xs text-zinc-500">{t('settings.savingsGoal')}</label>
-          <input
-            id="pref_savings_goal"
-            type="number"
-            min="0"
-            step="0.01"
-            value={savingsGoal}
-            onChange={(e) => setSavingsGoal(e.target.value)}
-            placeholder="0.00"
-            className={`${fieldCls}`}
-          />
-        </div>
-        <div>
-          <span className="mb-1.5 block text-xs text-zinc-500">{t('settings.theme')}</span>
-          <div className="grid grid-cols-2 gap-2">
-            {(['dark', 'light'] as Theme[]).map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onThemeChange(opt)}
-                className={[
-                  'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
-                  theme === opt
-                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-                ].join(' ')}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label htmlFor="pref_currency" className={gLabelCls}>{t('settings.currency')}</label>
+              <select
+                id="pref_currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className={`${fieldCls}`}
               >
-                {t(`settings.theme_${opt}`)}
-              </button>
-            ))}
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label htmlFor="pref_locale" className={gLabelCls}>{t('settings.locale')}</label>
+              <select
+                id="pref_locale"
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                className={`${fieldCls}`}
+              >
+                {LOCALES.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
           </div>
-        </div>
+          <div>
+            <label htmlFor="pref_tz" className={gLabelCls}>{t('settings.timezone')}</label>
+            <select
+              id="pref_tz"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className={`${fieldCls}`}
+            >
+              {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="pref_language" className={gLabelCls}>{t('settings.language')}</label>
+            <select
+              id="pref_language"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className={`${fieldCls}`}
+            >
+              {SUPPORTED_LANGUAGES.map((l) => <option key={l} value={l}>{LANGUAGE_NAMES[l]}</option>)}
+            </select>
+          </div>
+        </section>
+
+        <section className="space-y-3 border-t border-zinc-800/60 pt-4">
+          <p className={sectionCls}>{t('settings.sectionMoney')}</p>
+          <div>
+            <label htmlFor="pref_savings_opening" className={gLabelCls}>{t('settings.currentSavings')}</label>
+            <input
+              id="pref_savings_opening"
+              type="number"
+              min="0"
+              step="0.01"
+              value={savingsOpening}
+              onChange={(e) => setSavingsOpening(e.target.value)}
+              placeholder="0.00"
+              className={`${fieldCls}`}
+            />
+            <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
+          </div>
+          {/* Savings targets now live on each pot (Money → tap a pot). */}
+          <p className="text-xs text-zinc-600">{t('settings.potsHint')}</p>
+        </section>
+
+        <section className="space-y-3 border-t border-zinc-800/60 pt-4">
+          <p className={sectionCls}>{t('settings.sectionAppearance')}</p>
+          <div>
+            <span className={gLabelCls}>{t('settings.theme')}</span>
+            <div className="grid grid-cols-2 gap-2">
+              {(['dark', 'light'] as Theme[]).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => onThemeChange(opt)}
+                  aria-pressed={theme === opt}
+                  className={[
+                    'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                    theme === opt
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                      : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                  ].join(' ')}
+                >
+                  {t(`settings.theme_${opt}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <button
           type="button"
           onClick={savePrefs}
           disabled={savingPrefs}
-          className="w-full rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {savingPrefs ? t('common.saving') : t('settings.savePreferences')}
         </button>

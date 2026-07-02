@@ -324,7 +324,12 @@
     "pushEnabled": "Attivo — riceverai i promemoria qui.",
     "pushDisabled": "Disattivo — tocca per attivare.",
     "pushUnsupported": "Questo browser non supporta le notifiche.",
-    "pushFailed": "Impossibile modificare le notifiche."
+    "pushFailed": "Impossibile modificare le notifiche.",
+    "sectionHousehold": "Casa",
+    "sectionRegion": "Regione e lingua",
+    "sectionMoney": "Denaro",
+    "sectionAppearance": "Aspetto",
+    "potsHint": "Gli obiettivi vivono su ogni salvadanaio: apri Denaro e toccane uno."
   },
   "account": {
     "title": "Il mio account",

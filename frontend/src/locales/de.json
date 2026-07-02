@@ -324,7 +324,12 @@
     "pushEnabled": "An – du bekommst hier Erinnerungen.",
     "pushDisabled": "Aus – zum Aktivieren tippen.",
     "pushUnsupported": "Dieser Browser unterstützt keine Benachrichtigungen.",
-    "pushFailed": "Benachrichtigungen konnten nicht geändert werden."
+    "pushFailed": "Benachrichtigungen konnten nicht geändert werden.",
+    "sectionHousehold": "Haushalt",
+    "sectionRegion": "Region & Sprache",
+    "sectionMoney": "Geld",
+    "sectionAppearance": "Darstellung",
+    "potsHint": "Sparziele gehören zu den Töpfen – öffne Geld und tippe auf einen Topf."
   },
   "account": {
     "title": "Mein Konto",

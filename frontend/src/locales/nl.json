@@ -324,7 +324,12 @@
     "pushEnabled": "Aan — je krijgt hier herinneringen.",
     "pushDisabled": "Uit — tik om aan te zetten.",
     "pushUnsupported": "Deze browser ondersteunt geen meldingen.",
-    "pushFailed": "Kon meldingen niet wijzigen."
+    "pushFailed": "Kon meldingen niet wijzigen.",
+    "sectionHousehold": "Huishouden",
+    "sectionRegion": "Regio & taal",
+    "sectionMoney": "Geld",
+    "sectionAppearance": "Weergave",
+    "potsHint": "Spaardoelen horen bij elk potje — open Geld en tik op een potje."
   },
   "account": {
     "title": "Mijn account",

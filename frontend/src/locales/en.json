@@ -323,7 +323,12 @@
     "pushEnabled": "On — you'll get reminders here.",
     "pushDisabled": "Off — tap to enable.",
     "pushUnsupported": "This browser doesn't support notifications.",
-    "pushFailed": "Couldn't change notifications."
+    "pushFailed": "Couldn't change notifications.",
+    "sectionHousehold": "Household",
+    "sectionRegion": "Region & language",
+    "sectionMoney": "Money",
+    "sectionAppearance": "Appearance",
+    "potsHint": "Savings targets live on each pot — open Money and tap a pot to set one."
   },
   "account": {
     "title": "My account",
