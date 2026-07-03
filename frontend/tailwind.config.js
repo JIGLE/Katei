@@ -4,8 +4,13 @@
 //   amber-500 (time & deadlines), emerald-500 (money), rose-500 (critical).
 // The neutral `zinc` scale is redefined as CSS variables (see index.css) so a
 // single `data-theme` flip on <html> recolours every neutral surface for the
-// light theme — no per-component class changes. Accents stay default Tailwind.
-const zinc = (n) => `rgb(var(--zinc-${n}) / <alpha-value>)`;
+// light theme — no per-component class changes. The semantic accent steps the
+// app uses are variables for the same reason: dark keeps Tailwind's values,
+// light remaps them to deep steps that hold contrast on white.
+const v = (name) => (n) => `rgb(var(--${name}-${n}) / <alpha-value>)`;
+const scale = (name, steps) =>
+  Object.fromEntries(steps.map((n) => [n, v(name)(n)]));
+const zinc = v('zinc');
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -24,6 +29,10 @@ export default {
           900: zinc(900),
           950: zinc(950),
         },
+        emerald: scale('emerald', [300, 400, 500, 600]),
+        teal: scale('teal', [300, 400, 500, 600]),
+        rose: scale('rose', [300, 400, 500]),
+        amber: scale('amber', [400, 500]),
       },
       fontFamily: {
         sans: [

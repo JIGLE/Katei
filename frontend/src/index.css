@@ -38,6 +38,46 @@
 }
 
 /*
+ * Semantic accents (emerald = money, teal = savings, rose = critical,
+ * amber = time) as CSS variables too. The steps below are the ones the app
+ * uses; dark keeps Tailwind's values byte-for-byte. The light theme remaps
+ * each hue to its deep (~700) step: shades picked for dark cards sit at
+ * 1.6–3:1 on white and wash out — the deep steps hold ≥4.5:1 for text while
+ * dots/fills stay unmistakably the same hue.
+ */
+:root {
+  --emerald-300: 110 231 183;
+  --emerald-400: 52 211 153;
+  --emerald-500: 16 185 129;
+  --emerald-600: 5 150 105;
+  --teal-300: 94 234 212;
+  --teal-400: 45 212 191;
+  --teal-500: 20 184 166;
+  --teal-600: 13 148 136;
+  --rose-300: 253 164 175;
+  --rose-400: 251 113 133;
+  --rose-500: 244 63 94;
+  --amber-400: 251 191 36;
+  --amber-500: 245 158 11;
+}
+
+:root[data-theme='light'] {
+  --emerald-300: 5 150 105;
+  --emerald-400: 4 120 87;
+  --emerald-500: 4 120 87;
+  --emerald-600: 6 95 70;
+  --teal-300: 15 118 110;
+  --teal-400: 15 118 110;
+  --teal-500: 13 148 136;
+  --teal-600: 17 94 89;
+  --rose-300: 190 18 60;
+  --rose-400: 190 18 60;
+  --rose-500: 190 18 60;
+  --amber-400: 180 83 9;
+  --amber-500: 180 83 9;
+}
+
+/*
  * Motion tokens — the single source of durations/easings for the whole app
  * (see ui-animation guidance folded into CLAUDE.md). Same in both themes.
  * enter: enter/appear transforms · move: slides & drawers/sheets.
