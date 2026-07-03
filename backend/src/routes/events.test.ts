@@ -51,13 +51,14 @@ test('a plain event with money_stream_id: null is created (no null→0 coercion)
   assert.equal(res.json().money_stream_id, null); // stored as null, not 0
 });
 
-test('upcoming filter excludes past and completed events', opts, async () => {
+test('upcoming keeps open overdue items first and excludes completed ones', opts, async () => {
   await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Future', target_date: '2999-01-01' }) });
-  await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Past', target_date: '2000-01-01' }) });
+  await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Overdue', target_date: '2000-01-01' }) });
+  const done = (await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make({ title: 'Done', target_date: '2000-02-01' }) })).json();
+  await app.inject({ method: 'PATCH', url: `/api/events/${done.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
 
   const upcoming = (await app.inject({ method: 'GET', url: '/api/events?upcoming=true', headers: { cookie } })).json();
-  assert.equal(upcoming.length, 1);
-  assert.equal(upcoming[0].title, 'Future');
+  assert.deepEqual(upcoming.map((e: { title: string }) => e.title), ['Overdue', 'Future']);
 });
 
 test('toggles completion', opts, async () => {

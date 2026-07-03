@@ -11,7 +11,7 @@ import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
-import { formatDate } from '../lib/format';
+import { formatDate, formatMoney, daysUntil } from '../lib/format';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -305,6 +305,18 @@ export default function Timeline() {
           {visible.map((evt, i) => {
             const cfg = typeConfig[evt.event_type];
             const styles = accentMap[cfg.accent];
+            // A late open item overrides its type accent — urgency wins.
+            const overdue = !evt.is_completed && daysUntil(evt.target_date, timezone) < 0;
+            // Bills carry their amount — the fact a person came to check.
+            const linked = evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
+            const amount =
+              evt.event_type === 'payment'
+                ? evt.actual_amount != null
+                  ? formatMoney(evt.actual_amount, linked?.currency ?? currency, locale)
+                  : linked
+                    ? formatMoney(linked.amount, linked.currency, locale)
+                    : null
+                : null;
             return (
               <div
                 key={evt.id}
@@ -316,7 +328,7 @@ export default function Timeline() {
               >
                 {/* Date */}
                 <div
-                  className={`w-14 flex-shrink-0 border-r border-zinc-800/60 pr-4 text-center text-xs font-medium ${styles.date}`}
+                  className={`w-14 flex-shrink-0 border-r border-zinc-800/60 pr-4 text-center text-xs font-medium ${overdue ? 'text-rose-500' : styles.date}`}
                 >
                   {formatDate(evt.target_date, locale, timezone)}
                 </div>
@@ -327,11 +339,15 @@ export default function Timeline() {
                   onClick={() => setEditing(evt)}
                   className="flex-1 min-w-0 text-left"
                 >
-                  <p className={`text-sm ${evt.is_completed ? 'line-through text-zinc-500' : 'text-zinc-100'}`}>
+                  <p className={`text-sm ${evt.is_completed ? 'line-through text-zinc-500' : overdue ? 'text-rose-400' : 'text-zinc-100'}`}>
                     {evt.title}
                   </p>
-                  {evt.description && (
-                    <p className="mt-0.5 truncate text-xs text-zinc-500">{evt.description}</p>
+                  {(amount || evt.description) && (
+                    <p className="mt-0.5 truncate text-xs text-zinc-500">
+                      {amount && <span className="tabular-nums text-zinc-400">{amount}</span>}
+                      {amount && evt.description ? ' · ' : ''}
+                      {evt.description}
+                    </p>
                   )}
                 </button>
 

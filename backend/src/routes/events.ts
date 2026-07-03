@@ -35,7 +35,8 @@ async function recordSavingsContribution(
 
 export const eventsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/events
-  // Query params: ?upcoming=true  — only future incomplete events
+  // Query params: ?upcoming=true  — open items: overdue included (they sort
+  //                                 first by date), completed excluded
   //               ?type=deadline|payment|appointment
   app.get<{ Querystring: { upcoming?: string; type?: string } }>('/', async (req) => {
     const conditions: string[] = [];
@@ -43,7 +44,9 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
     let i = 1;
 
     if (req.query.upcoming === 'true') {
-      conditions.push(`target_date >= CURRENT_DATE AND is_completed = FALSE`);
+      // Overdue-and-open belongs in "upcoming" — hiding the most urgent item
+      // from the planning view's default tab inverts the app's whole point.
+      conditions.push(`is_completed = FALSE`);
     }
     if (req.query.type) {
       conditions.push(`event_type = $${i++}`);
