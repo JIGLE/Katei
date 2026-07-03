@@ -9,7 +9,7 @@ import type { User } from '../lib/types';
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
+  'placeholder:text-zinc-600 focus:border-zinc-600';
 
 // "My account" — self-service profile (name / email / avatar) and password
 // change. Distinct from admin member-management: it only ever edits the

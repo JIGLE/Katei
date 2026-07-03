@@ -70,6 +70,18 @@
     font-feature-settings: 'kern' 1, 'liga' 1;
   }
 
+  /*
+   * Keyboard focus — one visible ring everywhere, in place of the browser
+   * default some controls suppressed. The highest-contrast neutral in each
+   * theme (near-white on dark, near-black on light) keeps it unmistakable
+   * without borrowing a semantic accent; pointer/touch focus stays quiet
+   * because :focus-visible targets keyboard interaction.
+   */
+  :focus-visible {
+    outline: 2px solid rgb(var(--zinc-100));
+    outline-offset: 2px;
+  }
+
   /* Scrollbar — dark, minimal */
   ::-webkit-scrollbar {
     width: 4px;

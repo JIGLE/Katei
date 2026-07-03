@@ -31,7 +31,7 @@ const typeOptions: { value: StreamType; labelKey: string; active: string }[] = [
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
+  'placeholder:text-zinc-600 focus:border-zinc-600';
 
 export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted }: StreamFormProps) {
   const { currency: defaultCurrency } = usePreferences();

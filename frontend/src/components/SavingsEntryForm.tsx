@@ -16,7 +16,7 @@ interface SavingsEntryFormProps {
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none';
+  'placeholder:text-zinc-600 focus:border-zinc-600';
 
 // Record a one-time deposit (or withdrawal) into the savings ledger, or correct a
 // mistaken one. This is the answer to "adding savings doesn't update the total" —

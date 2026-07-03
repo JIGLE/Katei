@@ -33,7 +33,7 @@ export function SearchInput({ value, onChange, label }: SearchInputProps) {
         onChange={(e) => onChange(e.target.value)}
         placeholder={label}
         aria-label={label}
-        className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-2.5 pl-9 pr-9 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-2.5 pl-9 pr-9 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-600 [&::-webkit-search-cancel-button]:hidden"
       />
       {value !== '' && (
         <button
