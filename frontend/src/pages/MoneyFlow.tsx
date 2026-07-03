@@ -360,15 +360,18 @@ export default function MoneyFlow() {
       {!loading && !error && slices.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.whereItGoes')}</p>
-          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
+          {/* Adjacent segments are steps of one green — rank, not identity —
+              so a 2px gap separates them and the sorted list below is the
+              real legend (same order as the bar, largest first). Colour dots
+              on the rows would promise a mapping the shades can't deliver. */}
+          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-zinc-800">
             {slices.map((s, i) => (
-              <div key={s.category} className={SEGMENT_BG[i % SEGMENT_BG.length]} style={{ width: `${s.pct}%` }} title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`} />
+              <div key={s.category} className={`${SEGMENT_BG[i % SEGMENT_BG.length]} first:rounded-l-full last:rounded-r-full`} style={{ width: `${s.pct}%` }} title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`} />
             ))}
           </div>
           <ul className="mt-4 space-y-2.5">
-            {slices.map((s, i) => (
+            {slices.map((s) => (
               <li key={s.category} className="flex items-center gap-3">
-                <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${SEGMENT_BG[i % SEGMENT_BG.length]}`} />
                 <span className="flex-1 truncate text-sm text-zinc-300">{catLabel(s.category)}</span>
                 <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
                 <span className="w-24 text-right text-sm tabular-nums text-zinc-200">{fmt(s.monthly)}</span>

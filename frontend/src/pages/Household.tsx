@@ -172,13 +172,17 @@ export default function Household() {
                 </span>
               )}
             </p>
-            <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-teal-300' : 'text-zinc-500'}`}>
-              {nearBirthday
-                ? days === 0
-                  ? `🎂 ${t('household.birthdayToday')}`
-                  : `🎂 ${t('household.birthdayIn', { count: days })}`
-                : t('household.assignmentCount', { count: userAssignments.length })}
-            </p>
+            {/* Pets don't do chores — their caption is the birthday nudge or
+                nothing, never "0 assignments". */}
+            {(nearBirthday || u.kind !== 'pet') && (
+              <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-teal-300' : 'text-zinc-500'}`}>
+                {nearBirthday
+                  ? days === 0
+                    ? `🎂 ${t('household.birthdayToday')}`
+                    : `🎂 ${t('household.birthdayIn', { count: days })}`
+                  : t('household.assignmentCount', { count: userAssignments.length })}
+              </p>
+            )}
           </div>
         </button>
 

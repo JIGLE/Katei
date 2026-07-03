@@ -115,6 +115,8 @@ export default function Timeline() {
   // Search + type narrow the list further; both are client-side over the
   // fetched rows, so they respond on every keystroke.
   const searching = query.trim() !== '' || typeFilter !== 'all';
+  // Search + type pills appear once the list is big enough to need them.
+  const showFilters = events.length >= 8 || searching;
   const visible = mineFiltered.filter(
     (e) =>
       (typeFilter === 'all' || e.event_type === typeFilter) &&
@@ -222,10 +224,13 @@ export default function Timeline() {
                 </button>
               ))}
             </div>
-            <SearchInput value={query} onChange={setQuery} label={t('search.events')} />
+            {/* Search and type pills earn their place with volume — short
+                lists don't need three rows of controls before content. */}
+            {showFilters && <SearchInput value={query} onChange={setQuery} label={t('search.events')} />}
             {/* One row of pill filters — personal first, then event type. The
-                row scrolls sideways at phone width instead of stacking. */}
-            <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                row scrolls sideways at phone width instead of stacking; the
+                right-edge fade signals there's more. */}
+            <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
               <button
                 type="button"
                 onClick={() => setMineOnly((v) => !v)}
@@ -239,25 +244,29 @@ export default function Timeline() {
               >
                 {t('timeline.assignedToMe')}
               </button>
-              <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
-              {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
-                <button
-                  key={tk}
-                  type="button"
-                  onClick={() => setTypeFilter(tk)}
-                  aria-pressed={typeFilter === tk}
-                  className={[
-                    'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                    typeFilter === tk
-                      ? tk === 'all'
-                        ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
-                        : accentMap[typeConfig[tk].accent].pill
-                      : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-                  ].join(' ')}
-                >
-                  {t(tk === 'all' ? 'eventType.all' : typeConfig[tk].labelKey)}
-                </button>
-              ))}
+              {showFilters && (
+                <>
+                  <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
+                  {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
+                    <button
+                      key={tk}
+                      type="button"
+                      onClick={() => setTypeFilter(tk)}
+                      aria-pressed={typeFilter === tk}
+                      className={[
+                        'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                        typeFilter === tk
+                          ? tk === 'all'
+                            ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
+                            : accentMap[typeConfig[tk].accent].pill
+                          : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                      ].join(' ')}
+                    >
+                      {t(tk === 'all' ? 'eventType.all' : typeConfig[tk].labelKey)}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </>
         )}

@@ -64,8 +64,10 @@ export default function App() {
         </div>
       </header>
 
-      {/* Scrollable content area — padded above the fixed bottom nav */}
-      <main className="flex-1 overflow-y-auto pb-28">
+      {/* Scrollable content area — padded above the fixed bottom nav plus
+          the floating add button's envelope, so the last row's right edge
+          is never trapped underneath it. */}
+      <main className="flex-1 overflow-y-auto pb-44">
         {/* Keyed on the path so each tab change re-runs the calm reveal.
             Opacity-only: a transform here would become the containing block
             for the pages' position:fixed add buttons and un-float them. */}
