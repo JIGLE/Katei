@@ -395,12 +395,15 @@ export default function MoneyFlow() {
         />
       )}
 
-      {/* Streams grouped by type */}
+      {/* Streams grouped by type. Search earns its place with volume; the
+          personal filter is cheap and stays. */}
       {!loading && !error && streams.length > 0 && (
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          {(streams.length >= 8 || query !== '') && (
+            <div className="flex-1">
+              <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setMineOnly((v) => !v)}
@@ -423,7 +426,12 @@ export default function MoneyFlow() {
         <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
       )}
       {!loading && !error && TYPE_ORDER.map((type) => {
-        const group = listStreams.filter((s) => s.stream_type === type);
+        // Heaviest first — the list's order should match the money's weight,
+        // not the order someone happened to type things in.
+        const weight = (s: MoneyStream) => monthlyEquiv(s) || parseFloat(s.amount);
+        const group = listStreams
+          .filter((s) => s.stream_type === type)
+          .sort((a, b) => weight(b) - weight(a));
         if (group.length === 0) return null;
         return (
           <section key={type} className="space-y-2">
