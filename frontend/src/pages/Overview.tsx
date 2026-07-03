@@ -5,6 +5,7 @@ import { OnboardingCard } from '../components/OnboardingCard';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
+import { assignedIds } from '../lib/assignments';
 import { useCountUp } from '../lib/useCountUp';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
 import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
@@ -100,6 +101,7 @@ export default function Overview() {
   const [activity, setActivity] = useState<Activity[]>([]);
   const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
+  const [mineOnly, setMineOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currency, locale, timezone, household_name } = usePreferences();
@@ -167,9 +169,15 @@ export default function Overview() {
     .filter((evt) => evt.event_type !== 'income')
     .map((evt) => ({ evt, days: daysUntil(evt.target_date, timezone) }))
     .sort((a, b) => a.days - b.days);
-  const overdue = dated.filter((d) => d.days < 0);
-  const thisWeek = dated.filter((d) => d.days >= 0 && d.days <= 7);
-  const later = dated.filter((d) => d.days > 7);
+  // The personal filter narrows the attention list only; the header summary
+  // keeps describing the whole household.
+  const myEventIds = assignedIds(assignments, user?.id, 'event_id');
+  const visibleDated = mineOnly ? dated.filter(({ evt }) => myEventIds.has(evt.id)) : dated;
+  const overdue = visibleDated.filter((d) => d.days < 0);
+  const thisWeek = visibleDated.filter((d) => d.days >= 0 && d.days <= 7);
+  const later = visibleDated.filter((d) => d.days > 7);
+  const overdueAll = dated.filter((d) => d.days < 0);
+  const thisWeekAll = dated.filter((d) => d.days >= 0 && d.days <= 7);
 
   // Money at a glance: monthly-equivalents from the streams + the pots' balance.
   const net = monthlyOf(streams, 'income') - monthlyOf(streams, 'expense') - monthlyOf(streams, 'savings');
@@ -197,10 +205,10 @@ export default function Overview() {
     : t('overview.title');
   const summary = loading
     ? null
-    : overdue.length > 0
-      ? t('overview.summaryOverdue', { count: overdue.length })
-      : thisWeek.length > 0
-        ? t('overview.summaryWeek', { count: thisWeek.length })
+    : overdueAll.length > 0
+      ? t('overview.summaryOverdue', { count: overdueAll.length })
+      : thisWeekAll.length > 0
+        ? t('overview.summaryWeek', { count: thisWeekAll.length })
         : t('overview.summaryClear');
 
   return (
@@ -222,17 +230,37 @@ export default function Overview() {
 
       {/* Attention list — the focal point: what the house needs from you. */}
       <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-        <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-          {t('overview.needsAttention')}
-        </p>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('overview.needsAttention')}
+          </p>
+          {!loading && !error && dated.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMineOnly((v) => !v)}
+              aria-pressed={mineOnly}
+              className={[
+                'flex-shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
+                mineOnly
+                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+              ].join(' ')}
+            >
+              {t('timeline.assignedToMe')}
+            </button>
+          )}
+        </div>
 
         {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
         {error && <p className="text-sm text-rose-400">{error}</p>}
         {!loading && !error && dated.length === 0 && (
           <p className="text-sm text-zinc-500">{t('overview.allClear')}</p>
         )}
+        {!loading && !error && dated.length > 0 && visibleDated.length === 0 && (
+          <p className="text-sm text-zinc-500">{t('timeline.noneAssigned')}</p>
+        )}
 
-        {!loading && !error && dated.length > 0 && (
+        {!loading && !error && visibleDated.length > 0 && (
           <div className="space-y-5">
             {overdue.length > 0 && (
               <div>

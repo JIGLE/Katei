@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
+import { assignedIds } from '../lib/assignments';
 import { CalendarMonth } from '../components/CalendarMonth';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
@@ -107,11 +108,7 @@ export default function Timeline() {
   }
 
   // Events assigned to the logged-in member, for the "Assigned to me" filter.
-  const mineEventIds = new Set(
-    assignments
-      .filter((a) => a.user_id === user?.id && a.event_id != null)
-      .map((a) => a.event_id as number),
-  );
+  const mineEventIds = assignedIds(assignments, user?.id, 'event_id');
   const mineFiltered = mineOnly ? events.filter((e) => mineEventIds.has(e.id)) : events;
   // Search + type narrow the list further; both are client-side over the
   // fetched rows, so they respond on every keystroke.

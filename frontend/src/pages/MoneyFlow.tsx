@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
+import type { AssignmentDetail, MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
 import { Modal } from '../components/Modal';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
@@ -9,6 +9,8 @@ import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
+import { useAuth } from '../lib/auth';
+import { assignedIds } from '../lib/assignments';
 import { formatMoney, formatMonthShort } from '../lib/format';
 import { useCountUp } from '../lib/useCountUp';
 
@@ -84,7 +86,10 @@ export default function MoneyFlow() {
   const [showNewPot, setShowNewPot] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
   const [query, setQuery] = useState('');
+  const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
+  const [mineOnly, setMineOnly] = useState(false);
   const { currency, locale } = usePreferences();
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   const fetchStreams = () => {
@@ -106,6 +111,8 @@ export default function MoneyFlow() {
     // Spend history is independent of the stream list — a soft, non-blocking load.
     api.get<MonthlySpend[]>('/analytics/monthly-spend?months=6').then(setTrends).catch(() => {});
     api.get<MonthVariance[]>('/analytics/variance?months=6').then(setVariance).catch(() => {});
+    // Assignments back the "Assigned to me" filter on the stream list.
+    api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
   }, []);
 
   const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
@@ -134,9 +141,11 @@ export default function MoneyFlow() {
   const animatedNet = useCountUp(net, !loading);
   const animatedBalance = useCountUp(balance, !loading && savingsData !== null);
 
-  // Search narrows the stream list only — the totals and analytics above it
-  // keep describing the whole household, not the current query.
-  const listStreams = streams.filter((s) => matchesQuery(query, s.name, s.category));
+  // Search and the personal filter narrow the stream list only — the totals
+  // and analytics above it keep describing the whole household.
+  const mineStreamIds = assignedIds(assignments, user?.id, 'money_stream_id');
+  const mineStreams = mineOnly ? streams.filter((s) => mineStreamIds.has(s.id)) : streams;
+  const listStreams = mineStreams.filter((s) => matchesQuery(query, s.name, s.category));
 
   const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
@@ -374,9 +383,29 @@ export default function MoneyFlow() {
 
       {/* Streams grouped by type */}
       {!loading && !error && streams.length > 0 && (
-        <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMineOnly((v) => !v)}
+            aria-pressed={mineOnly}
+            className={[
+              'flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+              mineOnly
+                ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+            ].join(' ')}
+          >
+            {t('timeline.assignedToMe')}
+          </button>
+        </div>
       )}
-      {!loading && !error && streams.length > 0 && listStreams.length === 0 && (
+      {!loading && !error && streams.length > 0 && mineOnly && mineStreams.length === 0 && (
+        <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
+      )}
+      {!loading && !error && streams.length > 0 && mineStreams.length > 0 && listStreams.length === 0 && (
         <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
       )}
       {!loading && !error && TYPE_ORDER.map((type) => {
