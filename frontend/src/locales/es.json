@@ -114,7 +114,16 @@
     "payment": "Pago",
     "appointment": "Cita",
     "income": "Ingreso",
-    "savings": "Ahorro"
+    "savings": "Ahorro",
+    "all": "Todos"
+  },
+  "search": {
+    "events": "Buscar eventos",
+    "streams": "Buscar flujos",
+    "members": "Buscar miembros",
+    "clear": "Borrar búsqueda",
+    "noMatches": "Nada coincide con tu búsqueda.",
+    "noMatchesHint": "Prueba con otro nombre o borra la búsqueda."
   },
   "money": {
     "eyebrow": "Finanzas",

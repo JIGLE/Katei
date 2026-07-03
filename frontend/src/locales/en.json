@@ -113,7 +113,16 @@
     "payment": "Payment",
     "appointment": "Appointment",
     "income": "Income",
-    "savings": "Savings"
+    "savings": "Savings",
+    "all": "All"
+  },
+  "search": {
+    "events": "Search events",
+    "streams": "Search streams",
+    "members": "Search members",
+    "clear": "Clear search",
+    "noMatches": "Nothing matches your search.",
+    "noMatchesHint": "Try a different name, or clear the search."
   },
   "money": {
     "eyebrow": "Finance",

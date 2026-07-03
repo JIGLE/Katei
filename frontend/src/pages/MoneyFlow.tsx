@@ -6,6 +6,7 @@ import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { GoalForm } from '../components/GoalForm';
 import { EmptyState } from '../components/EmptyState';
+import { SearchInput, matchesQuery } from '../components/SearchInput';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { formatMoney, formatMonthShort } from '../lib/format';
@@ -82,6 +83,7 @@ export default function MoneyFlow() {
   const [editingPot, setEditingPot] = useState<SavingsPot | null>(null);
   const [showNewPot, setShowNewPot] = useState(false);
   const [editing, setEditing] = useState<MoneyStream | null>(null);
+  const [query, setQuery] = useState('');
   const { currency, locale } = usePreferences();
   const { t } = useTranslation();
 
@@ -131,6 +133,10 @@ export default function MoneyFlow() {
   // once when the data first arrives, rather than just appearing.
   const animatedNet = useCountUp(net, !loading);
   const animatedBalance = useCountUp(balance, !loading && savingsData !== null);
+
+  // Search narrows the stream list only — the totals and analytics above it
+  // keep describing the whole household, not the current query.
+  const listStreams = streams.filter((s) => matchesQuery(query, s.name, s.category));
 
   const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
@@ -367,8 +373,14 @@ export default function MoneyFlow() {
       )}
 
       {/* Streams grouped by type */}
+      {!loading && !error && streams.length > 0 && (
+        <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+      )}
+      {!loading && !error && streams.length > 0 && listStreams.length === 0 && (
+        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+      )}
       {!loading && !error && TYPE_ORDER.map((type) => {
-        const group = streams.filter((s) => s.stream_type === type);
+        const group = listStreams.filter((s) => s.stream_type === type);
         if (group.length === 0) return null;
         return (
           <section key={type} className="space-y-2">

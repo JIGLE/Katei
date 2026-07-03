@@ -4,6 +4,7 @@ import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types
 import { Modal } from '../components/Modal';
 import { EventForm } from '../components/EventForm';
 import { EmptyState } from '../components/EmptyState';
+import { SearchInput, matchesQuery } from '../components/SearchInput';
 import { CalendarMonth } from '../components/CalendarMonth';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
@@ -28,11 +29,11 @@ const typeConfig: Record<
   savings: { accent: 'teal', labelKey: 'eventType.savings' },
 };
 
-const accentMap: Record<Accent, { date: string; dot: string; badge: string }> = {
-  amber: { date: 'text-amber-500', dot: 'bg-amber-500', badge: 'bg-amber-500/10 text-amber-500' },
-  emerald: { date: 'text-emerald-500', dot: 'bg-emerald-500', badge: 'bg-emerald-500/10 text-emerald-500' },
-  rose: { date: 'text-rose-500', dot: 'bg-rose-500', badge: 'bg-rose-500/10 text-rose-500' },
-  teal: { date: 'text-teal-300', dot: 'bg-teal-400', badge: 'bg-teal-500/10 text-teal-300' },
+const accentMap: Record<Accent, { date: string; dot: string; badge: string; pill: string }> = {
+  amber: { date: 'text-amber-500', dot: 'bg-amber-500', badge: 'bg-amber-500/10 text-amber-500', pill: 'border-amber-500/40 bg-amber-500/10 text-amber-500' },
+  emerald: { date: 'text-emerald-500', dot: 'bg-emerald-500', badge: 'bg-emerald-500/10 text-emerald-500', pill: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500' },
+  rose: { date: 'text-rose-500', dot: 'bg-rose-500', badge: 'bg-rose-500/10 text-rose-500', pill: 'border-rose-500/40 bg-rose-500/10 text-rose-500' },
+  teal: { date: 'text-teal-300', dot: 'bg-teal-400', badge: 'bg-teal-500/10 text-teal-300', pill: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
 };
 
 type View = 'upcoming' | 'all' | 'done';
@@ -52,6 +53,8 @@ export default function Timeline() {
   const [view, setView] = useState<View>('upcoming');
   const [mode, setMode] = useState<'list' | 'calendar'>('list');
   const [mineOnly, setMineOnly] = useState(false);
+  const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<HouseholdEvent['event_type'] | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -109,7 +112,15 @@ export default function Timeline() {
       .filter((a) => a.user_id === user?.id && a.event_id != null)
       .map((a) => a.event_id as number),
   );
-  const visible = mineOnly ? events.filter((e) => mineEventIds.has(e.id)) : events;
+  const mineFiltered = mineOnly ? events.filter((e) => mineEventIds.has(e.id)) : events;
+  // Search + type narrow the list further; both are client-side over the
+  // fetched rows, so they respond on every keystroke.
+  const searching = query.trim() !== '' || typeFilter !== 'all';
+  const visible = mineFiltered.filter(
+    (e) =>
+      (typeFilter === 'all' || e.event_type === typeFilter) &&
+      matchesQuery(query, e.title, e.description),
+  );
 
   const handleSaved = () => {
     setShowForm(false);
@@ -212,20 +223,43 @@ export default function Timeline() {
                 </button>
               ))}
             </div>
-            {/* Personal filter — only events assigned to me. */}
-            <button
-              type="button"
-              onClick={() => setMineOnly((v) => !v)}
-              aria-pressed={mineOnly}
-              className={[
-                'self-start rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                mineOnly
-                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-              ].join(' ')}
-            >
-              {t('timeline.assignedToMe')}
-            </button>
+            <SearchInput value={query} onChange={setQuery} label={t('search.events')} />
+            {/* One row of pill filters — personal first, then event type. The
+                row scrolls sideways at phone width instead of stacking. */}
+            <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <button
+                type="button"
+                onClick={() => setMineOnly((v) => !v)}
+                aria-pressed={mineOnly}
+                className={[
+                  'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  mineOnly
+                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t('timeline.assignedToMe')}
+              </button>
+              <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
+              {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
+                <button
+                  key={tk}
+                  type="button"
+                  onClick={() => setTypeFilter(tk)}
+                  aria-pressed={typeFilter === tk}
+                  className={[
+                    'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    typeFilter === tk
+                      ? tk === 'all'
+                        ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
+                        : accentMap[typeConfig[tk].accent].pill
+                      : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                  ].join(' ')}
+                >
+                  {t(tk === 'all' ? 'eventType.all' : typeConfig[tk].labelKey)}
+                </button>
+              ))}
+            </div>
           </>
         )}
       </header>
@@ -237,7 +271,13 @@ export default function Timeline() {
       {mode === 'list' && loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      {mode === 'list' && !loading && !error && visible.length === 0 && mineOnly && (
+      {/* A search/type filter that matches nothing states so plainly — the
+          other empty states describe a genuinely empty timeline. */}
+      {mode === 'list' && !loading && !error && visible.length === 0 && searching && mineFiltered.length > 0 && (
+        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+      )}
+
+      {mode === 'list' && !loading && !error && mineFiltered.length === 0 && mineOnly && (
         <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
       )}
 

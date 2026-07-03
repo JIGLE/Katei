@@ -114,7 +114,16 @@
     "payment": "Zahlung",
     "appointment": "Termin",
     "income": "Einkommen",
-    "savings": "Sparen"
+    "savings": "Sparen",
+    "all": "Alle"
+  },
+  "search": {
+    "events": "Termine suchen",
+    "streams": "Geldflüsse suchen",
+    "members": "Mitglieder suchen",
+    "clear": "Suche löschen",
+    "noMatches": "Nichts passt zu deiner Suche.",
+    "noMatchesHint": "Versuch einen anderen Namen oder lösche die Suche."
   },
   "money": {
     "eyebrow": "Finanzen",

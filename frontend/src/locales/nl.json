@@ -114,7 +114,16 @@
     "payment": "Betaling",
     "appointment": "Afspraak",
     "income": "Inkomen",
-    "savings": "Sparen"
+    "savings": "Sparen",
+    "all": "Alle"
+  },
+  "search": {
+    "events": "Zoek gebeurtenissen",
+    "streams": "Zoek geldstromen",
+    "members": "Zoek leden",
+    "clear": "Zoekopdracht wissen",
+    "noMatches": "Niets gevonden voor je zoekopdracht.",
+    "noMatchesHint": "Probeer een andere naam of wis de zoekopdracht."
   },
   "money": {
     "eyebrow": "Financiën",

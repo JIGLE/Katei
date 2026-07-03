@@ -9,6 +9,7 @@ import { AssignmentForm } from '../components/AssignmentForm';
 import { daysToBirthday } from '../lib/format';
 import { usePreferences } from '../lib/preferences';
 import { EmptyState } from '../components/EmptyState';
+import { SearchInput, matchesQuery } from '../components/SearchInput';
 
 function initials(name: string): string {
   return name
@@ -45,6 +46,7 @@ export default function Household() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [query, setQuery] = useState('');
   const [showMemberForm, setShowMemberForm] = useState(false);
   const [editingMember, setEditingMember] = useState<User | null>(null);
   const [showAssignForm, setShowAssignForm] = useState(false);
@@ -121,9 +123,12 @@ export default function Household() {
   };
 
   // People and pets are shown as separate, warmer groups — a household is
-  // everyone who lives here, not one flat roster.
+  // everyone who lives here, not one flat roster. The summary line keeps
+  // counting everyone; only the rendered groups narrow to the search.
   const people = users.filter((u) => u.kind !== 'pet');
   const pets = users.filter((u) => u.kind === 'pet');
+  const visiblePeople = people.filter((u) => matchesQuery(query, u.name));
+  const visiblePets = pets.filter((u) => matchesQuery(query, u.name));
   const upcomingBirthdays = users.filter((u) => {
     const d = daysToBirthday(u.birthday);
     return d !== null && d <= 30;
@@ -237,19 +242,27 @@ export default function Household() {
         />
       )}
 
+      {!loading && !error && users.length > 0 && (
+        <SearchInput value={query} onChange={setQuery} label={t('search.members')} />
+      )}
+
+      {!loading && !error && users.length > 0 && visiblePeople.length === 0 && visiblePets.length === 0 && (
+        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+      )}
+
       {/* People */}
-      {!loading && !error && people.length > 0 && (
+      {!loading && !error && visiblePeople.length > 0 && (
         <section className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.people')}</p>
-          {people.map((u, i) => renderMember(u, i))}
+          {visiblePeople.map((u, i) => renderMember(u, i))}
         </section>
       )}
 
       {/* Pets — the rest of the household */}
-      {!loading && !error && pets.length > 0 && (
+      {!loading && !error && visiblePets.length > 0 && (
         <section className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">{t('household.pets')}</p>
-          {pets.map((u, i) => renderMember(u, i))}
+          {visiblePets.map((u, i) => renderMember(u, i))}
         </section>
       )}
 

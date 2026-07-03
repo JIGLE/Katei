@@ -114,7 +114,16 @@
     "payment": "Paiement",
     "appointment": "Rendez-vous",
     "income": "Revenu",
-    "savings": "Épargne"
+    "savings": "Épargne",
+    "all": "Tous"
+  },
+  "search": {
+    "events": "Rechercher une échéance",
+    "streams": "Rechercher un flux",
+    "members": "Rechercher un membre",
+    "clear": "Effacer la recherche",
+    "noMatches": "Aucun résultat pour cette recherche.",
+    "noMatchesHint": "Essayez un autre nom ou effacez la recherche."
   },
   "money": {
     "eyebrow": "Finances",
