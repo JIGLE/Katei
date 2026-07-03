@@ -6,6 +6,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - "e2e/**"
       - "Dockerfile"
       - "entrypoint.sh"
       - "restore.sh"
@@ -60,10 +61,109 @@ jobs:
           # pure unit tests ignore it. Without DATABASE_URL they skip cleanly.
           DATABASE_URL: postgresql://katei:katei@localhost:5432/katei_test
 
+  e2e:
+    name: E2E smoke (Playwright)
+    runs-on: ubuntu-latest
+    needs: test
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: katei
+          POSTGRES_PASSWORD: katei
+          POSTGRES_DB: katei_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U katei"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://katei:katei@localhost:5432/katei_e2e
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+            e2e/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      # The backend serves the SPA from ./public in production; mirror that
+      # shape so the suite exercises the real single-origin deployment.
+      - name: Copy SPA into backend
+        run: cp -r frontend/dist backend/public
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+
+      # schema.sql normally runs via the postgres image's init hook; a CI
+      # service container starts before checkout, so apply it explicitly.
+      - name: Apply base schema
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f schema.sql
+        env:
+          PGPASSWORD: katei
+
+      - name: Boot the app
+        working-directory: backend
+        run: |
+          node dist/index.js > /tmp/katei-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/health && exit 0
+            sleep 1
+          done
+          echo "server failed to become healthy"
+          cat /tmp/katei-server.log
+          exit 1
+        env:
+          JWT_SECRET: e2e-ci-secret
+          PORT: "3000"
+
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run smoke suite
+        working-directory: e2e
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            /tmp/katei-server.log
+          retention-days: 7
+
   build:
     name: Build single image
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, e2e]
 
     steps:
       - name: Checkout

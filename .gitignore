@@ -27,6 +27,10 @@ yarn-error.log*
 .vscode/
 *.swp
 
+# Playwright run artifacts
+e2e/test-results/
+e2e/playwright-report/
+
 # Docker volumes (if ever bind-mounted locally)
 pgdata/
 
