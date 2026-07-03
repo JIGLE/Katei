@@ -321,6 +321,7 @@
     "theme": "Weergave",
     "theme_dark": "Donker",
     "theme_light": "Licht",
+    "theme_system": "Systeem",
     "calendar": "Agenda-feed",
     "calendarIntro": "Abonneer je in je agenda-app om vervaldata en betalingen te zien. Houd de link privé; genereer opnieuw om toegang in te trekken.",
     "calendarUrl": "Abonnee-URL (tik om te kopiëren)",

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from './api';
 import { setLanguage } from './i18n';
 
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'system';
 
 export interface Preferences {
   country: string;
@@ -28,20 +28,36 @@ const DEFAULTS: Preferences = {
   household_name: '',
 };
 
-// Apply the theme to <html> so the CSS-variable palette flips, and cache it so
-// the next boot can apply it before React mounts (see index.html) — no flash.
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+// The last explicitly applied choice, so the OS listener below knows whether
+// a live scheme flip should re-resolve ('system') or be ignored (fixed theme).
+let appliedChoice: Theme = 'dark';
+
+// Apply the theme to <html> so the CSS-variable palette flips, and cache the
+// raw choice so the next boot can apply it before React mounts (see
+// index.html / theme-init.js) — no flash. 'system' resolves against the
+// device colour scheme here and re-resolves whenever the OS setting changes.
 export function applyTheme(theme: Theme) {
-  if (theme === 'light') document.documentElement.dataset.theme = 'light';
+  appliedChoice = theme;
+  const resolved = theme === 'system' ? (systemDark.matches ? 'dark' : 'light') : theme;
+  if (resolved === 'light') document.documentElement.dataset.theme = 'light';
   else delete document.documentElement.dataset.theme;
   // Keep the browser/PWA chrome colour in step with the page background.
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'light' ? '#f7f6f3' : '#09090b');
+  if (meta) meta.setAttribute('content', resolved === 'light' ? '#f7f6f3' : '#09090b');
   try {
     localStorage.setItem('katei-theme', theme);
   } catch {
     // localStorage unavailable (private mode) — theme still applies this session.
   }
 }
+
+// Live-update while the app is open: if the household follows the system,
+// flipping the OS scheme flips Katei without a reload.
+systemDark.addEventListener('change', () => {
+  if (appliedChoice === 'system') applyTheme('system');
+});
 
 interface PreferencesContextValue extends Preferences {
   loading: boolean;

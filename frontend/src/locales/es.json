@@ -321,6 +321,7 @@
     "theme": "Apariencia",
     "theme_dark": "Oscuro",
     "theme_light": "Claro",
+    "theme_system": "Sistema",
     "calendar": "Feed de calendario",
     "calendarIntro": "Suscríbete en tu app de calendario para ver vencimientos y pagos. Mantén el enlace privado; regenéralo para revocar el acceso.",
     "calendarUrl": "URL de suscripción (toca para copiar)",

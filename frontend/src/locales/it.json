@@ -321,6 +321,7 @@
     "theme": "Aspetto",
     "theme_dark": "Scuro",
     "theme_light": "Chiaro",
+    "theme_system": "Sistema",
     "calendar": "Feed calendario",
     "calendarIntro": "Iscriviti nella tua app calendario per vedere scadenze e pagamenti. Tieni privato il link; rigeneralo per revocare l'accesso.",
     "calendarUrl": "URL di iscrizione (tocca per copiare)",

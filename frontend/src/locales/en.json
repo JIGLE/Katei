@@ -320,6 +320,7 @@
     "theme": "Appearance",
     "theme_dark": "Dark",
     "theme_light": "Light",
+    "theme_system": "System",
     "calendar": "Calendar feed",
     "calendarIntro": "Subscribe in your calendar app to see due dates and payments. Keep the link private; regenerate it to revoke access.",
     "calendarUrl": "Subscribe URL (tap to copy)",

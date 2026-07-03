@@ -325,8 +325,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           <p className={sectionCls}>{t('settings.sectionAppearance')}</p>
           <div>
             <span className={gLabelCls}>{t('settings.theme')}</span>
-            <div className="grid grid-cols-2 gap-2">
-              {(['dark', 'light'] as Theme[]).map((opt) => (
+            <div className="grid grid-cols-3 gap-2">
+              {(['dark', 'light', 'system'] as Theme[]).map((opt) => (
                 <button
                   key={opt}
                   type="button"

@@ -50,6 +50,25 @@ test('PUT persists preferences including theme and savings goal', opts, async ()
   assert.equal(got.household_name, 'The Nguyens');
 });
 
+test("theme 'system' round-trips; unknown values fall back to dark", opts, async () => {
+  const base = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin', language: 'de' };
+  const put = await app.inject({
+    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    payload: { ...base, theme: 'system' },
+  });
+  assert.equal(put.statusCode, 200);
+  assert.equal(put.json().theme, 'system');
+  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  assert.equal(got.theme, 'system');
+
+  // Values outside the enum are rejected by schema validation.
+  const bad = await app.inject({
+    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    payload: { ...base, theme: 'sepia' },
+  });
+  assert.equal(bad.statusCode, 400);
+});
+
 test('household_name defaults to empty string', opts, async () => {
   const p = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
   assert.equal(p.household_name, '');

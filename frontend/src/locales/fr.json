@@ -321,6 +321,7 @@
     "theme": "Apparence",
     "theme_dark": "Sombre",
     "theme_light": "Clair",
+    "theme_system": "Système",
     "calendar": "Flux calendrier",
     "calendarIntro": "Abonnez-vous dans votre application calendrier pour voir échéances et paiements. Gardez le lien privé ; régénérez-le pour révoquer l'accès.",
     "calendarUrl": "URL d'abonnement (toucher pour copier)",

@@ -20,6 +20,11 @@ const adminOnly = { preHandler: requireAdmin } as const;
 // EU-leaning defaults when a household hasn't set preferences yet.
 const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
 
+// 'system' follows the device's colour scheme on the client; unset stays dark
+// so long-standing households don't flip theme on upgrade.
+const normalizeTheme = (v: string | null | undefined): 'dark' | 'light' | 'system' =>
+  v === 'light' || v === 'system' ? v : 'dark';
+
 export const settingsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/settings/preferences — household country / currency / locale / timezone / language.
   app.get('/preferences', async () => {
@@ -34,7 +39,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       language,
       savings_goal: Number((await getSetting('savings_goal')) ?? 0),
       savings_opening: Number((await getSetting('savings_opening')) ?? 0),
-      theme: (await getSetting('theme')) === 'light' ? 'light' : 'dark',
+      theme: normalizeTheme(await getSetting('theme')),
       household_name: (await getSetting('household_name')) ?? '',
     };
   });
@@ -58,7 +63,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             language: { type: 'string', pattern: '^[A-Za-z]{2}$' },
             savings_goal: { type: 'number', minimum: 0 },
             savings_opening: { type: 'number', minimum: 0 },
-            theme: { type: 'string', enum: ['dark', 'light'] },
+            theme: { type: 'string', enum: ['dark', 'light', 'system'] },
             household_name: { type: 'string', maxLength: 60 },
           },
         },
@@ -75,7 +80,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('savings_goal', String(savings_goal));
       const savings_opening = req.body.savings_opening ?? 0;
       await setSetting('savings_opening', String(savings_opening));
-      const theme = req.body.theme === 'light' ? 'light' : 'dark';
+      const theme = normalizeTheme(req.body.theme);
       await setSetting('theme', theme);
       const household_name = (req.body.household_name ?? '').trim();
       await setSetting('household_name', household_name);
