@@ -107,7 +107,10 @@
     "viewMonth": "Monat",
     "prevMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
-    "noEventsThisDay": "Nichts an diesem Tag."
+    "noEventsThisDay": "Nichts an diesem Tag.",
+    "today": "Heute",
+    "dayEvents_one": "{{count}} Termin",
+    "dayEvents_other": "{{count}} Termine"
   },
   "eventType": {
     "deadline": "Frist",

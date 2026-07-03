@@ -107,7 +107,10 @@
     "viewMonth": "Maand",
     "prevMonth": "Vorige maand",
     "nextMonth": "Volgende maand",
-    "noEventsThisDay": "Niets op deze dag."
+    "noEventsThisDay": "Niets op deze dag.",
+    "today": "Vandaag",
+    "dayEvents_one": "{{count}} gebeurtenis",
+    "dayEvents_other": "{{count}} gebeurtenissen"
   },
   "eventType": {
     "deadline": "Deadline",

@@ -106,7 +106,10 @@
     "viewMonth": "Month",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
-    "noEventsThisDay": "Nothing on this day."
+    "noEventsThisDay": "Nothing on this day.",
+    "today": "Today",
+    "dayEvents_one": "{{count}} event",
+    "dayEvents_other": "{{count}} events"
   },
   "eventType": {
     "deadline": "Deadline",

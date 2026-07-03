@@ -107,7 +107,10 @@
     "viewMonth": "Mois",
     "prevMonth": "Mois précédent",
     "nextMonth": "Mois suivant",
-    "noEventsThisDay": "Rien ce jour-là."
+    "noEventsThisDay": "Rien ce jour-là.",
+    "today": "Aujourd'hui",
+    "dayEvents_one": "{{count}} échéance",
+    "dayEvents_other": "{{count}} échéances"
   },
   "eventType": {
     "deadline": "Date limite",
