@@ -64,8 +64,13 @@
     "birthdays": "Aankomende verjaardagen",
     "activity": "In huis",
     "greetingName": "{{greeting}}, {{name}}",
-    "saved": "Gespaard",
-    "goals": "Spaardoelen"
+    "goals": "Spaardoelen",
+    "statusOverdue_one": "{{count}} te laat",
+    "statusOverdue_other": "{{count}} te laat",
+    "statusWeek_one": "{{count}} deze week",
+    "statusWeek_other": "{{count}} deze week",
+    "nextBill": "Volgende rekening",
+    "closestGoal": "Dichtstbijzijnde doel"
   },
   "onboarding": {
     "title": "Aan de slag",
@@ -76,7 +81,8 @@
     "addMoney": "Terugkerende kosten toevoegen",
     "addMoneyHint": "Huur, rekeningen, abonnementen",
     "addEvent": "Aankomende gebeurtenis toevoegen",
-    "addEventHint": "Een deadline of afspraak"
+    "addEventHint": "Een deadline of afspraak",
+    "hide": "Verbergen"
   },
   "timeline": {
     "eyebrow": "Planning",
@@ -368,7 +374,13 @@
     "event_done": "{{actor}} heeft {{item}} afgerond",
     "payment_paid": "{{actor}} heeft {{item}} betaald",
     "member_added": "{{actor}} heeft {{item}} verwelkomd",
-    "savings_added": "{{actor}} heeft {{item}} opzijgezet"
+    "savings_added": "{{actor}} heeft {{item}} opzijgezet",
+    "stream_added_self": "Je hebt {{item}} toegevoegd",
+    "event_added_self": "Je hebt {{item}} toegevoegd",
+    "event_done_self": "Je hebt {{item}} afgerond",
+    "payment_paid_self": "Je hebt {{item}} betaald",
+    "member_added_self": "Je hebt {{item}} verwelkomd",
+    "savings_added_self": "Je hebt {{item}} opzijgezet"
   },
   "notifications": {
     "title": "Meldingen",

@@ -64,8 +64,13 @@
     "birthdays": "Compleanni in arrivo",
     "activity": "In casa",
     "greetingName": "{{greeting}}, {{name}}",
-    "saved": "Risparmiato",
-    "goals": "Obiettivi di risparmio"
+    "goals": "Obiettivi di risparmio",
+    "statusOverdue_one": "{{count}} in ritardo",
+    "statusOverdue_other": "{{count}} in ritardo",
+    "statusWeek_one": "{{count}} in scadenza questa settimana",
+    "statusWeek_other": "{{count}} in scadenza questa settimana",
+    "nextBill": "Prossima bolletta",
+    "closestGoal": "Obiettivo più vicino"
   },
   "onboarding": {
     "title": "Per iniziare",
@@ -76,7 +81,8 @@
     "addMoney": "Aggiungi le spese ricorrenti",
     "addMoneyHint": "Affitto, bollette, abbonamenti",
     "addEvent": "Aggiungi un evento imminente",
-    "addEventHint": "Una scadenza o un appuntamento"
+    "addEventHint": "Una scadenza o un appuntamento",
+    "hide": "Nascondi"
   },
   "timeline": {
     "eyebrow": "Pianificazione",
@@ -368,7 +374,13 @@
     "event_done": "{{actor}} ha completato {{item}}",
     "payment_paid": "{{actor}} ha pagato {{item}}",
     "member_added": "{{actor}} ha dato il benvenuto a {{item}}",
-    "savings_added": "{{actor}} ha messo da parte {{item}}"
+    "savings_added": "{{actor}} ha messo da parte {{item}}",
+    "stream_added_self": "Hai aggiunto {{item}}",
+    "event_added_self": "Hai aggiunto {{item}}",
+    "event_done_self": "Hai completato {{item}}",
+    "payment_paid_self": "Hai pagato {{item}}",
+    "member_added_self": "Hai accolto {{item}}",
+    "savings_added_self": "Hai messo da parte {{item}}"
   },
   "notifications": {
     "title": "Notifiche",

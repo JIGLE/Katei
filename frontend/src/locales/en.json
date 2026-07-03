@@ -63,8 +63,13 @@
     "birthdays": "Upcoming birthdays",
     "activity": "Around the house",
     "greetingName": "{{greeting}}, {{name}}",
-    "saved": "Saved",
-    "goals": "Savings goals"
+    "goals": "Savings goals",
+    "statusOverdue_one": "{{count}} overdue",
+    "statusOverdue_other": "{{count}} overdue",
+    "statusWeek_one": "{{count}} due this week",
+    "statusWeek_other": "{{count}} due this week",
+    "nextBill": "Next bill",
+    "closestGoal": "Closest goal"
   },
   "onboarding": {
     "title": "Getting started",
@@ -75,7 +80,8 @@
     "addMoney": "Add your recurring money",
     "addMoneyHint": "Rent, bills, subscriptions",
     "addEvent": "Add an upcoming event",
-    "addEventHint": "A deadline or appointment"
+    "addEventHint": "A deadline or appointment",
+    "hide": "Hide"
   },
   "timeline": {
     "eyebrow": "Planning",
@@ -367,7 +373,13 @@
     "event_done": "{{actor}} finished {{item}}",
     "payment_paid": "{{actor}} paid {{item}}",
     "member_added": "{{actor}} welcomed {{item}}",
-    "savings_added": "{{actor}} set aside {{item}}"
+    "savings_added": "{{actor}} set aside {{item}}",
+    "stream_added_self": "You added {{item}}",
+    "event_added_self": "You added {{item}}",
+    "event_done_self": "You finished {{item}}",
+    "payment_paid_self": "You paid {{item}}",
+    "member_added_self": "You welcomed {{item}}",
+    "savings_added_self": "You set aside {{item}}"
   },
   "notifications": {
     "title": "Notifications",

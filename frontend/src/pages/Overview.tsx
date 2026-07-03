@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { assignedIds } from '../lib/assignments';
-import { useCountUp } from '../lib/useCountUp';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
 import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
 
@@ -84,11 +83,17 @@ function EventRow({
 }
 
 // Turn an activity row into a localized sentence. The verb lives in the
-// catalog; the actor + item are interpolated (item stays as stored).
+// catalog; the actor + item are interpolated (item stays as stored). Your own
+// actions use the `_self` form of each verb — "You added…" — because a plain
+// pronoun swap breaks conjugation in half the catalogs ("Du hat…").
 function activitySentence(
   a: Activity,
   t: (k: string, o?: Record<string, unknown>) => string,
+  selfId?: number,
 ): string {
+  if (selfId != null && a.actor_id === selfId) {
+    return t(`activity.${a.action}_self`, { item: a.summary });
+  }
   const actor = a.actor_name ?? t('activity.someone');
   return t(`activity.${a.action}`, { actor, item: a.summary });
 }
@@ -109,7 +114,7 @@ export default function Overview() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
 
-  useEffect(() => {
+  const fetchAll = () => {
     Promise.all([
       api.get<HouseholdEvent[]>('/events'),
       api.get<MoneyStream[]>('/money-streams'),
@@ -129,7 +134,29 @@ export default function Overview() {
       .finally(() => setLoading(false));
     // Savings pots are a soft, non-blocking glance.
     api.get<SavingsSummary>('/savings').then(setSavings).catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchAll();
+    // A resumed PWA lands on yesterday's dashboard otherwise — refresh
+    // quietly whenever the app comes back into view.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchAll();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The first-run checklist can also be put away — a one-person household
+  // can never tick "add members", so completion alone can't retire it.
+  const [onboardingHidden, setOnboardingHidden] = useState(
+    () => localStorage.getItem('katei-onboarding-hidden') === '1',
+  );
+  const hideOnboarding = () => {
+    setOnboardingHidden(true);
+    try { localStorage.setItem('katei-onboarding-hidden', '1'); } catch { /* private mode */ }
+  };
 
   // Quick-complete from the dashboard — payments are "paid", chores "done".
   // The detailed mark-as-paid flow (actual amount) still lives on the Timeline.
@@ -189,10 +216,16 @@ export default function Overview() {
   // Long localized amounts use a non-breaking separator; normalize so they wrap
   // cleanly inside the cramped 3-up cells.
   const fmtWrap = (n: number) => fmt(n).replace(/[\u00a0\u202f]/g, ' ');
-  // The one money figure that counts up — the household's saved balance.
-  const animatedSaved = useCountUp(savings?.balance ?? 0, savings !== null);
-  // Goals worth glancing at: pots with a target, soonest-created first.
-  const goalPots = (savings?.pots ?? []).filter((p) => p.target && p.target > 0).slice(0, 3);
+  // The next bill: the soonest open payment with a known amount — the one
+  // money fact that changes what you do today.
+  const nextBill = dated
+    .filter(({ evt }) => evt.event_type === 'payment' && evt.money_stream_id != null)
+    .map(({ evt, days }) => ({ evt, days, stream: streams.find((s) => s.id === evt.money_stream_id) }))
+    .find((b) => b.stream);
+  // One goal earns a glance: the progressing pot closest to its target.
+  const topGoal = (savings?.pots ?? [])
+    .filter((p) => p.target && p.target > 0 && p.balance > 0)
+    .sort((a, b) => b.balance / (b.target as number) - a.balance / (a.target as number))[0];
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -206,13 +239,13 @@ export default function Overview() {
       ? t('overview.greetingName', { greeting, name: user.name })
       : user.name
     : t('overview.title');
-  const summary = loading
-    ? null
-    : overdueAll.length > 0
-      ? t('overview.summaryOverdue', { count: overdueAll.length })
-      : thisWeekAll.length > 0
-        ? t('overview.summaryWeek', { count: thisWeekAll.length })
-        : t('overview.summaryClear');
+  // The one-line TLDR of the home: count overdue AND the week, not just the
+  // worst bucket — "1 overdue · 2 due this week".
+  const statusParts = [
+    ...(overdueAll.length ? [t('overview.statusOverdue', { count: overdueAll.length })] : []),
+    ...(thisWeekAll.length ? [t('overview.statusWeek', { count: thisWeekAll.length })] : []),
+  ];
+  const summary = loading ? null : statusParts.length ? statusParts.join(' · ') : t('overview.summaryClear');
 
   return (
     <div className="space-y-6">
@@ -222,12 +255,14 @@ export default function Overview() {
         {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
       </header>
 
-      {/* First-run setup checklist — hides once the household is set up. */}
-      {!loading && !error && !onboardingComplete && (
+      {/* First-run setup checklist — hides once the household is set up, or
+          when it's put away (a solo home can never tick "add members"). */}
+      {!loading && !error && !onboardingComplete && !onboardingHidden && (
         <OnboardingCard
           usersCount={usersCount}
           streamsCount={streams.length}
           eventsCount={eventsTotal}
+          onDismiss={hideOnboarding}
         />
       )}
 
@@ -305,15 +340,35 @@ export default function Overview() {
         )}
       </section>
 
-      {/* Money at a glance — saved so far, monthly net, monthly outflow. */}
-      {!loading && !error && streams.length > 0 && (
-        <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-          <div className="p-4">
-            <p className="text-xs text-zinc-500">{t('overview.saved')}</p>
-            <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
-              {savings ? fmtWrap(animatedSaved) : '—'}
-            </p>
+      {/* Next bill — the money fact that changes what you do today. */}
+      {!loading && !error && nextBill && nextBill.stream && (
+        <div className="flex items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('overview.nextBill')}</p>
+            <p className="mt-1 truncate text-sm text-zinc-200">{nextBill.evt.title}</p>
           </div>
+          <p className="flex-shrink-0 text-sm font-medium tabular-nums text-zinc-100">
+            {formatMoney(nextBill.stream.amount, nextBill.stream.currency, locale)}
+          </p>
+          <span
+            className={[
+              'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+              nextBill.days < 0
+                ? 'bg-rose-500/20 text-rose-400'
+                : nextBill.days <= 7
+                  ? 'bg-emerald-500/10 text-emerald-500'
+                  : 'bg-zinc-800 text-zinc-500',
+            ].join(' ')}
+          >
+            {formatRelativeDay(nextBill.days, lang)}
+          </span>
+        </div>
+      )}
+
+      {/* Money at a glance — two figures, not an accounting panel: what's
+          left each month and what goes out. The full picture lives on Money. */}
+      {!loading && !error && streams.length > 0 && (
+        <div className="grid grid-cols-2 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
           <div className="p-4">
             <p className="text-xs text-zinc-500">{t('money.net')}</p>
             <p className={`mt-1 text-sm font-light leading-tight tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -327,41 +382,6 @@ export default function Overview() {
             </p>
           </div>
         </div>
-      )}
-
-      {/* Savings goals — the pots being saved toward, at a glance. */}
-      {!loading && goalPots.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('overview.goals')}
-          </p>
-          <ul className="space-y-3">
-            {goalPots.map((pot) => {
-              const pct = pot.target && pot.target > 0 ? Math.min(100, (pot.balance / pot.target) * 100) : 0;
-              return (
-                <li key={pot.id}>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span aria-hidden>{pot.icon || '🐷'}</span>
-                    <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
-                    <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
-                    <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target ?? 0)}</span>
-                    {pct >= 100 && (
-                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
-                        {t('money.goalReached')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
       )}
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
@@ -384,17 +404,44 @@ export default function Overview() {
         </section>
       )}
 
-      {/* Around the house — the shared pulse of recent activity. */}
+      {/* One goal, if any is progressing — the pot closest to its target. */}
+      {!loading && topGoal && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('overview.closestGoal')}
+          </p>
+          <div className="flex items-center gap-2 text-sm">
+            <span aria-hidden>{topGoal.icon || '🐷'}</span>
+            <span className="flex-1 truncate text-zinc-200">{topGoal.is_default ? t('money.generalPot') : topGoal.name}</span>
+            <span className="tabular-nums text-teal-300">{fmt(topGoal.balance)}</span>
+            <span className="text-xs tabular-nums text-zinc-600">/ {fmt(topGoal.target ?? 0)}</span>
+            {topGoal.balance >= (topGoal.target ?? Infinity) && (
+              <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
+                {t('money.goalReached')}
+              </span>
+            )}
+          </div>
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+            <div
+              className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
+              style={{ width: `${Math.min(100, (topGoal.balance / (topGoal.target ?? 1)) * 100)}%` }}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Around the house — the shared pulse of recent activity. Five rows;
+          the item is the news, so it wins the space (two lines if needed). */}
       {!loading && activity.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.activity')}
           </p>
           <ul className="space-y-3">
-            {activity.map((a) => (
+            {activity.slice(0, 5).map((a) => (
               <li key={a.id} className="flex items-center gap-3">
                 <Avatar name={a.actor_name ?? '·'} url={a.actor_avatar} size="sm" />
-                <span className="flex-1 truncate text-sm text-zinc-300">{activitySentence(a, t)}</span>
+                <span className="line-clamp-2 flex-1 text-sm text-zinc-300">{activitySentence(a, t, user?.id)}</span>
                 <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
                   {formatRelativeTime(a.created_at, lang)}
                 </time>

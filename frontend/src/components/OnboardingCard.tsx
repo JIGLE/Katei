@@ -15,10 +15,13 @@ export function OnboardingCard({
   usersCount,
   streamsCount,
   eventsCount,
+  onDismiss,
 }: {
   usersCount: number;
   streamsCount: number;
   eventsCount: number;
+  /** A solo household can never tick "add members" — let them put it away. */
+  onDismiss: () => void;
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -47,11 +50,20 @@ export function OnboardingCard({
 
   return (
     <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-      <div className="mb-4 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
           {t('onboarding.title')}
         </p>
-        <p className="text-xs text-zinc-600">{t('onboarding.left', { count: remaining })}</p>
+        <div className="flex items-baseline gap-3">
+          <p className="text-xs text-zinc-600">{t('onboarding.left', { count: remaining })}</p>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+          >
+            {t('onboarding.hide')}
+          </button>
+        </div>
       </div>
       <p className="mb-4 text-sm leading-relaxed text-zinc-400">
         {t('onboarding.intro')}

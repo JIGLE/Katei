@@ -64,8 +64,13 @@
     "birthdays": "Anstehende Geburtstage",
     "activity": "Im Haushalt",
     "greetingName": "{{greeting}}, {{name}}",
-    "saved": "Gespart",
-    "goals": "Sparziele"
+    "goals": "Sparziele",
+    "statusOverdue_one": "{{count}} überfällig",
+    "statusOverdue_other": "{{count}} überfällig",
+    "statusWeek_one": "{{count}} diese Woche fällig",
+    "statusWeek_other": "{{count}} diese Woche fällig",
+    "nextBill": "Nächste Rechnung",
+    "closestGoal": "Nächstes Sparziel"
   },
   "onboarding": {
     "title": "Erste Schritte",
@@ -76,7 +81,8 @@
     "addMoney": "Wiederkehrende Kosten hinzufügen",
     "addMoneyHint": "Miete, Rechnungen, Abos",
     "addEvent": "Anstehenden Termin hinzufügen",
-    "addEventHint": "Eine Frist oder ein Termin"
+    "addEventHint": "Eine Frist oder ein Termin",
+    "hide": "Ausblenden"
   },
   "timeline": {
     "eyebrow": "Planung",
@@ -368,7 +374,13 @@
     "event_done": "{{actor}} hat {{item}} erledigt",
     "payment_paid": "{{actor}} hat {{item}} bezahlt",
     "member_added": "{{actor}} hat {{item}} begrüßt",
-    "savings_added": "{{actor}} hat {{item}} zurückgelegt"
+    "savings_added": "{{actor}} hat {{item}} zurückgelegt",
+    "stream_added_self": "Du hast {{item}} hinzugefügt",
+    "event_added_self": "Du hast {{item}} hinzugefügt",
+    "event_done_self": "Du hast {{item}} erledigt",
+    "payment_paid_self": "Du hast {{item}} bezahlt",
+    "member_added_self": "Du hast {{item}} begrüßt",
+    "savings_added_self": "Du hast {{item}} zurückgelegt"
   },
   "notifications": {
     "title": "Benachrichtigungen",
