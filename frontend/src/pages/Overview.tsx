@@ -180,8 +180,11 @@ export default function Overview() {
   const thisWeekAll = dated.filter((d) => d.days >= 0 && d.days <= 7);
 
   // Money at a glance: monthly-equivalents from the streams + the pots' balance.
-  const net = monthlyOf(streams, 'income') - monthlyOf(streams, 'expense') - monthlyOf(streams, 'savings');
-  const outflow = monthlyOf(streams, 'expense');
+  // Only streams in the household currency count — raw numbers in another
+  // currency don't add (the Money page carries the exclusion note).
+  const homeStreams = streams.filter((s) => s.currency === currency);
+  const net = monthlyOf(homeStreams, 'income') - monthlyOf(homeStreams, 'expense') - monthlyOf(homeStreams, 'savings');
+  const outflow = monthlyOf(homeStreams, 'expense');
   const fmt = (n: number) => formatMoney(n, currency, locale);
   // Long localized amounts use a non-breaking separator; normalize so they wrap
   // cleanly inside the cramped 3-up cells.

@@ -43,6 +43,19 @@ test('creates an expense with sane defaults and lists it', opts, async () => {
   assert.equal(list.json().length, 1);
 });
 
+test('omitted currency defaults to the household currency, not USD', opts, async () => {
+  await app.inject({
+    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    payload: { country: 'DK', currency: 'DKK', locale: 'da-DK', timezone: 'Europe/Copenhagen' },
+  });
+  const res = await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'El', amount: 300 },
+  });
+  assert.equal(res.statusCode, 201);
+  assert.equal(res.json().currency, 'DKK');
+});
+
 test('patches an amount', opts, async () => {
   const created = (await app.inject({
     method: 'POST', url: '/api/money-streams', headers: { cookie },

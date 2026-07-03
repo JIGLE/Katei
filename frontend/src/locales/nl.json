@@ -177,7 +177,9 @@
     "potIcon": "Pictogram",
     "potTarget": "Doel (optioneel)",
     "potTargetPlaceholder": "0,00",
-    "goalReached": "Gehaald"
+    "goalReached": "Gehaald",
+    "foreignExcluded_one": "De totalen laten {{count}} geldstroom in een andere valuta weg.",
+    "foreignExcluded_other": "De totalen laten {{count}} geldstromen in andere valuta's weg."
   },
   "freq": {
     "monthly": "Maandelijks",

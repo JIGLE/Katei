@@ -176,7 +176,9 @@
     "potIcon": "Icon",
     "potTarget": "Target (optional)",
     "potTargetPlaceholder": "0.00",
-    "goalReached": "Reached"
+    "goalReached": "Reached",
+    "foreignExcluded_one": "Totals leave out {{count}} stream in another currency.",
+    "foreignExcluded_other": "Totals leave out {{count}} streams in other currencies."
   },
   "freq": {
     "monthly": "Monthly",

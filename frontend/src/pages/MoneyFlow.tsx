@@ -127,11 +127,18 @@ export default function MoneyFlow() {
 
   const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
 
-  const income = sumType(streams, 'income');
-  const expenses = sumType(streams, 'expense');
+  // Sums are only meaningful in one currency — the household's. Streams kept
+  // in another currency stay in the list with their own symbol but are left
+  // out of the totals instead of being added as raw numbers under the wrong
+  // symbol; a note below the panel says so.
+  const homeStreams = streams.filter((s) => s.currency === currency);
+  const foreignCount = streams.length - homeStreams.length;
+
+  const income = sumType(homeStreams, 'income');
+  const expenses = sumType(homeStreams, 'expense');
   // Planned monthly saving (recurring streams) drives net cash-flow, separate
   // from the accumulated balance below — a monthly rate vs money already set aside.
-  const plannedMonthly = sumType(streams, 'savings');
+  const plannedMonthly = sumType(homeStreams, 'savings');
   const net = income - expenses - plannedMonthly;
   const savingsRate = income > 0 ? (plannedMonthly / income) * 100 : 0;
   const balance = savingsData?.balance ?? 0;
@@ -147,7 +154,7 @@ export default function MoneyFlow() {
   const mineStreams = mineOnly ? streams.filter((s) => mineStreamIds.has(s.id)) : streams;
   const listStreams = mineStreams.filter((s) => matchesQuery(query, s.name, s.category));
 
-  const expenseStreams = streams.filter((s) => s.stream_type === 'expense');
+  const expenseStreams = homeStreams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
   const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
 
@@ -202,6 +209,10 @@ export default function MoneyFlow() {
           <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(plannedMonthly)}</p>
         </div>
       </div>
+
+      {!loading && foreignCount > 0 && (
+        <p className="-mt-4 text-xs text-zinc-500">{t('money.foreignExcluded', { count: foreignCount })}</p>
+      )}
 
       {/* Savings — the accumulated balance, split across pots (goals). The total
           is the hero; each pot below shows its own balance and progress, so a

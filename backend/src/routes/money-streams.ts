@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { query } from '../db.js';
+import { query, getSetting } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
 const COLS =
@@ -64,7 +64,9 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       const {
         name,
         amount,
-        currency = 'USD',
+        // Omitted currency means the household's own, never a hard-coded one —
+        // a USD default silently mislabels every aggregate for non-USD homes.
+        currency = (await getSetting('default_currency')) ?? 'EUR',
         is_recurring = true,
         frequency = 'monthly',
         category = null,

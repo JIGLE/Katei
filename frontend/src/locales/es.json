@@ -177,7 +177,9 @@
     "potIcon": "Icono",
     "potTarget": "Meta (opcional)",
     "potTargetPlaceholder": "0,00",
-    "goalReached": "Conseguido"
+    "goalReached": "Conseguido",
+    "foreignExcluded_one": "Los totales excluyen {{count}} flujo en otra moneda.",
+    "foreignExcluded_other": "Los totales excluyen {{count}} flujos en otras monedas."
   },
   "freq": {
     "monthly": "Mensual",

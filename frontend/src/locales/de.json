@@ -177,7 +177,9 @@
     "potIcon": "Symbol",
     "potTarget": "Ziel (optional)",
     "potTargetPlaceholder": "0,00",
-    "goalReached": "Erreicht"
+    "goalReached": "Erreicht",
+    "foreignExcluded_one": "Die Summen lassen {{count}} Geldfluss in anderer Währung aus.",
+    "foreignExcluded_other": "Die Summen lassen {{count}} Geldflüsse in anderen Währungen aus."
   },
   "freq": {
     "monthly": "Monatlich",
