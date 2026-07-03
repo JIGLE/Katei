@@ -222,7 +222,7 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
             <button
               type="button"
               onClick={() => onAddOnDay(selected)}
-              className="mt-2 text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+              className="mx-auto mt-2 block text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
             >
               ＋ {t('timeline.addOnDay', {
                 date: new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long' }).format(
