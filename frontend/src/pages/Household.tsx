@@ -246,7 +246,8 @@ export default function Household() {
         />
       )}
 
-      {!loading && !error && users.length > 0 && (
+      {/* Search earns its place with volume — three cards don't need it. */}
+      {!loading && !error && (users.length >= 8 || query !== '') && (
         <SearchInput value={query} onChange={setQuery} label={t('search.members')} />
       )}
 
