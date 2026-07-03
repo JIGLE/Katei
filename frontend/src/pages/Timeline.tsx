@@ -59,6 +59,8 @@ export default function Timeline() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  // Set when the form opens from a calendar day, prefilling that date.
+  const [prefillDate, setPrefillDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<HouseholdEvent | null>(null);
   const [paying, setPaying] = useState<HouseholdEvent | null>(null);
   const [payAmount, setPayAmount] = useState('');
@@ -262,7 +264,13 @@ export default function Timeline() {
       </header>
 
       {mode === 'calendar' && !error && (
-        <CalendarMonth events={events} lang={i18n.language} timezone={timezone} onSelectEvent={setEditing} />
+        <CalendarMonth
+          events={events}
+          lang={i18n.language}
+          timezone={timezone}
+          onSelectEvent={setEditing}
+          onAddOnDay={(day) => { setPrefillDate(day); setShowForm(true); }}
+        />
       )}
 
       {mode === 'list' && loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
@@ -402,8 +410,13 @@ export default function Timeline() {
         </svg>
       </button>
 
-      <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => setShowForm(false)}>
-        <EventForm onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+      <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => { setShowForm(false); setPrefillDate(null); }}>
+        <EventForm
+          key={prefillDate ?? 'blank'}
+          initialDate={prefillDate ?? undefined}
+          onSaved={() => { setPrefillDate(null); handleSaved(); }}
+          onCancel={() => { setShowForm(false); setPrefillDate(null); }}
+        />
       </Modal>
 
       <Modal open={!!paying} title={t('timeline.markPaidTitle')} onClose={() => setPaying(null)}>

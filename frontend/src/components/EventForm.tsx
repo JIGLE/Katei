@@ -5,6 +5,8 @@ import type { HouseholdEvent, MoneyStream } from '../lib/types';
 
 interface EventFormProps {
   initial?: HouseholdEvent;
+  /** Pre-fill the date for a new event (e.g. added from a calendar day). */
+  initialDate?: string;
   onSaved: (event: HouseholdEvent) => void;
   onCancel: () => void;
   onDeleted?: (id: number) => void;
@@ -24,12 +26,15 @@ const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-600 focus:border-zinc-600';
 
-export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormProps) {
+export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }: EventFormProps) {
   const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [eventType, setEventType] = useState<EventType>(initial?.event_type ?? 'deadline');
-  const [targetDate, setTargetDate] = useState(initial?.target_date?.slice(0, 10) ?? '');
+  const [targetDate, setTargetDate] = useState(initial?.target_date?.slice(0, 10) ?? initialDate ?? '');
+  // Manually created events are deadlines, payments, or appointments —
+  // income is a stream-generated concept, offered only when editing one.
+  const visibleTypes = typeOptions.filter((o) => o.value !== 'income' || isEdit);
   const [description, setDescription] = useState(initial?.description ?? '');
   const [moneyStreamId, setMoneyStreamId] = useState<string>(
     initial?.money_stream_id ? String(initial.money_stream_id) : '',
@@ -102,7 +107,7 @@ export function EventForm({ initial, onSaved, onCancel, onDeleted }: EventFormPr
       <div>
         <span className={labelCls}>{t('form.type')}</span>
         <div className="grid grid-cols-3 gap-2">
-          {typeOptions.map((opt) => (
+          {visibleTypes.map((opt) => (
             <button
               key={opt.value}
               type="button"

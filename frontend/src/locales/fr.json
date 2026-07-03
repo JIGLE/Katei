@@ -116,7 +116,8 @@
     "noEventsThisDay": "Rien ce jour-là.",
     "today": "Aujourd'hui",
     "dayEvents_one": "{{count}} échéance",
-    "dayEvents_other": "{{count}} échéances"
+    "dayEvents_other": "{{count}} échéances",
+    "addOnDay": "Ajouter le {{date}}"
   },
   "eventType": {
     "deadline": "Date limite",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
@@ -50,6 +50,21 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Existing categories back the datalist under the category field.
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  useEffect(() => {
+    api.get<MoneyStream[]>('/money-streams')
+      .then((rows) => {
+        const seen = new Set<string>();
+        for (const s of rows) {
+          const c = s.category?.trim();
+          if (c) seen.add(c);
+        }
+        setExistingCategories([...seen].sort((a, b) => a.localeCompare(b)));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,7 +262,13 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
           onChange={(e) => setCategory(e.target.value)}
           placeholder={t('form.categoryPlaceholder')}
           className={fieldCls}
+          list="existing-categories"
         />
+        {/* Offer the household's existing categories while typing, so
+            "Housing" and "housing" don't split the breakdown in two. */}
+        <datalist id="existing-categories">
+          {existingCategories.map((c) => <option key={c} value={c} />)}
+        </datalist>
       </div>
 
       {error && <p className="text-sm text-rose-400">{error}</p>}

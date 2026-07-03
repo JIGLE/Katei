@@ -116,7 +116,8 @@
     "noEventsThisDay": "Nada este día.",
     "today": "Hoy",
     "dayEvents_one": "{{count}} evento",
-    "dayEvents_other": "{{count}} eventos"
+    "dayEvents_other": "{{count}} eventos",
+    "addOnDay": "Añadir el {{date}}"
   },
   "eventType": {
     "deadline": "Fecha límite",

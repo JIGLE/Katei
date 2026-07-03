@@ -9,6 +9,8 @@ interface CalendarMonthProps {
   lang: string;
   timezone?: string;
   onSelectEvent: (evt: HouseholdEvent) => void;
+  /** Offer "add on this day" in the day panel — no dead-end empty days. */
+  onAddOnDay?: (dayKey: string) => void;
 }
 
 // Dot colour per event type (matches the Timeline/BRAND semantic accents).
@@ -30,7 +32,7 @@ const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}
 // and week, Home/End jump within the month, PageUp/PageDown change month.
 // Each day announces its full date, its event count, and today; the dots are
 // decoration only.
-export function CalendarMonth({ events, lang, timezone, onSelectEvent }: CalendarMonthProps) {
+export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDay }: CalendarMonthProps) {
   const { t } = useTranslation();
   const today = todayInTimezone(timezone); // 'YYYY-MM-DD'
   const [cursor, setCursor] = useState(() => {
@@ -194,7 +196,8 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent }: Calenda
         ))}
       </div>
 
-      {/* The selected day's events */}
+      {/* The selected day's events — never a dead end: the day panel always
+          offers adding something on that date. */}
       {selected && (
         <div className="mt-4 border-t border-zinc-800/60 pt-3">
           {selectedEvents.length === 0 ? (
@@ -214,6 +217,19 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent }: Calenda
                 </li>
               ))}
             </ul>
+          )}
+          {onAddOnDay && (
+            <button
+              type="button"
+              onClick={() => onAddOnDay(selected)}
+              className="mt-2 text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+            >
+              ＋ {t('timeline.addOnDay', {
+                date: new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long' }).format(
+                  new Date(`${selected}T00:00:00`),
+                ),
+              })}
+            </button>
           )}
         </div>
       )}

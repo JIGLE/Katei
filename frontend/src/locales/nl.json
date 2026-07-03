@@ -116,7 +116,8 @@
     "noEventsThisDay": "Niets op deze dag.",
     "today": "Vandaag",
     "dayEvents_one": "{{count}} gebeurtenis",
-    "dayEvents_other": "{{count}} gebeurtenissen"
+    "dayEvents_other": "{{count}} gebeurtenissen",
+    "addOnDay": "Toevoegen op {{date}}"
   },
   "eventType": {
     "deadline": "Deadline",
