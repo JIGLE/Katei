@@ -64,13 +64,17 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
     restoreRef.current = null;
   }, [open]);
 
-  // The page behind the sheet must not scroll while it is up.
+  // The page behind the sheet must not scroll while it is up. The app's
+  // scroller is the <main> element (App.tsx), not <body> — body never
+  // scrolls, so locking it alone would be a no-op while wheel/drag events
+  // bubbling out of the sheet could still move the page behind.
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const scroller = document.querySelector<HTMLElement>('main') ?? document.body;
+    const previous = scroller.style.overflow;
+    scroller.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = previous;
+      scroller.style.overflow = previous;
     };
   }, [open]);
 
