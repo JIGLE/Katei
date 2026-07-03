@@ -42,6 +42,25 @@ test('a due event raises an in-app notification for the household', opts, async 
   assert.equal(feed.unread, 1);
 });
 
+test('an overdue event escalates once with its own notification type', opts, async () => {
+  await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: { title: 'Car MOT', event_type: 'deadline', target_date: '2000-01-15' },
+  });
+  await runSweep();
+
+  const feed = (await app.inject({ method: 'GET', url: '/api/notifications', headers: { cookie } })).json();
+  const overdue = feed.items.filter((n: { type: string }) => n.type === 'overdue');
+  assert.equal(overdue.length, 1);
+  assert.equal(overdue[0].title, 'Car MOT');
+  assert.match(overdue[0].body, /Overdue since/);
+
+  // A second sweep must not raise it again.
+  await runSweep();
+  const again = (await app.inject({ method: 'GET', url: '/api/notifications', headers: { cookie } })).json();
+  assert.equal(again.items.filter((n: { type: string }) => n.type === 'overdue').length, 1);
+});
+
 test('marking read clears the unread count', opts, async () => {
   await app.inject({
     method: 'POST', url: '/api/events', headers: { cookie },

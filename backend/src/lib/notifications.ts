@@ -124,6 +124,7 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
        FROM household_events
       WHERE is_completed = FALSE
         AND notified_at IS NULL
+        AND target_date >= CURRENT_DATE
         AND target_date <= CURRENT_DATE + ($1 || ' days')::interval
       ORDER BY target_date ASC`,
     [String(lead_days)],
@@ -131,49 +132,77 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
 
   let sent = 0;
   for (const ev of rows) {
-    // Members assigned to this event, or every account-holding member when the
-    // event isn't assigned to anyone (a household-wide reminder).
-    const { rows: assignees } = await query<{ id: number }>(
-      `SELECT DISTINCT u.id FROM assignments a JOIN users u ON u.id = a.user_id WHERE a.event_id = $1`,
-      [ev.id],
-    );
-    let targetIds = assignees.map((a) => a.id);
-    if (targetIds.length === 0) {
-      const { rows: all } = await query<{ id: number }>(
-        `SELECT id FROM users WHERE password_hash IS NOT NULL`,
-      );
-      targetIds = all.map((u) => u.id);
-    }
-
     const date = new Date(ev.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const body = `Due ${date}`;
-    for (const uid of targetIds) {
-      await createNotification(uid, 'reminder', ev.title, body, ev.id);
-    }
-
-    // Web Push to those members' subscribed devices; prune dead subscriptions.
-    if (targetIds.length) {
-      const { rows: subs } = await query<PushSubRow>(
-        `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ANY($1::int[])`,
-        [targetIds],
-      );
-      for (const sub of subs) {
-        try {
-          if ((await sendPush(sub, { title: ev.title, body, url: '/timeline' })) === 'gone') {
-            await query(`DELETE FROM push_subscriptions WHERE id = $1`, [sub.id]);
-          }
-        } catch (err) {
-          log?.error({ err, eventId: ev.id }, 'Failed to send push');
-        }
-      }
-    }
-
+    await fanOutForEvent(ev, 'reminder', `Due ${date}`, log);
     // Stamp once per event so it isn't raised again next sweep.
     await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
     sent += 1;
   }
+
+  // Overdue escalation — one further nudge when an open item crosses its
+  // date, so the bell never claims "all caught up" over something late.
+  const { rows: late } = await query<DueEvent>(
+    `SELECT id, title, event_type, target_date
+       FROM household_events
+      WHERE is_completed = FALSE
+        AND overdue_notified_at IS NULL
+        AND target_date < CURRENT_DATE
+      ORDER BY target_date ASC`,
+  );
+  for (const ev of late) {
+    const date = new Date(ev.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    await fanOutForEvent(ev, 'overdue', `Overdue since ${date}`, log);
+    await query(`UPDATE household_events SET overdue_notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
+    sent += 1;
+  }
+
   if (sent && log) log.info(`Notified for ${sent} event(s).`);
   return sent;
+}
+
+/**
+ * Raise an in-app notification for an event's assignees (or every
+ * account-holding member when unassigned) and push to their subscribed
+ * devices, pruning dead subscriptions. Shared by the pre-due reminder and
+ * the overdue escalation.
+ */
+async function fanOutForEvent(
+  ev: DueEvent,
+  type: string,
+  body: string,
+  log?: FastifyBaseLogger,
+): Promise<void> {
+  const { rows: assignees } = await query<{ id: number }>(
+    `SELECT DISTINCT u.id FROM assignments a JOIN users u ON u.id = a.user_id WHERE a.event_id = $1`,
+    [ev.id],
+  );
+  let targetIds = assignees.map((a) => a.id);
+  if (targetIds.length === 0) {
+    const { rows: all } = await query<{ id: number }>(
+      `SELECT id FROM users WHERE password_hash IS NOT NULL`,
+    );
+    targetIds = all.map((u) => u.id);
+  }
+
+  for (const uid of targetIds) {
+    await createNotification(uid, type, ev.title, body, ev.id);
+  }
+
+  if (targetIds.length) {
+    const { rows: subs } = await query<PushSubRow>(
+      `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ANY($1::int[])`,
+      [targetIds],
+    );
+    for (const sub of subs) {
+      try {
+        if ((await sendPush(sub, { title: ev.title, body, url: '/timeline' })) === 'gone') {
+          await query(`DELETE FROM push_subscriptions WHERE id = $1`, [sub.id]);
+        }
+      } catch (err) {
+        log?.error({ err, eventId: ev.id }, 'Failed to send push');
+      }
+    }
+  }
 }
 
 function isWeekend(d: Date): boolean {

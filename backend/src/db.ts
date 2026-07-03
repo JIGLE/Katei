@@ -48,6 +48,9 @@ export async function migrate(): Promise<void> {
   );
   // Timestamp a reminder was sent for an event, so we don't notify twice.
   await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP`);
+  // Timestamp the one-time overdue escalation, separate from the pre-due
+  // reminder — an item crossing its date deserves its own single nudge.
+  await query(`ALTER TABLE household_events ADD COLUMN IF NOT EXISTS overdue_notified_at TIMESTAMP`);
   // Budgeting: classify streams and schedule their recurrence.
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS stream_type TEXT NOT NULL DEFAULT 'expense'`);
   await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS due_day SMALLINT NOT NULL DEFAULT 1`);
