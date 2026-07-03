@@ -76,6 +76,11 @@ export function AuthGate() {
         await prefs.reload();
       } else {
         await login(name.trim(), password);
+        // The provider first fetched preferences before this session existed
+        // (a 401 that fell back to defaults) — refetch now or the whole app
+        // renders the wrong currency, language, and household name, and a
+        // Settings save would overwrite the real values with defaults.
+        await prefs.reload();
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('auth.errGeneric');
