@@ -56,6 +56,10 @@ system-wide choice; spend boldness elsewhere.)
   predictable purple gradients and cookie-cutter components.
 - Don't invent new accent colors — reuse the semantic palette in `BRAND.md`.
 
+> For a full audit-and-elevate pass (staged household, both-theme captures,
+> scorecard incl. taste, verified fixes), invoke the **design-award** skill
+> (`.claude/skills/design-award/SKILL.md`).
+
 ## 3. Process (two-pass, before non-trivial UI)
 
 1. **Brainstorm** a compact token plan for the change: which existing tokens/accents,

@@ -31,6 +31,9 @@ yarn-error.log*
 e2e/test-results/
 e2e/playwright-report/
 
+# design-award skill working files (screenshots, scorecards)
+.design-award/
+
 # Docker volumes (if ever bind-mounted locally)
 pgdata/
 
