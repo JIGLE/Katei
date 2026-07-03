@@ -127,7 +127,6 @@ export function AuthGate() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('auth.namePlaceholder')}
-                autoFocus
                 autoComplete="username"
                 className={fieldCls}
               />
