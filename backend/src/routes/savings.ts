@@ -10,7 +10,7 @@ import { query, getSetting } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
 const ENTRY_COLS = 'id, amount, note, occurred_on, money_stream_id, goal_id, created_at';
-const GOAL_COLS = 'id, name, target_amount, icon, is_default, created_at';
+const GOAL_COLS = 'id, name, target_amount, icon, is_default, url, link_title, link_site, created_at';
 
 /** The default pot's id, created on demand so the system self-heals (and tests
  *  that truncate the table still work). */
@@ -28,7 +28,7 @@ async function getOrCreateDefaultGoalId(): Promise<number> {
 }
 
 interface EntryRow { id: number; amount: string; goal_id: number | null; [k: string]: unknown }
-interface GoalRow { id: number; name: string; target_amount: string | null; icon: string | null; is_default: boolean; created_at: string }
+interface GoalRow { id: number; name: string; target_amount: string | null; icon: string | null; is_default: boolean; url: string | null; link_title: string | null; link_site: string | null; created_at: string }
 
 async function summary() {
   const opening = Number((await getSetting('savings_opening')) ?? 0);
@@ -52,6 +52,9 @@ async function summary() {
       target: g.target_amount != null ? Number(g.target_amount) : null,
       icon: g.icon,
       is_default: g.is_default,
+      url: g.url ?? null,
+      link_title: g.link_title ?? null,
+      link_site: g.link_site ?? null,
       balance: base + sum,
       entries: potEntries,
     };
@@ -142,7 +145,7 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
   // --- Pots (goals) ---------------------------------------------------------
 
   // POST /api/savings/goals — add a pot (holiday, furniture, …).
-  app.post<{ Body: { name: string; target_amount?: number | null; icon?: string | null } }>(
+  app.post<{ Body: { name: string; target_amount?: number | null; icon?: string | null; url?: string | null; link_title?: string | null; link_site?: string | null } }>(
     '/goals',
     {
       schema: {
@@ -153,22 +156,26 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
             name: { type: 'string', minLength: 1, maxLength: 80 },
             target_amount: { type: ['number', 'null'], minimum: 0 },
             icon: { type: ['string', 'null'], maxLength: 16 },
+            url: { type: ['string', 'null'], maxLength: 2000 },
+            link_title: { type: ['string', 'null'], maxLength: 300 },
+            link_site: { type: ['string', 'null'], maxLength: 120 },
           },
         },
       },
     },
     async (req, reply) => {
-      const { name, target_amount = null, icon = null } = req.body;
+      const { name, target_amount = null, icon = null, url = null, link_title = null, link_site = null } = req.body;
       await query(
-        `INSERT INTO savings_goals (name, target_amount, icon, is_default) VALUES ($1, $2, $3, FALSE)`,
-        [name.trim(), target_amount, icon],
+        `INSERT INTO savings_goals (name, target_amount, icon, is_default, url, link_title, link_site)
+         VALUES ($1, $2, $3, FALSE, $4, $5, $6)`,
+        [name.trim(), target_amount, icon, url, link_title, link_site],
       );
       return reply.code(201).send(await summary());
     },
   );
 
   // PATCH /api/savings/goals/:id — rename / retarget / re-icon a pot.
-  app.patch<{ Params: { id: string }; Body: { name?: string; target_amount?: number | null; icon?: string | null } }>(
+  app.patch<{ Params: { id: string }; Body: { name?: string; target_amount?: number | null; icon?: string | null; url?: string | null; link_title?: string | null; link_site?: string | null } }>(
     '/goals/:id',
     {
       schema: {
@@ -178,12 +185,15 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
             name: { type: 'string', minLength: 1, maxLength: 80 },
             target_amount: { type: ['number', 'null'], minimum: 0 },
             icon: { type: ['string', 'null'], maxLength: 16 },
+            url: { type: ['string', 'null'], maxLength: 2000 },
+            link_title: { type: ['string', 'null'], maxLength: 300 },
+            link_site: { type: ['string', 'null'], maxLength: 120 },
           },
         },
       },
     },
     async (req, reply) => {
-      const allowed = ['name', 'target_amount', 'icon'] as const;
+      const allowed = ['name', 'target_amount', 'icon', 'url', 'link_title', 'link_site'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;

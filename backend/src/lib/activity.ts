@@ -10,7 +10,8 @@ export type ActivityAction =
   | 'event_done'
   | 'payment_paid'
   | 'member_added'
-  | 'savings_added';
+  | 'savings_added'
+  | 'shopping_added';
 
 /**
  * Record a household action. Logging must never break the primary request, so

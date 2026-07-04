@@ -12,6 +12,9 @@ import { savingsRoutes } from './savings.js';
 import { notificationsRoutes } from './notifications.js';
 import { pushRoutes } from './push.js';
 import { avatarsRoutes } from './avatars.js';
+import { shoppingRoutes } from './shopping.js';
+import { giftsRoutes } from './gifts.js';
+import { linkPreviewRoutes } from './link-preview.js';
 
 export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(usersRoutes, { prefix: '/users' });
@@ -25,4 +28,7 @@ export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(notificationsRoutes, { prefix: '/notifications' });
   await app.register(pushRoutes, { prefix: '/push' });
   await app.register(avatarsRoutes, { prefix: '/avatars' });
+  await app.register(shoppingRoutes, { prefix: '/shopping' });
+  await app.register(giftsRoutes, { prefix: '/gifts' });
+  await app.register(linkPreviewRoutes, { prefix: '/link-preview' });
 };

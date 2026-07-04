@@ -149,6 +149,39 @@ export async function migrate(): Promise<void> {
        UNIQUE (user_id, endpoint)
      )`,
   );
+  // Shopping list — the household's shared, fast-moving staples list.
+  await query(
+    `CREATE TABLE IF NOT EXISTS shopping_items (
+       id SERIAL PRIMARY KEY,
+       name VARCHAR(120) NOT NULL,
+       note TEXT,
+       added_by INT REFERENCES users(id) ON DELETE SET NULL,
+       is_done BOOLEAN NOT NULL DEFAULT FALSE,
+       done_at TIMESTAMP,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
+  // Gift list — ideas and purchases per recipient. Rows are hidden from
+  // their recipient at the API layer so surprises survive.
+  await query(
+    `CREATE TABLE IF NOT EXISTS gift_items (
+       id SERIAL PRIMARY KEY,
+       recipient_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+       title VARCHAR(160) NOT NULL,
+       url TEXT,
+       link_title TEXT,
+       link_site TEXT,
+       price DECIMAL(10, 2),
+       currency VARCHAR(3),
+       status VARCHAR(10) NOT NULL DEFAULT 'idea',
+       added_by INT REFERENCES users(id) ON DELETE SET NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+  );
+  // Savings pots can point at the thing being saved for.
+  await query(`ALTER TABLE savings_goals ADD COLUMN IF NOT EXISTS url TEXT`);
+  await query(`ALTER TABLE savings_goals ADD COLUMN IF NOT EXISTS link_title TEXT`);
+  await query(`ALTER TABLE savings_goals ADD COLUMN IF NOT EXISTS link_site TEXT`);
   await query(
     `CREATE TABLE IF NOT EXISTS invites (
        id SERIAL PRIMARY KEY,
@@ -169,6 +202,7 @@ export async function migrate(): Promise<void> {
 const SERIAL_TABLES = [
   'users', 'money_streams', 'household_events', 'assignments',
   'invites', 'activity', 'notifications', 'savings_entries', 'savings_goals', 'push_subscriptions',
+  'shopping_items', 'gift_items',
 ];
 
 /**

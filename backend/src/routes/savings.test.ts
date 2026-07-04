@@ -58,6 +58,24 @@ test('pots isolate money and expose per-pot balances', opts, async () => {
   assert.equal(s.balance, 1400);          // total = opening + all entries
 });
 
+test('a pot can carry the link it is saving for, round-tripped', opts, async () => {
+  const created = (await app.inject({
+    method: 'POST', url: '/api/savings/goals', headers: { cookie },
+    payload: { name: 'Sofa', target_amount: 900, url: 'https://example.com/sofa', link_title: 'Oak sofa', link_site: 'example.com' },
+  })).json();
+  const sofa = created.pots.find((p: { name: string }) => p.name === 'Sofa');
+  assert.equal(sofa.url, 'https://example.com/sofa');
+  assert.equal(sofa.link_title, 'Oak sofa');
+  assert.equal(sofa.link_site, 'example.com');
+
+  const patched = (await app.inject({
+    method: 'PATCH', url: `/api/savings/goals/${sofa.id}`, headers: { cookie },
+    payload: { url: null, link_title: null, link_site: null },
+  })).json();
+  const after = patched.pots.find((p: { id: number }) => p.id === sofa.id);
+  assert.equal(after.url, null);
+});
+
 test('deleting a pot returns its money to the default; the default is protected', opts, async () => {
   const created = (await app.inject({
     method: 'POST', url: '/api/savings/goals', headers: { cookie }, payload: { name: 'TV', target_amount: 600 },
