@@ -18,7 +18,8 @@
     "overview": "Resumen",
     "timeline": "Cronología",
     "money": "Dinero",
-    "household": "Hogar"
+    "household": "Hogar",
+    "lists": "Listas"
   },
   "auth": {
     "createTitle": "Crea tu cuenta",
@@ -133,7 +134,8 @@
     "members": "Buscar miembros",
     "clear": "Borrar búsqueda",
     "noMatches": "Nada coincide con tu búsqueda.",
-    "noMatchesHint": "Prueba con otro nombre o borra la búsqueda."
+    "noMatchesHint": "Prueba con otro nombre o borra la búsqueda.",
+    "shopping": "Buscar en la lista"
   },
   "money": {
     "eyebrow": "Finanzas",
@@ -296,7 +298,12 @@
     "photo": "Foto",
     "choosePhoto": "Elegir foto",
     "changePhoto": "Cambiar foto",
-    "photoHint": "JPG o PNG, hasta 2 MB"
+    "photoHint": "JPG o PNG, hasta 2 MB",
+    "link": "Enlace (opcional)",
+    "linkPlaceholder": "Pega un enlace de producto…",
+    "linkFetching": "Obteniendo el título…",
+    "deleteItem": "Eliminar",
+    "deleteGift": "Eliminar"
   },
   "settings": {
     "notificationsTitle": "Notificaciones",
@@ -381,10 +388,48 @@
     "event_done_self": "Has terminado {{item}}",
     "payment_paid_self": "Has pagado {{item}}",
     "member_added_self": "Has dado la bienvenida a {{item}}",
-    "savings_added_self": "Has apartado {{item}}"
+    "savings_added_self": "Has apartado {{item}}",
+    "shopping_added": "{{actor}} puso {{item}} en la lista de la compra",
+    "shopping_added_self": "Has puesto {{item}} en la lista de la compra"
   },
   "notifications": {
     "title": "Notificaciones",
     "empty": "Estás al día."
+  },
+  "lists": {
+    "eyebrow": "Día a día",
+    "title": "Listas",
+    "shopping": "Compra",
+    "gifts": "Regalos"
+  },
+  "shopping": {
+    "addPlaceholder": "Añadir algo…",
+    "add": "Añadir",
+    "clearDone": "Vaciar lo comprado",
+    "inTheBasket": "En la cesta",
+    "empty": "Nada en la lista.",
+    "emptyHint": "Añade lo primero que falte en casa.",
+    "editItem": "Editar artículo",
+    "notePlaceholder": "p. ej. la sin lactosa",
+    "checkAria": "Marcar como comprado",
+    "uncheckAria": "Devolver a la lista"
+  },
+  "gifts": {
+    "recipient": "Para",
+    "forName": "Para {{name}}",
+    "status": "Estado",
+    "status_idea": "Idea",
+    "status_bought": "Comprado",
+    "newGift": "Nuevo regalo",
+    "editGift": "Editar regalo",
+    "addGift": "Añadir un regalo",
+    "addGiftAria": "Añadir regalo",
+    "titlePlaceholder": "p. ej. Tocadiscos",
+    "empty": "Aún no hay ideas de regalos.",
+    "emptyHint": "Guarda ideas aquí — nadie ve las suyas.",
+    "hiddenForYou_one": "Te están ocultando {{count}} regalo.",
+    "hiddenForYou_other": "Te están ocultando {{count}} regalos.",
+    "errRecipientTitle": "Elige una persona y ponle nombre al regalo.",
+    "errSave": "No se pudo guardar el regalo."
   }
 }

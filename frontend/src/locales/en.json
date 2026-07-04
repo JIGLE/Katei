@@ -17,7 +17,8 @@
     "overview": "Overview",
     "timeline": "Timeline",
     "money": "Money",
-    "household": "Household"
+    "household": "Household",
+    "lists": "Lists"
   },
   "auth": {
     "createTitle": "Create your account",
@@ -132,7 +133,8 @@
     "members": "Search members",
     "clear": "Clear search",
     "noMatches": "Nothing matches your search.",
-    "noMatchesHint": "Try a different name, or clear the search."
+    "noMatchesHint": "Try a different name, or clear the search.",
+    "shopping": "Search the list"
   },
   "money": {
     "eyebrow": "Finance",
@@ -295,7 +297,12 @@
     "photo": "Photo",
     "choosePhoto": "Choose photo",
     "changePhoto": "Change photo",
-    "photoHint": "JPG or PNG, up to 2 MB"
+    "photoHint": "JPG or PNG, up to 2 MB",
+    "link": "Link (optional)",
+    "linkPlaceholder": "Paste a product link…",
+    "linkFetching": "Fetching the page title…",
+    "deleteItem": "Delete",
+    "deleteGift": "Delete"
   },
   "settings": {
     "notificationsTitle": "Notifications",
@@ -380,10 +387,48 @@
     "event_done_self": "You finished {{item}}",
     "payment_paid_self": "You paid {{item}}",
     "member_added_self": "You welcomed {{item}}",
-    "savings_added_self": "You set aside {{item}}"
+    "savings_added_self": "You set aside {{item}}",
+    "shopping_added": "{{actor}} put {{item}} on the shopping list",
+    "shopping_added_self": "You put {{item}} on the shopping list"
   },
   "notifications": {
     "title": "Notifications",
     "empty": "You're all caught up."
+  },
+  "lists": {
+    "eyebrow": "Day to day",
+    "title": "Lists",
+    "shopping": "Shopping",
+    "gifts": "Gifts"
+  },
+  "shopping": {
+    "addPlaceholder": "Add an item…",
+    "add": "Add",
+    "clearDone": "Clear completed",
+    "inTheBasket": "In the basket",
+    "empty": "Nothing on the list.",
+    "emptyHint": "Add the first thing the house needs.",
+    "editItem": "Edit item",
+    "notePlaceholder": "e.g. the lactose-free one",
+    "checkAria": "Mark as bought",
+    "uncheckAria": "Put back on the list"
+  },
+  "gifts": {
+    "recipient": "For",
+    "forName": "For {{name}}",
+    "status": "Status",
+    "status_idea": "Idea",
+    "status_bought": "Bought",
+    "newGift": "New gift",
+    "editGift": "Edit gift",
+    "addGift": "Add a gift",
+    "addGiftAria": "Add gift",
+    "titlePlaceholder": "e.g. Record player",
+    "empty": "No gift ideas yet.",
+    "emptyHint": "Keep ideas here — each person never sees their own.",
+    "hiddenForYou_one": "{{count}} gift is being kept from you.",
+    "hiddenForYou_other": "{{count}} gifts are being kept from you.",
+    "errRecipientTitle": "Pick a person and give the gift a name.",
+    "errSave": "Could not save the gift."
   }
 }

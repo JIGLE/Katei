@@ -18,7 +18,8 @@
     "overview": "Übersicht",
     "timeline": "Verlauf",
     "money": "Geld",
-    "household": "Haushalt"
+    "household": "Haushalt",
+    "lists": "Listen"
   },
   "auth": {
     "createTitle": "Konto erstellen",
@@ -133,7 +134,8 @@
     "members": "Mitglieder suchen",
     "clear": "Suche löschen",
     "noMatches": "Nichts passt zu deiner Suche.",
-    "noMatchesHint": "Versuch einen anderen Namen oder lösche die Suche."
+    "noMatchesHint": "Versuch einen anderen Namen oder lösche die Suche.",
+    "shopping": "Liste durchsuchen"
   },
   "money": {
     "eyebrow": "Finanzen",
@@ -296,7 +298,12 @@
     "photo": "Foto",
     "choosePhoto": "Foto wählen",
     "changePhoto": "Foto ändern",
-    "photoHint": "JPG oder PNG, bis 2 MB"
+    "photoHint": "JPG oder PNG, bis 2 MB",
+    "link": "Link (optional)",
+    "linkPlaceholder": "Produktlink einfügen…",
+    "linkFetching": "Seitentitel wird geladen…",
+    "deleteItem": "Löschen",
+    "deleteGift": "Löschen"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",
@@ -381,10 +388,48 @@
     "event_done_self": "Du hast {{item}} erledigt",
     "payment_paid_self": "Du hast {{item}} bezahlt",
     "member_added_self": "Du hast {{item}} begrüßt",
-    "savings_added_self": "Du hast {{item}} zurückgelegt"
+    "savings_added_self": "Du hast {{item}} zurückgelegt",
+    "shopping_added": "{{actor}} hat {{item}} auf die Einkaufsliste gesetzt",
+    "shopping_added_self": "Du hast {{item}} auf die Einkaufsliste gesetzt"
   },
   "notifications": {
     "title": "Benachrichtigungen",
     "empty": "Alles erledigt."
+  },
+  "lists": {
+    "eyebrow": "Alltag",
+    "title": "Listen",
+    "shopping": "Einkaufen",
+    "gifts": "Geschenke"
+  },
+  "shopping": {
+    "addPlaceholder": "Etwas hinzufügen…",
+    "add": "Hinzufügen",
+    "clearDone": "Erledigtes leeren",
+    "inTheBasket": "Im Korb",
+    "empty": "Nichts auf der Liste.",
+    "emptyHint": "Füg das Erste hinzu, das im Haus fehlt.",
+    "editItem": "Eintrag bearbeiten",
+    "notePlaceholder": "z. B. die laktosefreie",
+    "checkAria": "Als gekauft markieren",
+    "uncheckAria": "Zurück auf die Liste"
+  },
+  "gifts": {
+    "recipient": "Für",
+    "forName": "Für {{name}}",
+    "status": "Status",
+    "status_idea": "Idee",
+    "status_bought": "Gekauft",
+    "newGift": "Neues Geschenk",
+    "editGift": "Geschenk bearbeiten",
+    "addGift": "Geschenk hinzufügen",
+    "addGiftAria": "Geschenk hinzufügen",
+    "titlePlaceholder": "z. B. Plattenspieler",
+    "empty": "Noch keine Geschenkideen.",
+    "emptyHint": "Sammle Ideen hier — niemand sieht die eigenen.",
+    "hiddenForYou_one": "{{count}} Geschenk wird vor dir geheim gehalten.",
+    "hiddenForYou_other": "{{count}} Geschenke werden vor dir geheim gehalten.",
+    "errRecipientTitle": "Wähle eine Person und gib dem Geschenk einen Namen.",
+    "errSave": "Geschenk konnte nicht gespeichert werden."
   }
 }

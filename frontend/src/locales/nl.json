@@ -18,7 +18,8 @@
     "overview": "Overzicht",
     "timeline": "Tijdlijn",
     "money": "Geld",
-    "household": "Huishouden"
+    "household": "Huishouden",
+    "lists": "Lijsten"
   },
   "auth": {
     "createTitle": "Maak je account",
@@ -133,7 +134,8 @@
     "members": "Zoek leden",
     "clear": "Zoekopdracht wissen",
     "noMatches": "Niets gevonden voor je zoekopdracht.",
-    "noMatchesHint": "Probeer een andere naam of wis de zoekopdracht."
+    "noMatchesHint": "Probeer een andere naam of wis de zoekopdracht.",
+    "shopping": "Zoek in de lijst"
   },
   "money": {
     "eyebrow": "Financiën",
@@ -296,7 +298,12 @@
     "photo": "Foto",
     "choosePhoto": "Foto kiezen",
     "changePhoto": "Foto wijzigen",
-    "photoHint": "JPG of PNG, tot 2 MB"
+    "photoHint": "JPG of PNG, tot 2 MB",
+    "link": "Link (optioneel)",
+    "linkPlaceholder": "Plak een productlink…",
+    "linkFetching": "Paginatitel ophalen…",
+    "deleteItem": "Verwijderen",
+    "deleteGift": "Verwijderen"
   },
   "settings": {
     "notificationsTitle": "Notificaties",
@@ -381,10 +388,48 @@
     "event_done_self": "Je hebt {{item}} afgerond",
     "payment_paid_self": "Je hebt {{item}} betaald",
     "member_added_self": "Je hebt {{item}} verwelkomd",
-    "savings_added_self": "Je hebt {{item}} opzijgezet"
+    "savings_added_self": "Je hebt {{item}} opzijgezet",
+    "shopping_added": "{{actor}} heeft {{item}} op het boodschappenlijstje gezet",
+    "shopping_added_self": "Je hebt {{item}} op het boodschappenlijstje gezet"
   },
   "notifications": {
     "title": "Meldingen",
     "empty": "Je bent helemaal bij."
+  },
+  "lists": {
+    "eyebrow": "Dagelijks",
+    "title": "Lijsten",
+    "shopping": "Boodschappen",
+    "gifts": "Cadeaus"
+  },
+  "shopping": {
+    "addPlaceholder": "Iets toevoegen…",
+    "add": "Toevoegen",
+    "clearDone": "Gekochte wissen",
+    "inTheBasket": "In de mand",
+    "empty": "Niets op de lijst.",
+    "emptyHint": "Voeg het eerste toe dat in huis ontbreekt.",
+    "editItem": "Item bewerken",
+    "notePlaceholder": "bijv. de lactosevrije",
+    "checkAria": "Markeren als gekocht",
+    "uncheckAria": "Terug op de lijst"
+  },
+  "gifts": {
+    "recipient": "Voor",
+    "forName": "Voor {{name}}",
+    "status": "Status",
+    "status_idea": "Idee",
+    "status_bought": "Gekocht",
+    "newGift": "Nieuw cadeau",
+    "editGift": "Cadeau bewerken",
+    "addGift": "Cadeau toevoegen",
+    "addGiftAria": "Cadeau toevoegen",
+    "titlePlaceholder": "bijv. Platenspeler",
+    "empty": "Nog geen cadeau-ideeën.",
+    "emptyHint": "Bewaar ideeën hier — niemand ziet die van zichzelf.",
+    "hiddenForYou_one": "{{count}} cadeau wordt voor je verborgen gehouden.",
+    "hiddenForYou_other": "{{count}} cadeaus worden voor je verborgen gehouden.",
+    "errRecipientTitle": "Kies iemand en geef het cadeau een naam.",
+    "errSave": "Cadeau kon niet worden opgeslagen."
   }
 }

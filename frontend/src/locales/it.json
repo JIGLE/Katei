@@ -18,7 +18,8 @@
     "overview": "Panoramica",
     "timeline": "Scadenze",
     "money": "Denaro",
-    "household": "Casa"
+    "household": "Casa",
+    "lists": "Liste"
   },
   "auth": {
     "createTitle": "Crea il tuo account",
@@ -133,7 +134,8 @@
     "members": "Cerca membri",
     "clear": "Cancella la ricerca",
     "noMatches": "Nessun risultato per la ricerca.",
-    "noMatchesHint": "Prova un altro nome o cancella la ricerca."
+    "noMatchesHint": "Prova un altro nome o cancella la ricerca.",
+    "shopping": "Cerca nella lista"
   },
   "money": {
     "eyebrow": "Finanze",
@@ -296,7 +298,12 @@
     "photo": "Foto",
     "choosePhoto": "Scegli foto",
     "changePhoto": "Cambia foto",
-    "photoHint": "JPG o PNG, fino a 2 MB"
+    "photoHint": "JPG o PNG, fino a 2 MB",
+    "link": "Link (facoltativo)",
+    "linkPlaceholder": "Incolla un link prodotto…",
+    "linkFetching": "Recupero del titolo…",
+    "deleteItem": "Elimina",
+    "deleteGift": "Elimina"
   },
   "settings": {
     "notificationsTitle": "Notifiche",
@@ -381,10 +388,48 @@
     "event_done_self": "Hai completato {{item}}",
     "payment_paid_self": "Hai pagato {{item}}",
     "member_added_self": "Hai accolto {{item}}",
-    "savings_added_self": "Hai messo da parte {{item}}"
+    "savings_added_self": "Hai messo da parte {{item}}",
+    "shopping_added": "{{actor}} ha messo {{item}} nella lista della spesa",
+    "shopping_added_self": "Hai messo {{item}} nella lista della spesa"
   },
   "notifications": {
     "title": "Notifiche",
     "empty": "Sei aggiornato."
+  },
+  "lists": {
+    "eyebrow": "Quotidiano",
+    "title": "Liste",
+    "shopping": "Spesa",
+    "gifts": "Regali"
+  },
+  "shopping": {
+    "addPlaceholder": "Aggiungi qualcosa…",
+    "add": "Aggiungi",
+    "clearDone": "Svuota il comprato",
+    "inTheBasket": "Nel carrello",
+    "empty": "Niente in lista.",
+    "emptyHint": "Aggiungi la prima cosa che manca in casa.",
+    "editItem": "Modifica articolo",
+    "notePlaceholder": "es. quello senza lattosio",
+    "checkAria": "Segna come comprato",
+    "uncheckAria": "Rimetti in lista"
+  },
+  "gifts": {
+    "recipient": "Per",
+    "forName": "Per {{name}}",
+    "status": "Stato",
+    "status_idea": "Idea",
+    "status_bought": "Comprato",
+    "newGift": "Nuovo regalo",
+    "editGift": "Modifica regalo",
+    "addGift": "Aggiungi un regalo",
+    "addGiftAria": "Aggiungi regalo",
+    "titlePlaceholder": "es. Giradischi",
+    "empty": "Ancora nessuna idea regalo.",
+    "emptyHint": "Tieni le idee qui — nessuno vede le proprie.",
+    "hiddenForYou_one": "{{count}} regalo ti viene tenuto nascosto.",
+    "hiddenForYou_other": "{{count}} regali ti vengono tenuti nascosti.",
+    "errRecipientTitle": "Scegli una persona e dai un nome al regalo.",
+    "errSave": "Impossibile salvare il regalo."
   }
 }

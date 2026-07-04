@@ -111,8 +111,53 @@ export interface SavingsPot {
   target: number | null;
   icon: string | null;
   is_default: boolean;
+  url: string | null;
+  link_title: string | null;
+  link_site: string | null;
   balance: number;
   entries: SavingsEntry[];
+}
+
+// A shopping-list row (GET /api/shopping) — open items first, done items sink.
+export interface ShoppingItem {
+  id: number;
+  name: string;
+  note: string | null;
+  added_by: number | null;
+  is_done: boolean;
+  done_at: string | null;
+  created_at: string;
+}
+
+// A gift row (GET /api/gifts). The API never returns gifts addressed to the
+// caller — `hidden_for_you` on the list response counts those.
+export interface GiftItem {
+  id: number;
+  recipient_id: number;
+  recipient_name: string;
+  recipient_avatar: string | null;
+  recipient_kind: string;
+  title: string;
+  url: string | null;
+  link_title: string | null;
+  link_site: string | null;
+  price: string | null;
+  currency: string | null;
+  status: 'idea' | 'bought';
+  added_by: number | null;
+  created_at: string;
+}
+
+export interface GiftList {
+  items: GiftItem[];
+  hidden_for_you: number;
+}
+
+// POST /api/link-preview — parsed metadata for a pasted product link.
+export interface LinkPreview {
+  url: string;
+  title: string | null;
+  site: string | null;
 }
 
 // The household savings picture (GET /api/savings): opening balance the household

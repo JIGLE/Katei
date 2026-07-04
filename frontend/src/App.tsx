@@ -13,6 +13,7 @@ import { useAuth } from './lib/auth';
 import { usePreferences } from './lib/preferences';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
+import Lists from './pages/Lists';
 import MoneyFlow from './pages/MoneyFlow';
 import Household from './pages/Household';
 
@@ -76,6 +77,7 @@ export default function App() {
             <Route path="/" element={<Overview />} />
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/money" element={<MoneyFlow />} />
+            <Route path="/lists" element={<Lists />} />
             <Route path="/household" element={<Household />} />
           </Routes>
         </div>

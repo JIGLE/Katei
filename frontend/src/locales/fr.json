@@ -18,7 +18,8 @@
     "overview": "Aperçu",
     "timeline": "Échéances",
     "money": "Argent",
-    "household": "Foyer"
+    "household": "Foyer",
+    "lists": "Listes"
   },
   "auth": {
     "createTitle": "Créer votre compte",
@@ -133,7 +134,8 @@
     "members": "Rechercher un membre",
     "clear": "Effacer la recherche",
     "noMatches": "Aucun résultat pour cette recherche.",
-    "noMatchesHint": "Essayez un autre nom ou effacez la recherche."
+    "noMatchesHint": "Essayez un autre nom ou effacez la recherche.",
+    "shopping": "Rechercher dans la liste"
   },
   "money": {
     "eyebrow": "Finances",
@@ -296,7 +298,12 @@
     "photo": "Photo",
     "choosePhoto": "Choisir une photo",
     "changePhoto": "Changer la photo",
-    "photoHint": "JPG ou PNG, jusqu’à 2 Mo"
+    "photoHint": "JPG ou PNG, jusqu’à 2 Mo",
+    "link": "Lien (facultatif)",
+    "linkPlaceholder": "Collez un lien produit…",
+    "linkFetching": "Récupération du titre…",
+    "deleteItem": "Supprimer",
+    "deleteGift": "Supprimer"
   },
   "settings": {
     "notificationsTitle": "Notifications",
@@ -381,10 +388,48 @@
     "event_done_self": "Vous avez terminé {{item}}",
     "payment_paid_self": "Vous avez payé {{item}}",
     "member_added_self": "Vous avez accueilli {{item}}",
-    "savings_added_self": "Vous avez mis {{item}} de côté"
+    "savings_added_self": "Vous avez mis {{item}} de côté",
+    "shopping_added": "{{actor}} a mis {{item}} sur la liste de courses",
+    "shopping_added_self": "Vous avez mis {{item}} sur la liste de courses"
   },
   "notifications": {
     "title": "Notifications",
     "empty": "Vous êtes à jour."
+  },
+  "lists": {
+    "eyebrow": "Au quotidien",
+    "title": "Listes",
+    "shopping": "Courses",
+    "gifts": "Cadeaux"
+  },
+  "shopping": {
+    "addPlaceholder": "Ajouter un article…",
+    "add": "Ajouter",
+    "clearDone": "Vider les articles pris",
+    "inTheBasket": "Dans le panier",
+    "empty": "Rien sur la liste.",
+    "emptyHint": "Ajoutez la première chose qui manque à la maison.",
+    "editItem": "Modifier l'article",
+    "notePlaceholder": "p. ex. la version sans lactose",
+    "checkAria": "Marquer comme acheté",
+    "uncheckAria": "Remettre sur la liste"
+  },
+  "gifts": {
+    "recipient": "Pour",
+    "forName": "Pour {{name}}",
+    "status": "Statut",
+    "status_idea": "Idée",
+    "status_bought": "Acheté",
+    "newGift": "Nouveau cadeau",
+    "editGift": "Modifier le cadeau",
+    "addGift": "Ajouter un cadeau",
+    "addGiftAria": "Ajouter un cadeau",
+    "titlePlaceholder": "p. ex. Platine vinyle",
+    "empty": "Pas encore d'idées de cadeaux.",
+    "emptyHint": "Gardez les idées ici — chacun ne voit jamais les siennes.",
+    "hiddenForYou_one": "{{count}} cadeau vous est caché.",
+    "hiddenForYou_other": "{{count}} cadeaux vous sont cachés.",
+    "errRecipientTitle": "Choisissez une personne et nommez le cadeau.",
+    "errSave": "Impossible d'enregistrer le cadeau."
   }
 }
