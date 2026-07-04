@@ -71,6 +71,9 @@
     "statusWeek_one": "{{count}} in scadenza questa settimana",
     "statusWeek_other": "{{count}} in scadenza questa settimana",
     "nextBill": "Prossima bolletta",
+    "shoppingList": "Lista della spesa",
+    "toGet_one": "{{count}} cosa da comprare",
+    "toGet_other": "{{count}} cose da comprare",
     "closestGoal": "Obiettivo più vicino"
   },
   "onboarding": {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
 import { Modal } from '../components/Modal';
@@ -51,8 +52,13 @@ export default function Timeline() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
+  // A deep link from the home week strip lands here as ?view=month&day=…
+  const [searchParams] = useSearchParams();
+  const linkedDay = searchParams.get('day') ?? undefined;
   const [view, setView] = useState<View>('upcoming');
-  const [mode, setMode] = useState<'list' | 'calendar'>('list');
+  const [mode, setMode] = useState<'list' | 'calendar'>(
+    searchParams.get('view') === 'month' ? 'calendar' : 'list',
+  );
   const [mineOnly, setMineOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<HouseholdEvent['event_type'] | 'all'>('all');
@@ -277,6 +283,7 @@ export default function Timeline() {
           events={events}
           lang={i18n.language}
           timezone={timezone}
+          initialDay={linkedDay}
           onSelectEvent={setEditing}
           onAddOnDay={(day) => { setPrefillDate(day); setShowForm(true); }}
         />

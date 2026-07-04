@@ -71,6 +71,9 @@
     "statusWeek_one": "{{count}} vence esta semana",
     "statusWeek_other": "{{count}} vencen esta semana",
     "nextBill": "Próxima factura",
+    "shoppingList": "Lista de la compra",
+    "toGet_one": "{{count}} cosa por comprar",
+    "toGet_other": "{{count}} cosas por comprar",
     "closestGoal": "Meta más cercana"
   },
   "onboarding": {

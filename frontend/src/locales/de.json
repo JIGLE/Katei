@@ -71,6 +71,9 @@
     "statusWeek_one": "{{count}} diese Woche fällig",
     "statusWeek_other": "{{count}} diese Woche fällig",
     "nextBill": "Nächste Rechnung",
+    "shoppingList": "Einkaufsliste",
+    "toGet_one": "{{count}} Sache zu besorgen",
+    "toGet_other": "{{count}} Sachen zu besorgen",
     "closestGoal": "Nächstes Sparziel"
   },
   "onboarding": {

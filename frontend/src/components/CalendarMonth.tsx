@@ -11,10 +11,13 @@ interface CalendarMonthProps {
   onSelectEvent: (evt: HouseholdEvent) => void;
   /** Offer "add on this day" in the day panel — no dead-end empty days. */
   onAddOnDay?: (dayKey: string) => void;
+  /** Open on this day (YYYY-MM-DD) — e.g. a deep-link from the home week strip. */
+  initialDay?: string;
 }
 
 // Dot colour per event type (matches the Timeline/BRAND semantic accents).
-const DOT: Record<HouseholdEvent['event_type'], string> = {
+// Exported so the home's week strip reads from one source of truth.
+export const DOT: Record<HouseholdEvent['event_type'], string> = {
   deadline: 'bg-rose-500',
   payment: 'bg-emerald-500',
   appointment: 'bg-amber-500',
@@ -32,16 +35,18 @@ const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}
 // and week, Home/End jump within the month, PageUp/PageDown change month.
 // Each day announces its full date, its event count, and today; the dots are
 // decoration only.
-export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDay }: CalendarMonthProps) {
+export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDay, initialDay }: CalendarMonthProps) {
   const { t } = useTranslation();
   const today = todayInTimezone(timezone); // 'YYYY-MM-DD'
+  // A deep-link opens on its day/month; otherwise today.
+  const start = initialDay ?? today;
   const [cursor, setCursor] = useState(() => {
-    const [y, m] = today.split('-').map(Number);
+    const [y, m] = start.split('-').map(Number);
     return { y, m: m - 1 }; // month is 0-indexed
   });
-  const [selected, setSelected] = useState<string | null>(today);
+  const [selected, setSelected] = useState<string | null>(start);
   // The roving tab stop: which day of the displayed month is focusable.
-  const [focusDay, setFocusDay] = useState(() => Number(today.slice(8)));
+  const [focusDay, setFocusDay] = useState(() => Number(start.slice(8)));
   // Focus moves only on keyboard navigation, never on plain re-renders.
   const shouldFocus = useRef(false);
   const cellRefs = useRef(new Map<number, HTMLButtonElement>());

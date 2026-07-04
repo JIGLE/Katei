@@ -70,6 +70,9 @@
     "statusWeek_one": "{{count}} due this week",
     "statusWeek_other": "{{count}} due this week",
     "nextBill": "Next bill",
+    "shoppingList": "Shopping list",
+    "toGet_one": "{{count}} thing to get",
+    "toGet_other": "{{count}} things to get",
     "closestGoal": "Closest goal"
   },
   "onboarding": {

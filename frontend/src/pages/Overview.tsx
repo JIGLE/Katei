@@ -1,14 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { AssigneeStack, Avatar } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
+import { WeekStrip } from '../components/WeekStrip';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { assignedIds } from '../lib/assignments';
+import { useCountUp } from '../lib/useCountUp';
 import { DomainChip } from '../components/LinkField';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
-import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
+import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, ShoppingItem, User } from '../lib/types';
+
+// A right-pointing chevron marks a row you can tap to go somewhere.
+function GoChevron() {
+  return (
+    <svg aria-hidden className="h-4 w-4 flex-shrink-0 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+    </svg>
+  );
+}
 
 type Accent = 'amber' | 'rose' | 'emerald' | 'teal';
 
@@ -107,11 +119,13 @@ export default function Overview() {
   const [activity, setActivity] = useState<Activity[]>([]);
   const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
+  const [shopping, setShopping] = useState<ShoppingItem[]>([]);
   const [mineOnly, setMineOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currency, locale, timezone, household_name } = usePreferences();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
 
@@ -133,8 +147,9 @@ export default function Overview() {
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-    // Savings pots are a soft, non-blocking glance.
+    // Savings pots and the shopping list are soft, non-blocking glances.
     api.get<SavingsSummary>('/savings').then(setSavings).catch(() => {});
+    api.get<ShoppingItem[]>('/shopping').then(setShopping).catch(() => {});
   };
 
   useEffect(() => {
@@ -213,6 +228,9 @@ export default function Overview() {
   const homeStreams = streams.filter((s) => s.currency === currency);
   const net = monthlyOf(homeStreams, 'income') - monthlyOf(homeStreams, 'expense') - monthlyOf(homeStreams, 'savings');
   const outflow = monthlyOf(homeStreams, 'expense');
+  // Net is the home's one animated figure — it counts up once when the data
+  // first lands, on the number people actually came to read.
+  const animatedNet = useCountUp(net, !loading && streams.length > 0);
   const fmt = (n: number) => formatMoney(n, currency, locale);
   // Long localized amounts use a non-breaking separator; normalize so they wrap
   // cleanly inside the cramped 3-up cells.
@@ -227,6 +245,9 @@ export default function Overview() {
   const topGoal = (savings?.pots ?? [])
     .filter((p) => p.target && p.target > 0 && p.balance > 0)
     .sort((a, b) => b.balance / (b.target as number) - a.balance / (a.target as number))[0];
+  // Open shopping items — a live line into the list, shown only when there's
+  // something to get (an empty list earns quiet, not a zero).
+  const shoppingOpen = shopping.filter((i) => !i.is_done).length;
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -248,27 +269,49 @@ export default function Overview() {
   ];
   const summary = loading ? null : statusParts.length ? statusParts.join(' · ') : t('overview.summaryClear');
 
+  // A gentle staggered entrance: each block rises in just after the one above.
+  // reveal() runs in render order, only for rendered blocks, so conditional
+  // sections never leave timing holes. The class fills `backwards` and is
+  // disabled under prefers-reduced-motion, so this is safe and calm.
+  let step = 0;
+  const reveal = () => ({ animationDelay: `${step++ * 50}ms` });
+
   return (
     <div className="space-y-6">
-      <header>
+      <header className="animate-fade-slide-in" style={reveal()}>
         <p className="text-xs uppercase tracking-widest text-zinc-500">{eyebrow}</p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{title}</h1>
         {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
       </header>
 
+      {/* Week strip — a tap-through gateway to the calendar, in the calendar's
+          own visual language (event dots by type, today ringed). */}
+      {!loading && !error && (
+        <div className="animate-fade-slide-in" style={reveal()}>
+          <WeekStrip
+            events={events}
+            lang={lang}
+            timezone={timezone}
+            onSelectDay={(day) => navigate(`/timeline?view=month&day=${day}`)}
+          />
+        </div>
+      )}
+
       {/* First-run setup checklist — hides once the household is set up, or
           when it's put away (a solo home can never tick "add members"). */}
       {!loading && !error && !onboardingComplete && !onboardingHidden && (
-        <OnboardingCard
-          usersCount={usersCount}
-          streamsCount={streams.length}
-          eventsCount={eventsTotal}
-          onDismiss={hideOnboarding}
-        />
+        <div className="animate-fade-slide-in" style={reveal()}>
+          <OnboardingCard
+            usersCount={usersCount}
+            streamsCount={streams.length}
+            eventsCount={eventsTotal}
+            onDismiss={hideOnboarding}
+          />
+        </div>
       )}
 
       {/* Attention list — the focal point: what the house needs from you. */}
-      <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+      <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.needsAttention')}
@@ -341,9 +384,15 @@ export default function Overview() {
         )}
       </section>
 
-      {/* Next bill — the money fact that changes what you do today. */}
+      {/* Next bill — the money fact that changes what you do today. Tapping
+          it opens the Timeline where it can be marked paid. */}
       {!loading && !error && nextBill && nextBill.stream && (
-        <div className="flex items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+        <button
+          type="button"
+          onClick={() => navigate('/timeline')}
+          className="animate-fade-slide-in flex w-full items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+          style={reveal()}
+        >
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('overview.nextBill')}</p>
             <p className="mt-1 truncate text-sm text-zinc-200">{nextBill.evt.title}</p>
@@ -363,17 +412,35 @@ export default function Overview() {
           >
             {formatRelativeDay(nextBill.days, lang)}
           </span>
-        </div>
+          <GoChevron />
+        </button>
+      )}
+
+      {/* Shopping list — a live line into the list, only when there's
+          something to get. */}
+      {!loading && !error && shoppingOpen > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate('/lists')}
+          className="animate-fade-slide-in flex w-full items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+          style={reveal()}
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('overview.shoppingList')}</p>
+            <p className="mt-1 truncate text-sm text-zinc-200">{t('overview.toGet', { count: shoppingOpen })}</p>
+          </div>
+          <GoChevron />
+        </button>
       )}
 
       {/* Money at a glance — two figures, not an accounting panel: what's
           left each month and what goes out. The full picture lives on Money. */}
       {!loading && !error && streams.length > 0 && (
-        <div className="grid grid-cols-2 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+        <div className="animate-fade-slide-in grid grid-cols-2 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900" style={reveal()}>
           <div className="p-4">
             <p className="text-xs text-zinc-500">{t('money.net')}</p>
             <p className={`mt-1 text-sm font-light leading-tight tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {fmtWrap(net)}
+              {fmtWrap(animatedNet)}
             </p>
           </div>
           <div className="p-4">
@@ -387,7 +454,7 @@ export default function Overview() {
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
       {!loading && birthdays.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+        <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.birthdays')}
           </p>
@@ -407,7 +474,7 @@ export default function Overview() {
 
       {/* One goal, if any is progressing — the pot closest to its target. */}
       {!loading && topGoal && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+        <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4" style={reveal()}>
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.closestGoal')}
           </p>
@@ -439,7 +506,7 @@ export default function Overview() {
       {/* Around the house — the shared pulse of recent activity. Five rows;
           the item is the news, so it wins the space (two lines if needed). */}
       {!loading && activity.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+        <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.activity')}
           </p>

@@ -71,6 +71,9 @@
     "statusWeek_one": "{{count}} deze week",
     "statusWeek_other": "{{count}} deze week",
     "nextBill": "Volgende rekening",
+    "shoppingList": "Boodschappenlijst",
+    "toGet_one": "{{count}} ding te halen",
+    "toGet_other": "{{count}} dingen te halen",
     "closestGoal": "Dichtstbijzijnde doel"
   },
   "onboarding": {
