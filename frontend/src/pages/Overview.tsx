@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { assignedIds } from '../lib/assignments';
+import { DomainChip } from '../components/LinkField';
 import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
 import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, User } from '../lib/types';
 
@@ -427,6 +428,11 @@ export default function Overview() {
               style={{ width: `${Math.min(100, (topGoal.balance / (topGoal.target ?? 1)) * 100)}%` }}
             />
           </div>
+          {topGoal.url && (
+            <div className="mt-1.5 flex justify-end">
+              <DomainChip url={topGoal.url} site={topGoal.link_site} />
+            </div>
+          )}
         </section>
       )}
 

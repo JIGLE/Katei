@@ -7,6 +7,7 @@ import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { GoalForm } from '../components/GoalForm';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
+import { DomainChip } from '../components/LinkField';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
@@ -241,12 +242,15 @@ export default function MoneyFlow() {
           <ul className="mt-4 space-y-3 border-t border-zinc-800/60 pt-4">
             {pots.map((pot) => {
               const pct = pot.target && pot.target > 0 ? Math.min(100, (pot.balance / pot.target) * 100) : null;
+              // The chip is a link, so it lives on its own line under the
+              // row's edit button — nested interactives are invalid, and
+              // inline it would squeeze the pot's name and bar.
               return (
-                <li key={pot.id}>
+                <li key={pot.id} className="-mx-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-800/40">
                   <button
                     type="button"
                     onClick={() => setEditingPot(pot)}
-                    className="-mx-2 block w-full rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-zinc-800/40"
+                    className="block w-full text-left"
                   >
                     <div className="flex items-center gap-2 text-sm">
                       <span aria-hidden>{pot.icon || '🐷'}</span>
@@ -265,6 +269,11 @@ export default function MoneyFlow() {
                       </div>
                     )}
                   </button>
+                  {pot.url && (
+                    <div className="mt-1.5 flex justify-end">
+                      <DomainChip url={pot.url} site={pot.link_site} />
+                    </div>
+                  )}
                 </li>
               );
             })}

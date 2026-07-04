@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
-import type { SavingsSummary, SavingsPot } from '../lib/types';
+import type { SavingsSummary, SavingsPot, LinkPreview } from '../lib/types';
+import { LinkField } from './LinkField';
 
 interface GoalFormProps {
   initial?: SavingsPot;
@@ -28,6 +29,9 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
   const [name, setName] = useState(initial?.name ?? '');
   const [target, setTarget] = useState(initial?.target ? String(initial.target) : '');
   const [icon, setIcon] = useState(initial?.icon ?? '🐷');
+  const [url, setUrl] = useState(initial?.url ?? '');
+  const [linkTitle, setLinkTitle] = useState<string | null>(initial?.link_title ?? null);
+  const [linkSite, setLinkSite] = useState<string | null>(initial?.link_site ?? null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +48,9 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
       const body: Record<string, unknown> = {
         target_amount: target.trim() ? Number(target) : null,
         icon: icon.trim() || null,
+        url: url.trim() || null,
+        link_title: url.trim() ? linkTitle : null,
+        link_site: url.trim() ? linkSite : null,
       };
       if (!isDefault) body.name = name.trim();
       const summary = isEdit
@@ -121,6 +128,20 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
           className={fieldCls}
         />
       </div>
+
+      {/* The thing being saved for — one tap away from the pot. */}
+      <LinkField
+        id="pot-url"
+        url={url}
+        onChange={setUrl}
+        onParsed={(meta: LinkPreview) => {
+          setLinkTitle(meta.title);
+          setLinkSite(meta.site);
+          if (meta.title && !name.trim() && !isDefault) setName(meta.title.slice(0, 80));
+        }}
+        parsedTitle={linkTitle}
+        parsedSite={linkSite}
+      />
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 

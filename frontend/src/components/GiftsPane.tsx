@@ -62,21 +62,18 @@ export function GiftsPane() {
               </p>
             </div>
             <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+              {/* The domain chip is a link, so it sits beside (not inside)
+                  the row's edit button — nested interactives are invalid. */}
               {gifts.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setEditing(g)}
-                  className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-zinc-800/30"
-                >
-                  <div className="min-w-0 flex-1">
+                <div key={g.id} className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-800/30">
+                  <button type="button" onClick={() => setEditing(g)} className="min-w-0 flex-1 text-left">
                     <p className={`text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}>{g.title}</p>
                     {g.price != null && (
                       <p className="mt-0.5 text-xs tabular-nums text-zinc-500">
                         {formatMoney(g.price, g.currency ?? 'EUR', locale)}
                       </p>
                     )}
-                  </div>
+                  </button>
                   {g.url && <DomainChip url={g.url} site={g.link_site} />}
                   <span
                     className={[
@@ -86,7 +83,7 @@ export function GiftsPane() {
                   >
                     {t(`gifts.status_${g.status}`)}
                   </span>
-                </button>
+                </div>
               ))}
             </div>
           </section>
