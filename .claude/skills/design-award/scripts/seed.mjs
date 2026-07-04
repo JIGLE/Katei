@@ -30,7 +30,7 @@ if (!put.ok()) problems.push(`preferences: ${put.status()}`);
 
 // --- Household ---------------------------------------------------------
 const sam = await post(page, problems, '/users', { name: 'Sam', birthday: daysFromNow(16).replace(/^\d{4}/, '1990') });
-await post(page, problems, '/users', { name: 'Miso', kind: 'pet', birthday: '2024-08-30' });
+const miso = await post(page, problems, '/users', { name: 'Miso', kind: 'pet', birthday: '2024-08-30' });
 
 // --- Money streams (household currency comes from the API default) ------
 const rent = await post(page, problems, '/money-streams', { name: 'Rent', amount: 1150, stream_type: 'expense', is_recurring: true, frequency: 'monthly', category: 'Housing' });
@@ -67,12 +67,34 @@ await post(page, problems, '/events', { title: 'Vet check — Miso', event_type:
 const bike = await post(page, problems, '/events', { title: 'Fix bicycle brakes', event_type: 'appointment', target_date: daysFromNow(-13) });
 if (bike) await page.request.patch(`${BASE}/api/events/${bike.id}/complete`, { data: { is_completed: true } });
 
+// --- Shopping list: a mid-week state, two things already in the basket ----
+const shopping = ['Milk', 'Oat flakes', 'Dish soap', 'Coffee beans', 'Cat litter', 'Basil plant'];
+const shopIds = [];
+for (const name of shopping) {
+  const it = await post(page, problems, '/shopping', { name });
+  if (it) shopIds.push(it.id);
+}
+for (const id of shopIds.slice(0, 2)) {
+  await page.request.patch(`${BASE}/api/shopping/${id}`, { data: { is_done: true } });
+}
+
 // --- Assignments ---------------------------------------------------------
 const me = await page.request.get(`${BASE}/api/auth/me`).then((r) => r.json());
 const myId = me.id ?? me.user?.id;
 if (rent) await post(page, problems, '/assignments', { user_id: myId, money_stream_id: rent.id, role: 'owner' });
 if (dentist && sam) await post(page, problems, '/assignments', { user_id: sam.id, event_id: dentist.id, role: 'owner' });
 if (mot) await post(page, problems, '/assignments', { user_id: myId, event_id: mot.id, role: 'owner' });
+
+// --- Gifts: two visible + one addressed to Alex (proves the hidden count) --
+if (sam) {
+  await post(page, problems, '/gifts', { recipient_id: sam.id, title: 'Record player', url: 'https://example.com/rp', link_site: 'example.com', price: 129.5, status: 'idea' });
+}
+if (miso) {
+  await post(page, problems, '/gifts', { recipient_id: miso.id, title: 'Catnip fortress', price: 24, status: 'bought' });
+}
+if (myId) {
+  await post(page, problems, '/gifts', { recipient_id: myId, title: 'Surprise for Alex' });
+}
 
 const savings = await page.request.get(`${BASE}/api/savings`).then((r) => r.json()).catch(() => null);
 console.log(JSON.stringify({

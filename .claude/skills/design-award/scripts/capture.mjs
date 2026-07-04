@@ -50,6 +50,11 @@ const captureTheme = async (suffix) => {
   await scrollMain(99999);
   await shot(`money-end-${suffix}`);
 
+  await page.locator('nav a[href="/lists"]').click();
+  await shot(`lists-shopping-${suffix}`);
+  await page.getByRole('button', { name: /Gifts|Geschenke|Cadeaux|Regalos|Regali|Cadeaus/ }).click();
+  await shot(`lists-gifts-${suffix}`);
+
   await page.locator('nav a[href="/household"]').click();
   await shot(`household-${suffix}`);
 };

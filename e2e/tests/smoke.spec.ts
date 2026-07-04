@@ -58,12 +58,24 @@ test('first-run household journey: register, event, money stream, persistence', 
     await expect(page.getByText('Rent', { exact: true })).toBeVisible();
   });
 
+  await test.step('quick-add a shopping item and check it off', async () => {
+    await page.locator('nav a[href="/lists"]').click();
+    const input = page.getByLabel('Add an item…');
+    await input.fill('Milk');
+    await input.press('Enter');
+    await expect(page.getByText('Milk', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Mark as bought' }).click();
+    await expect(page.getByText('In the basket')).toBeVisible();
+  });
+
   await test.step('data survives a full reload (round-trips the database)', async () => {
     await page.reload();
     await page.locator('nav a[href="/timeline"]').click();
     await expect(page.getByText('Dentist appointment')).toBeVisible();
     await page.locator('nav a[href="/money"]').click();
     await expect(page.getByText('Rent', { exact: true })).toBeVisible();
+    await page.locator('nav a[href="/lists"]').click();
+    await expect(page.getByText('Milk', { exact: true })).toBeVisible();
   });
 
   await test.step('no page exceptions or CSP violations anywhere in the journey', async () => {
