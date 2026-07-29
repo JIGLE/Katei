@@ -26,6 +26,7 @@ export default function Lists() {
   const [editing, setEditing] = useState<ShoppingItem | null>(null);
   const [editName, setEditName] = useState('');
   const [editNote, setEditNote] = useState('');
+  const [editStore, setEditStore] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const quickAddRef = useRef<HTMLInputElement>(null);
 
@@ -81,6 +82,7 @@ export default function Lists() {
     setEditing(item);
     setEditName(item.name);
     setEditNote(item.note ?? '');
+    setEditStore(item.store ?? '');
     setConfirmDelete(false);
   };
 
@@ -90,6 +92,7 @@ export default function Lists() {
       const updated = await api.patch<ShoppingItem>(`/shopping/${editing.id}`, {
         name: editName.trim(),
         note: editNote.trim() || null,
+        store: editStore.trim() || null,
       });
       setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
       setEditing(null);
@@ -108,9 +111,27 @@ export default function Lists() {
   };
 
   const visible = items.filter((i) => matchesQuery(query, i.name, i.note));
-  const open = visible.filter((i) => !i.is_done);
   const done = visible.filter((i) => i.is_done);
   const showSearch = items.length >= 8 || query !== '';
+
+  // Grouped by store (Groceries / IKEA / ...), falling back to a catch-all
+  // bucket for untagged items. Server order already puts open items before
+  // done ones, so partitioning by store preserves open-before-done per group.
+  const anywhereLabel = t('shopping.anywhere');
+  const storeGroups = Array.from(
+    visible.reduce<Map<string, ShoppingItem[]>>((map, item) => {
+      const key = item.store?.trim() || anywhereLabel;
+      map.set(key, [...(map.get(key) ?? []), item]);
+      return map;
+    }, new Map()),
+  ).sort(([a], [b]) => {
+    if (a === anywhereLabel) return 1;
+    if (b === anywhereLabel) return -1;
+    return a.localeCompare(b);
+  });
+  const existingStores = Array.from(
+    new Set(items.map((i) => i.store?.trim()).filter((s): s is string => !!s)),
+  ).sort((a, b) => a.localeCompare(b));
 
   const row = (item: ShoppingItem) => (
     <li key={item.id} className="flex items-center gap-3 p-4">
@@ -197,28 +218,33 @@ export default function Lists() {
             <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
           )}
 
-          {open.length > 0 && (
-            <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-              <ul className="divide-y divide-zinc-800/60">{open.map(row)}</ul>
-            </section>
-          )}
-
-          {done.length > 0 && (
-            <section className="space-y-2">
-              <div className="flex items-baseline justify-between">
-                <p className="text-xs font-medium uppercase tracking-widest text-zinc-600">{t('shopping.inTheBasket')}</p>
-                <button
-                  type="button"
-                  onClick={clearDone}
-                  className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
-                >
-                  {t('shopping.clearDone')}
-                </button>
-              </div>
-              <div className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900 opacity-70">
-                <ul className="divide-y divide-zinc-800/60">{done.map(row)}</ul>
-              </div>
-            </section>
+          {storeGroups.length > 0 && (
+            <div className="space-y-4">
+              {done.length > 0 && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={clearDone}
+                    className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+                  >
+                    {t('shopping.clearDone')}
+                  </button>
+                </div>
+              )}
+              {/* A store header only earns its place when there's more than
+                  one bucket — a single "Anywhere" group is just the plain
+                  list, not a truthful grouping. */}
+              {storeGroups.map(([store, groupItems]) => (
+                <section key={store} className="space-y-2">
+                  {storeGroups.length > 1 && (
+                    <p className="text-xs font-medium uppercase tracking-widest text-zinc-600">{store}</p>
+                  )}
+                  <div className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+                    <ul className="divide-y divide-zinc-800/60">{groupItems.map(row)}</ul>
+                  </div>
+                </section>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -238,6 +264,24 @@ export default function Lists() {
               {t('form.notes')}
             </label>
             <input id="shop_note" type="text" value={editNote} maxLength={500} onChange={(e) => setEditNote(e.target.value)} placeholder={t('shopping.notePlaceholder')} className={fieldCls} />
+          </div>
+          <div>
+            <label htmlFor="shop_store" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('shopping.store')}
+            </label>
+            <input
+              id="shop_store"
+              type="text"
+              list="existing-stores"
+              value={editStore}
+              maxLength={80}
+              onChange={(e) => setEditStore(e.target.value)}
+              placeholder={t('shopping.storePlaceholder')}
+              className={fieldCls}
+            />
+            <datalist id="existing-stores">
+              {existingStores.map((s) => <option key={s} value={s} />)}
+            </datalist>
           </div>
           <div className="flex gap-3 pt-1">
             <button

@@ -413,6 +413,9 @@
     "emptyHint": "Add the first thing the house needs.",
     "editItem": "Edit item",
     "notePlaceholder": "e.g. the lactose-free one",
+    "store": "Store",
+    "storePlaceholder": "e.g. Aldi, IKEA",
+    "anywhere": "Anywhere",
     "checkAria": "Mark as bought",
     "uncheckAria": "Put back on the list"
   },

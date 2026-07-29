@@ -161,6 +161,8 @@ export async function migrate(): Promise<void> {
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+  // Items can be grouped by where they're bought (Groceries / IKEA / ...).
+  await query(`ALTER TABLE shopping_items ADD COLUMN IF NOT EXISTS store VARCHAR(80)`);
   // Gift list — ideas and purchases per recipient. Rows are hidden from
   // their recipient at the API layer so surprises survive.
   await query(

@@ -414,6 +414,9 @@
     "emptyHint": "Ajoutez la première chose qui manque à la maison.",
     "editItem": "Modifier l'article",
     "notePlaceholder": "p. ex. la version sans lactose",
+    "store": "Magasin",
+    "storePlaceholder": "p. ex. Carrefour, IKEA",
+    "anywhere": "N'importe où",
     "checkAria": "Marquer comme acheté",
     "uncheckAria": "Remettre sur la liste"
   },

@@ -123,6 +123,7 @@ export interface ShoppingItem {
   id: number;
   name: string;
   note: string | null;
+  store: string | null;
   added_by: number | null;
   is_done: boolean;
   done_at: string | null;

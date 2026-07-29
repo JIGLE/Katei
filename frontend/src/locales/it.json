@@ -414,6 +414,9 @@
     "emptyHint": "Aggiungi la prima cosa che manca in casa.",
     "editItem": "Modifica articolo",
     "notePlaceholder": "es. quello senza lattosio",
+    "store": "Negozio",
+    "storePlaceholder": "es. Esselunga, IKEA",
+    "anywhere": "Ovunque",
     "checkAria": "Segna come comprato",
     "uncheckAria": "Rimetti in lista"
   },

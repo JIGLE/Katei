@@ -5,7 +5,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
-const COLS = 'id, name, note, added_by, is_done, done_at, created_at';
+const COLS = 'id, name, note, store, added_by, is_done, done_at, created_at';
 
 export const shoppingRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/shopping — open first (oldest added first), done last (most
@@ -19,7 +19,7 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/shopping
-  app.post<{ Body: { name: string; note?: string | null } }>(
+  app.post<{ Body: { name: string; note?: string | null; store?: string | null } }>(
     '/',
     {
       schema: {
@@ -29,6 +29,7 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 120 },
             note: { type: ['string', 'null'], maxLength: 500 },
+            store: { type: ['string', 'null'], maxLength: 80 },
           },
         },
       },
@@ -37,16 +38,16 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
       const name = req.body.name.trim();
       if (!name) return reply.code(400).send({ error: 'Name is required' });
       const { rows } = await query(
-        `INSERT INTO shopping_items (name, note, added_by) VALUES ($1, $2, $3) RETURNING ${COLS}`,
-        [name, req.body.note?.trim() || null, req.user?.id ?? null],
+        `INSERT INTO shopping_items (name, note, store, added_by) VALUES ($1, $2, $3, $4) RETURNING ${COLS}`,
+        [name, req.body.note?.trim() || null, req.body.store?.trim() || null, req.user?.id ?? null],
       );
       await logActivity(req.user?.id ?? null, 'shopping_added', name);
       return reply.code(201).send(rows[0]);
     },
   );
 
-  // PATCH /api/shopping/:id — rename, note, or (un)check.
-  app.patch<{ Params: { id: string }; Body: { name?: string; note?: string | null; is_done?: boolean } }>(
+  // PATCH /api/shopping/:id — rename, note, store, or (un)check.
+  app.patch<{ Params: { id: string }; Body: { name?: string; note?: string | null; store?: string | null; is_done?: boolean } }>(
     '/:id',
     {
       schema: {
@@ -55,6 +56,7 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 120 },
             note: { type: ['string', 'null'], maxLength: 500 },
+            store: { type: ['string', 'null'], maxLength: 80 },
             is_done: { type: 'boolean' },
           },
         },
@@ -66,6 +68,7 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
       let i = 1;
       if (req.body.name !== undefined) { fields.push(`name = $${i++}`); values.push(req.body.name.trim()); }
       if (req.body.note !== undefined) { fields.push(`note = $${i++}`); values.push(req.body.note?.trim() || null); }
+      if (req.body.store !== undefined) { fields.push(`store = $${i++}`); values.push(req.body.store?.trim() || null); }
       if (req.body.is_done !== undefined) {
         fields.push(`is_done = $${i++}`); values.push(req.body.is_done);
         fields.push(`done_at = ${req.body.is_done ? 'CURRENT_TIMESTAMP' : 'NULL'}`);

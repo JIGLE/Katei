@@ -67,3 +67,17 @@ test('adding logs household activity', opts, async () => {
 test('deleting an unknown item is a 404', opts, async () => {
   assert.equal((await app.inject({ method: 'DELETE', url: '/api/shopping/9999', headers: { cookie } })).statusCode, 404);
 });
+
+test('store is settable on add and edit, and defaults to null', opts, async () => {
+  const noStore = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Batteries' } })).json();
+  assert.equal(noStore.store, null);
+
+  const tagged = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Meatballs', store: 'IKEA' } })).json();
+  assert.equal(tagged.store, 'IKEA');
+
+  const retagged = (await app.inject({ method: 'PATCH', url: `/api/shopping/${noStore.id}`, headers: { cookie }, payload: { store: 'Groceries' } })).json();
+  assert.equal(retagged.store, 'Groceries');
+
+  const cleared = (await app.inject({ method: 'PATCH', url: `/api/shopping/${tagged.id}`, headers: { cookie }, payload: { store: null } })).json();
+  assert.equal(cleared.store, null);
+});

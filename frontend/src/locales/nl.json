@@ -414,6 +414,9 @@
     "emptyHint": "Voeg het eerste toe dat in huis ontbreekt.",
     "editItem": "Item bewerken",
     "notePlaceholder": "bijv. de lactosevrije",
+    "store": "Winkel",
+    "storePlaceholder": "bijv. Albert Heijn, IKEA",
+    "anywhere": "Overal",
     "checkAria": "Markeren als gekocht",
     "uncheckAria": "Terug op de lijst"
   },

@@ -414,6 +414,9 @@
     "emptyHint": "Füg das Erste hinzu, das im Haus fehlt.",
     "editItem": "Eintrag bearbeiten",
     "notePlaceholder": "z. B. die laktosefreie",
+    "store": "Geschäft",
+    "storePlaceholder": "z. B. Aldi, IKEA",
+    "anywhere": "Überall",
     "checkAria": "Als gekauft markieren",
     "uncheckAria": "Zurück auf die Liste"
   },
