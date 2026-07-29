@@ -51,6 +51,29 @@ test('a member\'s own wishlist is lazily created and starts empty', opts, async 
   assert.deepEqual(res.others, []);
 });
 
+test('a member can add an idea for someone who has never opened Gifts themselves', opts, async () => {
+  // Robin is invited but never logs in or calls GET — their gift_lists row
+  // doesn't exist yet from their own action.
+  const inviteRes = await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} });
+  const invite = inviteRes.json();
+  const joinRes = await app.inject({
+    method: 'POST', url: '/api/auth/register',
+    payload: { name: 'Robin', password: 'password123', invite_code: invite.code },
+  });
+  // Robin's session exists but is discarded — never used to call the API.
+  void joinRes;
+
+  const forAlex = (await app.inject({ method: 'GET', url: '/api/gift-lists', headers: { cookie } })).json();
+  const robinsList = forAlex.others.find((l) => l.owner_name === 'Robin');
+  assert.ok(robinsList, 'Robin should already have a list, backfilled by Alex\'s own GET');
+
+  const added = (await app.inject({
+    method: 'POST', url: `/api/gift-lists/${robinsList.id}/items`, headers: { cookie },
+    payload: { title: 'Hiking poles' },
+  })).json();
+  assert.equal(added.title, 'Hiking poles');
+});
+
 test('the owner always sees their own items as untouched ideas with no attribution', opts, async () => {
   const robin = await join('Robin');
   const listId = await ownListId(robin.session);

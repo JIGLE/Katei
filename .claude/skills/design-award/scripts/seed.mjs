@@ -85,15 +85,31 @@ if (rent) await post(page, problems, '/assignments', { user_id: myId, money_stre
 if (dentist && sam) await post(page, problems, '/assignments', { user_id: sam.id, event_id: dentist.id, role: 'owner' });
 if (mot) await post(page, problems, '/assignments', { user_id: myId, event_id: mot.id, role: 'owner' });
 
-// --- Gifts: two visible + one addressed to Alex (proves the hidden count) --
-if (sam) {
-  await post(page, problems, '/gifts', { recipient_id: sam.id, title: 'Record player', url: 'https://example.com/rp', link_site: 'example.com', price: 129.5, status: 'idea' });
+// --- Gift lists: my own wishlist, a household member's, a pet's, and one
+// for a friend outside the household — plus a live share link on my own
+// list, so the audit can see the "untouched to its owner" contract render.
+const giftLists = await page.request.get(`${BASE}/api/gift-lists`).then((r) => r.json()).catch(() => null);
+if (!giftLists) problems.push('GET /gift-lists failed');
+const myListId = giftLists?.mine?.id ?? null;
+const samListId = giftLists?.others?.find((l) => l.owner_name === 'Sam')?.id ?? null;
+const misoListId = giftLists?.others?.find((l) => l.owner_name === 'Miso')?.id ?? null;
+
+if (myListId) {
+  await post(page, problems, `/gift-lists/${myListId}/items`, { title: 'Noise-cancelling headphones', price: 220 });
+  const share = await post(page, problems, `/gift-lists/${myListId}/share`, {});
+  if (share?.share_token) console.log('SHARE_URL', `${BASE.replace(/\/api$/, '')}/gift/${share.share_token}`);
 }
-if (miso) {
-  await post(page, problems, '/gifts', { recipient_id: miso.id, title: 'Catnip fortress', price: 24, status: 'bought' });
+if (samListId) {
+  const record = await post(page, problems, `/gift-lists/${samListId}/items`, { title: 'Record player', url: 'https://example.com/rp', link_site: 'example.com', price: 129.5 });
+  if (record) await page.request.patch(`${BASE}/api/gift-lists/items/${record.id}`, { data: { status: 'reserved' } });
 }
-if (myId) {
-  await post(page, problems, '/gifts', { recipient_id: myId, title: 'Surprise for Alex' });
+if (misoListId) {
+  const catnip = await post(page, problems, `/gift-lists/${misoListId}/items`, { title: 'Catnip fortress', price: 24 });
+  if (catnip) await page.request.patch(`${BASE}/api/gift-lists/items/${catnip.id}`, { data: { status: 'bought' } });
+}
+const nana = await post(page, problems, '/gift-lists', { external_name: 'Nana' });
+if (nana) {
+  await post(page, problems, `/gift-lists/${nana.id}/items`, { title: 'Garden secateurs', price: 18 });
 }
 
 const savings = await page.request.get(`${BASE}/api/savings`).then((r) => r.json()).catch(() => null);

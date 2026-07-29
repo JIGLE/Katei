@@ -33,16 +33,16 @@ async function canManageShare(list: GiftListRow, uid: number): Promise<boolean> 
 }
 
 export const giftListsRoutes: FastifyPluginAsync = async (app) => {
-  // GET /api/gift-lists → { mine, others }. Lazily creates the caller's own
-  // list — a member never explicitly "creates" their wishlist. Pets can
-  // never log in to trigger that for themselves, so this also backfills a
-  // list for any pet still missing one — the only "special-casing" pets
-  // get, and it's just eager creation, not a different code path.
+  // GET /api/gift-lists → { mine, others }. Backfills a list for every
+  // household member (and pet) who doesn't have one yet — not just the
+  // caller — so a member can add an idea for someone who has never opened
+  // the Gifts tab themselves. Pets, who can never log in to trigger this
+  // for themselves, ride along for free: same query, no special-casing.
   app.get('/', async (req) => {
     const uid = req.user.id;
     await query(
       `INSERT INTO gift_lists (owner_user_id, created_by)
-       SELECT id, $1 FROM users WHERE id = $1 OR kind = 'pet'
+       SELECT id, $1 FROM users
        ON CONFLICT (owner_user_id) WHERE owner_user_id IS NOT NULL DO NOTHING`,
       [uid],
     );
