@@ -13,7 +13,7 @@ import { notificationsRoutes } from './notifications.js';
 import { pushRoutes } from './push.js';
 import { avatarsRoutes } from './avatars.js';
 import { shoppingRoutes } from './shopping.js';
-import { giftsRoutes } from './gifts.js';
+import { giftListsRoutes } from './gift-lists.js';
 import { linkPreviewRoutes } from './link-preview.js';
 
 export const apiRoutes: FastifyPluginAsync = async (app) => {
@@ -29,6 +29,6 @@ export const apiRoutes: FastifyPluginAsync = async (app) => {
   await app.register(pushRoutes, { prefix: '/push' });
   await app.register(avatarsRoutes, { prefix: '/avatars' });
   await app.register(shoppingRoutes, { prefix: '/shopping' });
-  await app.register(giftsRoutes, { prefix: '/gifts' });
+  await app.register(giftListsRoutes, { prefix: '/gift-lists' });
   await app.register(linkPreviewRoutes, { prefix: '/link-preview' });
 };

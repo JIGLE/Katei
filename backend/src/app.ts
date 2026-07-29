@@ -18,6 +18,7 @@ import { apiRoutes } from './routes/index.js';
 import { authRoutes } from './routes/auth.js';
 import { settingsRoutes } from './routes/settings.js';
 import { calendarRoutes } from './routes/calendar.js';
+import { giftShareRoutes } from './routes/gift-share.js';
 
 export interface BuildAppOptions {
   jwtSecret: string;
@@ -134,6 +135,10 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
 
   // Public iCalendar feed — token-gated, no session (calendar apps can't send one).
   await app.register(calendarRoutes, { prefix: '/api/calendar' });
+
+  // Public gift-list share links — token-gated, no session (an outside
+  // visitor has no Katei account).
+  await app.register(giftShareRoutes, { prefix: '/api/gift-share' });
 
   // All domain routers live under /api and require an authenticated session.
   await app.register(async (instance) => {

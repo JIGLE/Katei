@@ -21,7 +21,7 @@ const TEST_JWT_SECRET = 'integration-test-secret';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(dirname, '..', '..', 'schema.sql');
 
-const TABLES = ['assignments', 'activity', 'notifications', 'push_subscriptions', 'savings_entries', 'savings_goals', 'invites', 'household_events', 'money_streams', 'shopping_items', 'gift_items', 'users', 'app_settings'];
+const TABLES = ['assignments', 'activity', 'notifications', 'push_subscriptions', 'savings_entries', 'savings_goals', 'invites', 'household_events', 'money_streams', 'shopping_items', 'gift_items', 'gift_lists', 'users', 'app_settings'];
 
 /** Drop + recreate the schema from schema.sql, then apply migrations. Run once. */
 export async function setupTestDb(): Promise<void> {

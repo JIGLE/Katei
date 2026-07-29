@@ -163,12 +163,33 @@ export async function migrate(): Promise<void> {
   );
   // Items can be grouped by where they're bought (Groceries / IKEA / ...).
   await query(`ALTER TABLE shopping_items ADD COLUMN IF NOT EXISTS store VARCHAR(80)`);
-  // Gift list — ideas and purchases per recipient. Rows are hidden from
-  // their recipient at the API layer so surprises survive.
+  // Gift lists — one wishlist per household member (lazily created) or per
+  // external person (a friend/relative who isn't a Katei user). A list's
+  // items are visible in full to everyone EXCEPT the list's own owner: the
+  // owner always sees their own items as untouched ideas (status/attribution
+  // masked at the API layer), so surprises survive shared devices/accounts.
+  await query(
+    `CREATE TABLE IF NOT EXISTS gift_lists (
+       id SERIAL PRIMARY KEY,
+       owner_user_id INT REFERENCES users(id) ON DELETE CASCADE,
+       external_name VARCHAR(120),
+       share_token TEXT UNIQUE,
+       created_by INT REFERENCES users(id) ON DELETE SET NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+       CONSTRAINT gift_lists_owner_xor_external CHECK (
+         (owner_user_id IS NOT NULL AND external_name IS NULL) OR
+         (owner_user_id IS NULL AND external_name IS NOT NULL)
+       )
+     )`,
+  );
+  await query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS gift_lists_owner_uidx
+       ON gift_lists(owner_user_id) WHERE owner_user_id IS NOT NULL`,
+  );
   await query(
     `CREATE TABLE IF NOT EXISTS gift_items (
        id SERIAL PRIMARY KEY,
-       recipient_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+       list_id INT NOT NULL REFERENCES gift_lists(id) ON DELETE CASCADE,
        title VARCHAR(160) NOT NULL,
        url TEXT,
        link_title TEXT,
@@ -177,9 +198,39 @@ export async function migrate(): Promise<void> {
        currency VARCHAR(3),
        status VARCHAR(10) NOT NULL DEFAULT 'idea',
        added_by INT REFERENCES users(id) ON DELETE SET NULL,
+       bought_by_user_id INT REFERENCES users(id) ON DELETE SET NULL,
+       bought_by_note VARCHAR(60),
        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
      )`,
   );
+  // Pre-existing installs: gift_items used to reference recipient_id
+  // directly. Fold each distinct recipient into a lazily-created gift_lists
+  // row, point items at it, then drop the old column. Guarded so it only
+  // ever runs once, on the first boot after upgrade.
+  {
+    const { rows: legacy } = await query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_name = 'gift_items' AND column_name = 'recipient_id'
+       ) AS exists`,
+    );
+    await query(`ALTER TABLE gift_items ADD COLUMN IF NOT EXISTS list_id INT REFERENCES gift_lists(id) ON DELETE CASCADE`);
+    if (legacy[0].exists) {
+      await query(
+        `INSERT INTO gift_lists (owner_user_id)
+         SELECT DISTINCT recipient_id FROM gift_items
+         ON CONFLICT (owner_user_id) WHERE owner_user_id IS NOT NULL DO NOTHING`,
+      );
+      await query(
+        `UPDATE gift_items g SET list_id = gl.id
+         FROM gift_lists gl WHERE gl.owner_user_id = g.recipient_id AND g.list_id IS NULL`,
+      );
+      await query(`ALTER TABLE gift_items ALTER COLUMN list_id SET NOT NULL`);
+      await query(`ALTER TABLE gift_items DROP COLUMN recipient_id`);
+    }
+  }
+  await query(`ALTER TABLE gift_items ADD COLUMN IF NOT EXISTS bought_by_user_id INT REFERENCES users(id) ON DELETE SET NULL`);
+  await query(`ALTER TABLE gift_items ADD COLUMN IF NOT EXISTS bought_by_note VARCHAR(60)`);
   // Savings pots can point at the thing being saved for.
   await query(`ALTER TABLE savings_goals ADD COLUMN IF NOT EXISTS url TEXT`);
   await query(`ALTER TABLE savings_goals ADD COLUMN IF NOT EXISTS link_title TEXT`);
@@ -204,7 +255,7 @@ export async function migrate(): Promise<void> {
 const SERIAL_TABLES = [
   'users', 'money_streams', 'household_events', 'assignments',
   'invites', 'activity', 'notifications', 'savings_entries', 'savings_goals', 'push_subscriptions',
-  'shopping_items', 'gift_items',
+  'shopping_items', 'gift_items', 'gift_lists',
 ];
 
 /**
