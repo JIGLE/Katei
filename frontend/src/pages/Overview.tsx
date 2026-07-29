@@ -4,93 +4,74 @@ import { api } from '../lib/api';
 import { AssigneeStack, Avatar } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
 import { WeekStrip } from '../components/WeekStrip';
+import { DOT } from '../components/CalendarMonth';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
-import { assignedIds } from '../lib/assignments';
-import { useCountUp } from '../lib/useCountUp';
-import { DomainChip } from '../components/LinkField';
-import { formatMoney, daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
-import type { Activity, AssignmentDetail, HouseholdEvent, MoneyStream, SavingsSummary, ShoppingItem, User } from '../lib/types';
+import { daysUntil, formatRelativeDay, formatRelativeTime, daysToBirthday } from '../lib/format';
+import type {
+  Activity, AssignmentDetail, GiftListsResponse, HouseholdEvent, MoneyStream, ShoppingItem, User,
+} from '../lib/types';
 
-// A right-pointing chevron marks a row you can tap to go somewhere.
-function GoChevron() {
+// Thin line icons for the two shortcuts, in the bottom nav's idiom.
+const ICON_BAG = 'M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z';
+const ICON_GIFT = 'M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z';
+
+// One shortcut into a list: what it is, and how much is waiting there.
+function QuickTile({
+  iconPath, label, detail, onClick,
+}: {
+  iconPath: string;
+  label: string;
+  detail: string;
+  onClick: () => void;
+}) {
   return (
-    <svg aria-hidden className="h-4 w-4 flex-shrink-0 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-    </svg>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col gap-2 p-4 text-left transition-colors hover:bg-zinc-800/30"
+    >
+      <svg aria-hidden className="h-5 w-5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d={iconPath} />
+      </svg>
+      <span className="text-sm text-zinc-200">{label}</span>
+      <span className="text-xs text-zinc-500">{detail}</span>
+    </button>
   );
 }
 
-type Accent = 'amber' | 'rose' | 'emerald' | 'teal';
-
-const eventAccent: Record<HouseholdEvent['event_type'], Accent> = {
-  deadline: 'rose',
-  payment: 'emerald',
-  appointment: 'amber',
-  income: 'emerald',
-  savings: 'teal',
-};
-
-const accentMap: Record<Accent, { pill: string; dot: string }> = {
-  amber: { pill: 'bg-amber-500/10 text-amber-500', dot: 'bg-amber-500' },
-  rose: { pill: 'bg-rose-500/10 text-rose-500', dot: 'bg-rose-500' },
-  emerald: { pill: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
-  teal: { pill: 'bg-teal-500/10 text-teal-300', dot: 'bg-teal-400' },
-};
-
-// Monthly-equivalent of a recurring stream type (monthly as-is, yearly ÷12).
-function monthlyOf(streams: MoneyStream[], type: MoneyStream['stream_type']): number {
-  return streams
-    .filter((s) => s.is_recurring && s.stream_type === type)
-    .reduce((sum, s) => {
-      const a = parseFloat(s.amount);
-      return sum + (s.frequency === 'monthly' ? a : s.frequency === 'yearly' ? a / 12 : 0);
-    }, 0);
-}
-
-// A timeline row. Overdue items are tinted rose; far-out items are dimmed.
-// Assigned members appear as a compact avatar stack before the urgency pill.
-function EventRow({
-  evt,
-  days,
-  tone,
-  members,
-  lang,
-  onComplete,
+// A dated row in "Next payments" / "Upcoming appointments": what and when,
+// never how much. Overdue reads rose so dropping the old attention list
+// doesn't let a missed obligation disappear quietly.
+function UpcomingRow({
+  evt, days, dot, members, lang, onSelect,
 }: {
   evt: HouseholdEvent;
   days: number;
-  tone: 'overdue' | 'week' | 'later';
+  dot: string;
   members: AssignmentDetail[];
   lang: string;
-  onComplete: (evt: HouseholdEvent) => void;
+  onSelect: () => void;
 }) {
-  const { t } = useTranslation();
-  const accent = accentMap[eventAccent[evt.event_type]];
-  const dot = tone === 'overdue' ? 'bg-rose-500' : tone === 'later' ? 'bg-zinc-600' : accent.dot;
-  const title =
-    tone === 'overdue' ? 'text-rose-300' : tone === 'later' ? 'text-zinc-400' : 'text-zinc-200';
-  const pill =
-    tone === 'overdue'
-      ? 'bg-rose-500/20 text-rose-400'
-      : tone === 'later'
-        ? 'bg-zinc-800 text-zinc-500'
-        : accent.pill;
+  const overdue = days < 0;
   return (
-    <li className="flex items-center gap-3">
-      <span className={`h-2 w-2 flex-shrink-0 rounded-full ${dot}`} />
-      <span className={`flex-1 truncate text-sm ${title}`}>{evt.title}</span>
-      <AssigneeStack members={members} size="xs" />
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
-        {formatRelativeDay(days, lang)}
-      </span>
-      <button
-        type="button"
-        onClick={() => onComplete(evt)}
-        aria-label={t('timeline.markComplete')}
-        className="h-5 w-5 flex-shrink-0 rounded-full border-2 border-zinc-600 transition-colors hover:border-emerald-500"
-      />
+    <li>
+      <button type="button" onClick={onSelect} className="flex w-full items-center gap-3 text-left">
+        <span className={`h-2 w-2 flex-shrink-0 rounded-full ${overdue ? 'bg-rose-500' : dot}`} />
+        <span className={`min-w-0 flex-1 truncate text-sm ${overdue ? 'text-rose-300' : 'text-zinc-200'}`}>
+          {evt.title}
+        </span>
+        <AssigneeStack members={members} size="xs" />
+        <span
+          className={[
+            'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+            overdue ? 'bg-rose-500/20 text-rose-400' : 'bg-zinc-800 text-zinc-400',
+          ].join(' ')}
+        >
+          {formatRelativeDay(days, lang)}
+        </span>
+      </button>
     </li>
   );
 }
@@ -111,19 +92,21 @@ function activitySentence(
   return t(`activity.${a.action}`, { actor, item: a.summary });
 }
 
+// How many dated rows each block shows before deferring to the Timeline.
+const ROW_CAP = 4;
+
 export default function Overview() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [eventsTotal, setEventsTotal] = useState(0);
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [activity, setActivity] = useState<Activity[]>([]);
-  const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [shopping, setShopping] = useState<ShoppingItem[]>([]);
-  const [mineOnly, setMineOnly] = useState(false);
+  const [gifts, setGifts] = useState<GiftListsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { currency, locale, timezone, household_name } = usePreferences();
+  const { timezone, household_name } = usePreferences();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -147,9 +130,10 @@ export default function Overview() {
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-    // Savings pots and the shopping list are soft, non-blocking glances.
-    api.get<SavingsSummary>('/savings').then(setSavings).catch(() => {});
+    // The two lists are soft, non-blocking glances — they only feed the
+    // shortcut counts, so a failure should never blank the dashboard.
     api.get<ShoppingItem[]>('/shopping').then(setShopping).catch(() => {});
+    api.get<GiftListsResponse>('/gift-lists').then(setGifts).catch(() => {});
   };
 
   useEffect(() => {
@@ -174,17 +158,6 @@ export default function Overview() {
     try { localStorage.setItem('katei-onboarding-hidden', '1'); } catch { /* private mode */ }
   };
 
-  // Quick-complete from the dashboard — payments are "paid", chores "done".
-  // The detailed mark-as-paid flow (actual amount) still lives on the Timeline.
-  const completeEvent = async (evt: HouseholdEvent) => {
-    try {
-      await api.patch(`/events/${evt.id}/complete`, { is_completed: true });
-      setEvents((prev) => prev.filter((e) => e.id !== evt.id));
-    } catch {
-      // Leave the row; the Timeline offers the full flow.
-    }
-  };
-
   const usersCount = members.length;
 
   // Upcoming birthdays (people & pets) within the next month, soonest first —
@@ -197,7 +170,7 @@ export default function Overview() {
   // Show the first-run checklist until every setup step is satisfied.
   const onboardingComplete = usersCount > 1 && streams.length > 0 && eventsTotal > 0;
 
-  // Index assignments by event so each row can show who's responsible.
+  // Index assignments by event so an appointment can show who it's for.
   const membersByEvent = new Map<number, AssignmentDetail[]>();
   for (const a of assignments) {
     if (a.event_id == null) continue;
@@ -206,48 +179,25 @@ export default function Overview() {
     membersByEvent.set(a.event_id, list);
   }
 
-  // Bucket open events by urgency. "Needs attention" is actionable-only, so
-  // income (money arriving — nothing to do) is excluded; it stays on the Timeline.
   const dated = events
-    .filter((evt) => evt.event_type !== 'income')
     .map((evt) => ({ evt, days: daysUntil(evt.target_date, timezone) }))
     .sort((a, b) => a.days - b.days);
-  // The personal filter narrows the attention list only; the header summary
-  // keeps describing the whole household.
-  const myEventIds = assignedIds(assignments, user?.id, 'event_id');
-  const visibleDated = mineOnly ? dated.filter(({ evt }) => myEventIds.has(evt.id)) : dated;
-  const overdue = visibleDated.filter((d) => d.days < 0);
-  const thisWeek = visibleDated.filter((d) => d.days >= 0 && d.days <= 7);
-  const later = visibleDated.filter((d) => d.days > 7);
-  const overdueAll = dated.filter((d) => d.days < 0);
-  const thisWeekAll = dated.filter((d) => d.days >= 0 && d.days <= 7);
 
-  // Money at a glance: monthly-equivalents from the streams + the pots' balance.
-  // Only streams in the household currency count — raw numbers in another
-  // currency don't add (the Money page carries the exclusion note).
-  const homeStreams = streams.filter((s) => s.currency === currency);
-  const net = monthlyOf(homeStreams, 'income') - monthlyOf(homeStreams, 'expense') - monthlyOf(homeStreams, 'savings');
-  const outflow = monthlyOf(homeStreams, 'expense');
-  // Net is the home's one animated figure — it counts up once when the data
-  // first lands, on the number people actually came to read.
-  const animatedNet = useCountUp(net, !loading && streams.length > 0);
-  const fmt = (n: number) => formatMoney(n, currency, locale);
-  // Long localized amounts use a non-breaking separator; normalize so they wrap
-  // cleanly inside the cramped 3-up cells.
-  const fmtWrap = (n: number) => fmt(n).replace(/[\u00a0\u202f]/g, ' ');
-  // The next bill: the soonest open payment with a known amount — the one
-  // money fact that changes what you do today.
-  const nextBill = dated
-    .filter(({ evt }) => evt.event_type === 'payment' && evt.money_stream_id != null)
-    .map(({ evt, days }) => ({ evt, days, stream: streams.find((s) => s.id === evt.money_stream_id) }))
-    .find((b) => b.stream);
-  // One goal earns a glance: the progressing pot closest to its target.
-  const topGoal = (savings?.pots ?? [])
-    .filter((p) => p.target && p.target > 0 && p.balance > 0)
-    .sort((a, b) => b.balance / (b.target as number) - a.balance / (a.target as number))[0];
-  // Open shopping items — a live line into the list, shown only when there's
-  // something to get (an empty list earns quiet, not a zero).
+  // What's about to leave the account: payments and savings transfers, dated
+  // only. Income is excluded — money arriving doesn't answer "have I got
+  // enough in there". Amounts deliberately never appear here.
+  const payments = dated.filter(
+    ({ evt }) => evt.event_type === 'payment' || evt.event_type === 'savings',
+  );
+  const appointments = dated.filter(({ evt }) => evt.event_type === 'appointment');
+
+  // Open shopping items, and gift ideas on other people's lists that nobody
+  // has claimed yet — the two "something is waiting for you" counts.
   const shoppingOpen = shopping.filter((i) => !i.is_done).length;
+  const giftIdeas = (gifts?.others ?? []).reduce(
+    (n, l) => n + l.items.filter((g) => g.status === 'idea').length,
+    0,
+  );
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -262,10 +212,17 @@ export default function Overview() {
       : user.name
     : t('overview.title');
   // The one-line TLDR of the home: count overdue AND the week, not just the
-  // worst bucket — "1 overdue · 2 due this week".
+  // worst bucket — "1 overdue · 2 due this week". It counts deadlines too,
+  // which have no block of their own here, so the line taps through to the
+  // Timeline — a number you can't drill into is a number you can't trust.
+  const actionable = dated.filter(({ evt }) => evt.event_type !== 'income');
   const statusParts = [
-    ...(overdueAll.length ? [t('overview.statusOverdue', { count: overdueAll.length })] : []),
-    ...(thisWeekAll.length ? [t('overview.statusWeek', { count: thisWeekAll.length })] : []),
+    ...(actionable.some((d) => d.days < 0)
+      ? [t('overview.statusOverdue', { count: actionable.filter((d) => d.days < 0).length })]
+      : []),
+    ...(actionable.some((d) => d.days >= 0 && d.days <= 7)
+      ? [t('overview.statusWeek', { count: actionable.filter((d) => d.days >= 0 && d.days <= 7).length })]
+      : []),
   ];
   const summary = loading ? null : statusParts.length ? statusParts.join(' · ') : t('overview.summaryClear');
 
@@ -276,12 +233,62 @@ export default function Overview() {
   let step = 0;
   const reveal = () => ({ animationDelay: `${step++ * 50}ms` });
 
+  // Both dated blocks render identically apart from their accent and where a
+  // tap lands, so they share one renderer.
+  const datedSection = (
+    labelKey: string,
+    rows: { evt: HouseholdEvent; days: number }[],
+    dot: string,
+    onSelect: (d: { evt: HouseholdEvent; days: number }) => void,
+  ) => {
+    if (loading || error || rows.length === 0) return null;
+    const shown = rows.slice(0, ROW_CAP);
+    const extra = rows.length - shown.length;
+    return (
+      <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
+        <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">{t(labelKey)}</p>
+        <ul className="space-y-3">
+          {shown.map((d) => (
+            <UpcomingRow
+              key={d.evt.id}
+              evt={d.evt}
+              days={d.days}
+              dot={dot}
+              members={membersByEvent.get(d.evt.id) ?? []}
+              lang={lang}
+              onSelect={() => onSelect(d)}
+            />
+          ))}
+        </ul>
+        {extra > 0 && (
+          <button
+            type="button"
+            onClick={() => navigate('/timeline')}
+            className="mt-3 text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+          >
+            {t('overview.more', { count: extra })}
+          </button>
+        )}
+      </section>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <header className="animate-fade-slide-in" style={reveal()}>
         <p className="text-xs uppercase tracking-widest text-zinc-500">{eyebrow}</p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{title}</h1>
-        {summary && <p className="mt-2 text-sm text-zinc-400">{summary}</p>}
+        {summary && (statusParts.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => navigate('/timeline')}
+            className="mt-2 text-sm text-zinc-400 underline-offset-4 transition-colors hover:text-zinc-200 hover:underline"
+          >
+            {summary}
+          </button>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-400">{summary}</p>
+        ))}
       </header>
 
       {/* Week strip — a tap-through gateway to the calendar, in the calendar's
@@ -310,147 +317,36 @@ export default function Overview() {
         </div>
       )}
 
-      {/* Attention list — the focal point: what the house needs from you. */}
-      <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('overview.needsAttention')}
-          </p>
-          {!loading && !error && dated.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMineOnly((v) => !v)}
-              aria-pressed={mineOnly}
-              className={[
-                'flex-shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
-                mineOnly
-                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-              ].join(' ')}
-            >
-              {t('timeline.assignedToMe')}
-            </button>
-          )}
-        </div>
-
-        {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
-        {error && <p className="text-sm text-rose-400">{error}</p>}
-        {!loading && !error && dated.length === 0 && (
-          <p className="text-sm text-zinc-500">{t('overview.allClear')}</p>
-        )}
-        {!loading && !error && dated.length > 0 && visibleDated.length === 0 && (
-          <p className="text-sm text-zinc-500">{t('timeline.noneAssigned')}</p>
-        )}
-
-        {!loading && !error && visibleDated.length > 0 && (
-          <div className="space-y-5">
-            {overdue.length > 0 && (
-              <div>
-                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-rose-500/80">
-                  {t('overview.overdue')}
-                </p>
-                <ul className="space-y-3">
-                  {overdue.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="overdue" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
-                  ))}
-                </ul>
-              </div>
-            )}
-            {thisWeek.length > 0 && (
-              <div>
-                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-500">
-                  {t('overview.thisWeek')}
-                </p>
-                <ul className="space-y-3">
-                  {thisWeek.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="week" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
-                  ))}
-                </ul>
-              </div>
-            )}
-            {later.length > 0 && (
-              <div>
-                <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-widest text-zinc-600">
-                  {t('overview.later')}
-                </p>
-                <ul className="space-y-3">
-                  {later.map(({ evt, days }) => (
-                    <EventRow key={evt.id} evt={evt} days={days} tone="later" members={membersByEvent.get(evt.id) ?? []} lang={lang} onComplete={completeEvent} />
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Next bill — the money fact that changes what you do today. Tapping
-          it opens the Timeline where it can be marked paid. */}
-      {!loading && !error && nextBill && nextBill.stream && (
-        <button
-          type="button"
-          onClick={() => navigate('/timeline')}
-          className="animate-fade-slide-in flex w-full items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+      {/* The two lists people reach for daily. Always here — a shortcut that
+          comes and goes isn't a shortcut. Icons stay neutral so the accents
+          below carry the meaning. */}
+      {!loading && !error && (
+        <div
+          className="animate-fade-slide-in grid grid-cols-2 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900"
           style={reveal()}
         >
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('overview.nextBill')}</p>
-            <p className="mt-1 truncate text-sm text-zinc-200">{nextBill.evt.title}</p>
-          </div>
-          <p className="flex-shrink-0 text-sm font-medium tabular-nums text-zinc-100">
-            {formatMoney(nextBill.stream.amount, nextBill.stream.currency, locale)}
-          </p>
-          <span
-            className={[
-              'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-              nextBill.days < 0
-                ? 'bg-rose-500/20 text-rose-400'
-                : nextBill.days <= 7
-                  ? 'bg-emerald-500/10 text-emerald-500'
-                  : 'bg-zinc-800 text-zinc-500',
-            ].join(' ')}
-          >
-            {formatRelativeDay(nextBill.days, lang)}
-          </span>
-          <GoChevron />
-        </button>
-      )}
-
-      {/* Shopping list — a live line into the list, only when there's
-          something to get. */}
-      {!loading && !error && shoppingOpen > 0 && (
-        <button
-          type="button"
-          onClick={() => navigate('/lists')}
-          className="animate-fade-slide-in flex w-full items-center gap-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
-          style={reveal()}
-        >
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('overview.shoppingList')}</p>
-            <p className="mt-1 truncate text-sm text-zinc-200">{t('overview.toGet', { count: shoppingOpen })}</p>
-          </div>
-          <GoChevron />
-        </button>
-      )}
-
-      {/* Money at a glance — two figures, not an accounting panel: what's
-          left each month and what goes out. The full picture lives on Money. */}
-      {!loading && !error && streams.length > 0 && (
-        <div className="animate-fade-slide-in grid grid-cols-2 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900" style={reveal()}>
-          <div className="p-4">
-            <p className="text-xs text-zinc-500">{t('money.net')}</p>
-            <p className={`mt-1 text-sm font-light leading-tight tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {fmtWrap(animatedNet)}
-            </p>
-          </div>
-          <div className="p-4">
-            <p className="text-xs text-zinc-500">{t('overview.monthlyOutflow')}</p>
-            <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">
-              {fmtWrap(outflow)}
-            </p>
-          </div>
+          <QuickTile
+            iconPath={ICON_BAG}
+            label={t('overview.shoppingList')}
+            detail={shoppingOpen > 0 ? t('overview.toGet', { count: shoppingOpen }) : t('overview.shoppingClear')}
+            onClick={() => navigate('/lists')}
+          />
+          <QuickTile
+            iconPath={ICON_GIFT}
+            label={t('lists.gifts')}
+            detail={giftIdeas > 0 ? t('overview.giftIdeas', { count: giftIdeas }) : t('overview.giftsNone')}
+            onClick={() => navigate('/lists?pane=gifts')}
+          />
         </div>
       )}
+
+      {/* What's leaving the account soon — dates, never amounts. Tapping a row
+          opens the Timeline, where it can be marked paid. */}
+      {datedSection('overview.nextPayments', payments, DOT.payment, () => navigate('/timeline'))}
+
+      {/* Where the household has to be. Tapping opens that day in the calendar. */}
+      {datedSection('overview.upcomingAppointments', appointments, DOT.appointment, ({ evt }) =>
+        navigate(`/timeline?view=month&day=${evt.target_date.slice(0, 10)}`))}
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
       {!loading && birthdays.length > 0 && (
@@ -469,37 +365,6 @@ export default function Overview() {
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {/* One goal, if any is progressing — the pot closest to its target. */}
-      {!loading && topGoal && (
-        <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4" style={reveal()}>
-          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('overview.closestGoal')}
-          </p>
-          <div className="flex items-center gap-2 text-sm">
-            <span aria-hidden>{topGoal.icon || '🐷'}</span>
-            <span className="flex-1 truncate text-zinc-200">{topGoal.is_default ? t('money.generalPot') : topGoal.name}</span>
-            <span className="tabular-nums text-teal-300">{fmt(topGoal.balance)}</span>
-            <span className="text-xs tabular-nums text-zinc-600">/ {fmt(topGoal.target ?? 0)}</span>
-            {topGoal.balance >= (topGoal.target ?? Infinity) && (
-              <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
-                {t('money.goalReached')}
-              </span>
-            )}
-          </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-            <div
-              className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
-              style={{ width: `${Math.min(100, (topGoal.balance / (topGoal.target ?? 1)) * 100)}%` }}
-            />
-          </div>
-          {topGoal.url && (
-            <div className="mt-1.5 flex justify-end">
-              <DomainChip url={topGoal.url} site={topGoal.link_site} />
-            </div>
-          )}
         </section>
       )}
 

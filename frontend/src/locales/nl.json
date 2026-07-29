@@ -48,12 +48,6 @@
   "overview": {
     "eyebrow": "Thuis",
     "title": "Overzicht",
-    "monthlyOutflow": "Maandelijkse uitgaven",
-    "overdue": "Te laat",
-    "thisWeek": "Deze week",
-    "needsAttention": "Vraagt aandacht",
-    "allClear": "Niets op komst — alles in orde.",
-    "later": "Later",
     "morning": "Goedemorgen",
     "afternoon": "Goedemiddag",
     "evening": "Goedenavond",
@@ -70,11 +64,17 @@
     "statusOverdue_other": "{{count}} te laat",
     "statusWeek_one": "{{count}} deze week",
     "statusWeek_other": "{{count}} deze week",
-    "nextBill": "Volgende rekening",
     "shoppingList": "Boodschappenlijst",
     "toGet_one": "{{count}} ding te halen",
     "toGet_other": "{{count}} dingen te halen",
-    "closestGoal": "Dichtstbijzijnde doel"
+    "nextPayments": "Volgende betalingen",
+    "upcomingAppointments": "Komende afspraken",
+    "shoppingClear": "Niets te halen",
+    "giftIdeas_one": "{{count}} idee",
+    "giftIdeas_other": "{{count}} ideeën",
+    "giftsNone": "Nog geen ideeën",
+    "more_one": "+{{count}} meer",
+    "more_other": "+{{count}} meer"
   },
   "onboarding": {
     "title": "Aan de slag",

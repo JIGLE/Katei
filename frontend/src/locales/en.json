@@ -47,12 +47,6 @@
   "overview": {
     "eyebrow": "Home",
     "title": "Overview",
-    "monthlyOutflow": "Monthly outflow",
-    "overdue": "Overdue",
-    "thisWeek": "This week",
-    "needsAttention": "Needs attention",
-    "allClear": "Nothing coming up — all clear.",
-    "later": "Later",
     "morning": "Good morning",
     "afternoon": "Good afternoon",
     "evening": "Good evening",
@@ -69,11 +63,17 @@
     "statusOverdue_other": "{{count}} overdue",
     "statusWeek_one": "{{count}} due this week",
     "statusWeek_other": "{{count}} due this week",
-    "nextBill": "Next bill",
     "shoppingList": "Shopping list",
     "toGet_one": "{{count}} thing to get",
     "toGet_other": "{{count}} things to get",
-    "closestGoal": "Closest goal"
+    "nextPayments": "Next payments",
+    "upcomingAppointments": "Upcoming appointments",
+    "shoppingClear": "Nothing to get",
+    "giftIdeas_one": "{{count}} idea",
+    "giftIdeas_other": "{{count}} ideas",
+    "giftsNone": "No ideas yet",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more"
   },
   "onboarding": {
     "title": "Getting started",

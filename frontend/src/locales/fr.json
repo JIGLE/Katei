@@ -48,12 +48,6 @@
   "overview": {
     "eyebrow": "Accueil",
     "title": "Aperçu",
-    "monthlyOutflow": "Dépenses mensuelles",
-    "overdue": "En retard",
-    "thisWeek": "Cette semaine",
-    "needsAttention": "À traiter",
-    "allClear": "Rien à venir — tout est en ordre.",
-    "later": "Plus tard",
     "morning": "Bonjour",
     "afternoon": "Bon après-midi",
     "evening": "Bonsoir",
@@ -70,11 +64,17 @@
     "statusOverdue_other": "{{count}} en retard",
     "statusWeek_one": "{{count}} à faire cette semaine",
     "statusWeek_other": "{{count}} à faire cette semaine",
-    "nextBill": "Prochaine facture",
     "shoppingList": "Liste de courses",
     "toGet_one": "{{count}} article à acheter",
     "toGet_other": "{{count}} articles à acheter",
-    "closestGoal": "Objectif le plus proche"
+    "nextPayments": "Prochains paiements",
+    "upcomingAppointments": "Rendez-vous à venir",
+    "shoppingClear": "Rien à acheter",
+    "giftIdeas_one": "{{count}} idée",
+    "giftIdeas_other": "{{count}} idées",
+    "giftsNone": "Pas encore d'idées",
+    "more_one": "+{{count}} autre",
+    "more_other": "+{{count}} autres"
   },
   "onboarding": {
     "title": "Pour commencer",
