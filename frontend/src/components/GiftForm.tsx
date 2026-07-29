@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { CURRENCIES } from '../lib/countries';
-import type { GiftItem, User, LinkPreview } from '../lib/types';
+import type { GiftItem, GiftStatus, LinkPreview } from '../lib/types';
 import { LinkField } from './LinkField';
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -12,25 +12,28 @@ const fieldCls =
   'placeholder:text-zinc-600 focus:border-zinc-600';
 
 interface GiftFormProps {
-  members: User[];
+  /** Which list a new item is added to. Ignored when editing. */
+  listId: number;
+  /** True when the viewer owns the target list — hides the status control
+   * entirely, since the backend rejects a status change there outright. */
+  isOwnList: boolean;
   initial?: GiftItem;
   onSaved: (gift: GiftItem) => void;
   onCancel: () => void;
   onDeleted?: (id: number) => void;
 }
 
-export function GiftForm({ members, initial, onSaved, onCancel, onDeleted }: GiftFormProps) {
+export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDeleted }: GiftFormProps) {
   const { t } = useTranslation();
   const { currency: defaultCurrency } = usePreferences();
   const isEdit = Boolean(initial);
-  const [recipientId, setRecipientId] = useState<string>(initial ? String(initial.recipient_id) : '');
   const [title, setTitle] = useState(initial?.title ?? '');
   const [url, setUrl] = useState(initial?.url ?? '');
   const [linkTitle, setLinkTitle] = useState<string | null>(initial?.link_title ?? null);
   const [linkSite, setLinkSite] = useState<string | null>(initial?.link_site ?? null);
   const [price, setPrice] = useState(initial?.price ?? '');
   const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
-  const [status, setStatus] = useState<GiftItem['status']>(initial?.status ?? 'idea');
+  const [status, setStatus] = useState<GiftStatus>(initial?.status ?? 'idea');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -44,26 +47,25 @@ export function GiftForm({ members, initial, onSaved, onCancel, onDeleted }: Gif
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipientId || !title.trim()) {
-      setError(t('gifts.errRecipientTitle'));
+    if (!title.trim()) {
+      setError(t('gifts.errTitle'));
       return;
     }
     setSubmitting(true);
     setError(null);
     const body = {
-      recipient_id: Number(recipientId),
       title: title.trim(),
       url: url.trim() || null,
       link_title: url.trim() ? linkTitle : null,
       link_site: url.trim() ? linkSite : null,
       price: price !== '' && !Number.isNaN(parseFloat(String(price))) ? parseFloat(String(price)) : null,
       currency,
-      status,
+      ...(isEdit && !isOwnList ? { status } : {}),
     };
     try {
       const saved = isEdit
-        ? await api.patch<GiftItem>(`/gifts/${initial!.id}`, body)
-        : await api.post<GiftItem>('/gifts', body);
+        ? await api.patch<GiftItem>(`/gift-lists/items/${initial!.id}`, body)
+        : await api.post<GiftItem>(`/gift-lists/${listId}/items`, body);
       onSaved(saved);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('gifts.errSave'));
@@ -75,7 +77,7 @@ export function GiftForm({ members, initial, onSaved, onCancel, onDeleted }: Gif
     if (!initial || !onDeleted) return;
     setSubmitting(true);
     try {
-      await api.delete(`/gifts/${initial.id}`);
+      await api.delete(`/gift-lists/items/${initial.id}`);
       onDeleted(initial.id);
     } catch {
       setSubmitting(false);
@@ -84,16 +86,6 @@ export function GiftForm({ members, initial, onSaved, onCancel, onDeleted }: Gif
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="gift_recipient" className={labelCls}>{t('gifts.recipient')}</label>
-        <select id="gift_recipient" value={recipientId} onChange={(e) => setRecipientId(e.target.value)} className={fieldCls}>
-          <option value="">{t('common.choose')}</option>
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>{m.name}</option>
-          ))}
-        </select>
-      </div>
-
       <div>
         <label htmlFor="gift_title" className={labelCls}>{t('form.title')}</label>
         <input
@@ -139,29 +131,35 @@ export function GiftForm({ members, initial, onSaved, onCancel, onDeleted }: Gif
         </div>
       </div>
 
-      <div>
-        <span className={labelCls}>{t('gifts.status')}</span>
-        <div className="grid grid-cols-2 gap-2">
-          {(['idea', 'bought'] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatus(s)}
-              aria-pressed={status === s}
-              className={[
-                'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
-                status === s
-                  ? s === 'bought'
-                    ? 'border-teal-500/40 bg-teal-500/15 text-teal-300'
-                    : 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-              ].join(' ')}
-            >
-              {t(`gifts.status_${s}`)}
-            </button>
-          ))}
+      {/* The owner never sees a status control at all — not even a disabled
+          one — since the backend rejects the change outright either way. */}
+      {isEdit && !isOwnList && (
+        <div>
+          <span className={labelCls}>{t('gifts.status')}</span>
+          <div className="grid grid-cols-3 gap-2">
+            {(['idea', 'reserved', 'bought'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatus(s)}
+                aria-pressed={status === s}
+                className={[
+                  'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                  status === s
+                    ? s === 'bought'
+                      ? 'border-teal-500/40 bg-teal-500/15 text-teal-300'
+                      : s === 'reserved'
+                        ? 'border-amber-500/40 bg-amber-500/15 text-amber-300'
+                        : 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t(`gifts.status_${s}`)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 

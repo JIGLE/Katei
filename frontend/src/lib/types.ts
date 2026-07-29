@@ -130,28 +130,43 @@ export interface ShoppingItem {
   created_at: string;
 }
 
-// A gift row (GET /api/gifts). The API never returns gifts addressed to the
-// caller — `hidden_for_you` on the list response counts those.
+export type GiftStatus = 'idea' | 'reserved' | 'bought';
+
+// A gift-list item (GET /api/gift-lists). The API masks `status`,
+// `added_by_name`, and `bought_by_name` when the caller owns the item's
+// list, so a list's own items always look untouched to its owner.
 export interface GiftItem {
   id: number;
-  recipient_id: number;
-  recipient_name: string;
-  recipient_avatar: string | null;
-  recipient_kind: string;
+  list_id: number;
   title: string;
   url: string | null;
   link_title: string | null;
   link_site: string | null;
   price: string | null;
   currency: string | null;
-  status: 'idea' | 'bought';
-  added_by: number | null;
+  status: GiftStatus;
+  added_by_name: string | null;
+  bought_by_name: string | null;
   created_at: string;
 }
 
-export interface GiftList {
+// One wishlist — a household member's (or pet's), lazily created, or an
+// external person's (someone who isn't a Katei user).
+export interface GiftListSummary {
+  id: number;
+  owner_user_id: number | null;
+  owner_name: string | null;
+  owner_avatar: string | null;
+  owner_kind: MemberKind | null;
+  external_name: string | null;
+  is_mine: boolean;
+  share_enabled: boolean;
   items: GiftItem[];
-  hidden_for_you: number;
+}
+
+export interface GiftListsResponse {
+  mine: GiftListSummary;
+  others: GiftListSummary[];
 }
 
 // POST /api/link-preview — parsed metadata for a pasted product link.

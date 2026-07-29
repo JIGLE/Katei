@@ -16,6 +16,7 @@ import Timeline from './pages/Timeline';
 import Lists from './pages/Lists';
 import MoneyFlow from './pages/MoneyFlow';
 import Household from './pages/Household';
+import PublicGiftList from './pages/PublicGiftList';
 
 // Minimum time the branded splash stays up so it never just flashes.
 const SPLASH_MIN_MS = 900;
@@ -37,6 +38,17 @@ export default function App() {
     return () => clearTimeout(id);
   }, []);
   const ready = !loading && !prefsLoading && minElapsed;
+
+  // A gift-list share link has no session and no app chrome — reachable
+  // regardless of auth state, skipping the splash and sign-in gate an
+  // outside visitor has no business seeing.
+  if (location.pathname.startsWith('/gift/')) {
+    return (
+      <Routes>
+        <Route path="/gift/:token" element={<PublicGiftList />} />
+      </Routes>
+    );
+  }
 
   if (!splashGone) {
     return <Splash leaving={ready} onDone={() => setSplashGone(true)} />;

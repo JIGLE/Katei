@@ -6,7 +6,7 @@
 // their saved link is never throttled.
 
 import type { FastifyPluginAsync } from 'fastify';
-import { query } from '../db.js';
+import { query, getSetting } from '../db.js';
 import { hit } from '../lib/ratelimit.js';
 import { ITEM_SELECT, ITEM_FROM, ITEM_ORDER, shapeGiftItem, type RawGiftItemRow } from '../lib/giftlists.js';
 
@@ -44,8 +44,13 @@ export const giftShareRoutes: FastifyPluginAsync = async (app) => {
       `SELECT ${ITEM_SELECT} ${ITEM_FROM} WHERE gi.list_id = $1 ${ITEM_ORDER}`,
       [list.id],
     );
+    // The visitor has no session, so the household's own money-formatting
+    // locale (not just each item's currency) has to travel with the
+    // response — usePreferences() can't fetch it for them.
+    const locale = (await getSetting('locale')) ?? 'de-DE';
     return {
       list_name: list.owner_name ?? list.external_name,
+      locale,
       items: items.map((it) => shapeGiftItem(it, false)),
     };
   });

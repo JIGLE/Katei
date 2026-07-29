@@ -39,6 +39,7 @@ test('a minted share link serves the list with true status, no session', opts, a
   assert.equal(res.statusCode, 200);
   const body = res.json();
   assert.equal(body.list_name, 'Alex');
+  assert.equal(body.locale, 'de-DE'); // household default — no preferences set in this test
   assert.equal(body.items.length, 1);
   assert.equal(body.items[0].title, 'Espresso grinder');
   assert.equal(body.items[0].status, 'idea');

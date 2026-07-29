@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { ShoppingItem } from '../lib/types';
 import { Modal } from '../components/Modal';
@@ -15,7 +16,9 @@ type Pane = 'shopping' | 'gifts';
 
 export default function Lists() {
   const { t } = useTranslation();
-  const [pane, setPane] = useState<Pane>('shopping');
+  const [searchParams] = useSearchParams();
+  // A quick-access tile can deep-link straight into the gifts pane.
+  const [pane, setPane] = useState<Pane>(searchParams.get('pane') === 'gifts' ? 'gifts' : 'shopping');
 
   // --- Shopping state ------------------------------------------------------
   const [items, setItems] = useState<ShoppingItem[]>([]);
