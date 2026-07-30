@@ -18,7 +18,7 @@ function watchConsole(page: Page): string[] {
   return problems;
 }
 
-test('first-run household journey: register, event, money stream, persistence', async ({ page }) => {
+test('first-run household journey: register, event, money stream, persistence', async ({ page, request }) => {
   const problems = watchConsole(page);
 
   await test.step('first-run registration creates the admin', async () => {
@@ -65,7 +65,59 @@ test('first-run household journey: register, event, money stream, persistence', 
     await input.press('Enter');
     await expect(page.getByText('Milk', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Mark as bought' }).click();
-    await expect(page.getByText('In the basket')).toBeVisible();
+    // No "In the basket" heading exists anymore — checked items sink to the
+    // bottom of their store group in place. The checkbox itself is the source
+    // of truth: its accessible name flips once the item is done.
+    await expect(page.getByRole('button', { name: 'Put back on the list' })).toBeVisible();
+  });
+
+  await test.step('tagging items with different stores groups the list', async () => {
+    // Milk (no store) lands in "Anywhere". A second, stored item creates a
+    // real second bucket, so both group headers earn their place.
+    const input = page.getByLabel('Add an item…');
+    await input.fill('Bread');
+    await input.press('Enter');
+    await page.getByText('Bread', { exact: true }).click();
+    await page.locator('#shop_store').fill('Bakery');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Bakery', { exact: true })).toBeVisible();
+    await expect(page.getByText('Anywhere', { exact: true })).toBeVisible();
+  });
+
+  await test.step('my own wishlist never shows a status, even after adding to it', async () => {
+    await page.getByRole('button', { name: 'Gifts', exact: true }).click();
+    await expect(page.getByText('My wishlist')).toBeVisible();
+    const mine = page.locator('section', { hasText: 'My wishlist' });
+    await mine.getByRole('button', { name: 'Add gift' }).click();
+    await page.locator('#gift_title').fill('Espresso grinder');
+    await page.locator('form').getByRole('button', { name: 'Add a gift' }).click();
+    await expect(page.getByText('Espresso grinder')).toBeVisible();
+    await expect(mine.getByText(/^(Idea|Reserved|Bought)$/)).toHaveCount(0);
+  });
+
+  await test.step('add a gift list for someone outside the household', async () => {
+    await page.getByRole('button', { name: 'Add a friend or family member' }).click();
+    await page.locator('input[placeholder="Their name"]').fill('Lisa');
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    await expect(page.getByText('For Lisa')).toBeVisible();
+  });
+
+  await test.step('share my wishlist and reach it as an anonymous visitor', async () => {
+    const mine = page.locator('section', { hasText: 'My wishlist' });
+    await mine.getByText('Share list').click();
+    await mine.getByText('Enable link').click();
+    const url = (await mine.locator('p.break-all').textContent())?.trim();
+    expect(url).toMatch(/\/gift\//);
+    const token = url!.split('/gift/')[1];
+
+    // The `request` fixture is a standalone HTTP client sharing none of
+    // `page`'s cookies — a plain anonymous visitor's first hit, checked at
+    // the API the public page itself calls.
+    const res = await request.get(`/api/gift-share/${token}`);
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.list_name).toBe('Alex');
+    expect(body.items.some((i: { title: string }) => i.title === 'Espresso grinder')).toBeTruthy();
   });
 
   await test.step('data survives a full reload (round-trips the database)', async () => {
