@@ -44,7 +44,7 @@ katei/
     └── src/
         ├── App.tsx
         ├── components/BottomNav.tsx
-        └── pages/          # Overview | Timeline | MoneyFlow | Household
+        └── pages/          # Overview | Timeline | MoneyFlow | Lists | Household
 ```
 
 ## Development (without Docker)
@@ -123,7 +123,11 @@ Future deploys: `git push` → Actions rebuilds `ghcr.io/jigle/katei:latest` →
 
 | Tab | Route | Purpose |
 |---|---|---|
-| Overview | `/` | Household control tower — what needs attention now |
+| Overview | `/` | The daily glance — what to get, go to, and pay soon. Deliberately carries no money amounts; shortcuts into Shopping and Gifts, dated payment/appointment rows, birthdays, activity |
 | Timeline | `/timeline` | Chronological stream of upcoming events and deadlines |
 | Money Flow | `/money` | Recurring costs, utilities, subscriptions |
+| Lists | `/lists` | Shopping list (grouped by store) and gift lists — everyone's own wishlist plus everyone else's, including people outside the household |
 | Household | `/household` | Family members, roles, and operational assignments |
+
+A gift list can be shared via a revocable link at `/gift/:token` — reachable
+with no session, for people who aren't Katei users at all.
