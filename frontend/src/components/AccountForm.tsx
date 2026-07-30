@@ -80,7 +80,7 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
         <div className="min-w-0">
           <p className="truncate text-sm text-zinc-100">{name || user.name}</p>
           <p className="text-xs text-zinc-500">
-            家庭{user.role === 'admin' ? ` · ${t('household.admin')}` : ''}
+            Katei{user.role === 'admin' ? ` · ${t('household.admin')}` : ''}
           </p>
         </div>
       </div>

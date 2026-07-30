@@ -27,7 +27,7 @@ self.addEventListener('push', (event: PushEvent) => {
   } catch {
     data = { body: event.data?.text() };
   }
-  const title = data.title || 'Katei 家庭';
+  const title = data.title || 'Katei';
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',

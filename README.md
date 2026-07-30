@@ -1,4 +1,4 @@
-# Katei 家庭
+# Katei
 
 A premium, Japandi-inspired household obligation awareness system. Self-hosted via Docker Compose, targeted for TrueNAS SCALE.
 

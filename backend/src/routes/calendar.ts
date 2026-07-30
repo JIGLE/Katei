@@ -31,6 +31,6 @@ export const calendarRoutes: FastifyPluginAsync = async (app) => {
     reply
       .header('Content-Type', 'text/calendar; charset=utf-8')
       .header('Content-Disposition', 'inline; filename="katei.ics"');
-    return reply.send(buildICS(rows, { name: 'Katei 家庭' }));
+    return reply.send(buildICS(rows, { name: 'Katei' }));
   });
 };

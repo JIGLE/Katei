@@ -16,7 +16,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Katei 家庭',
+        name: 'Katei',
         short_name: 'Katei',
         description: 'Household obligation awareness system',
         theme_color: '#09090b',

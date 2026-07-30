@@ -1,4 +1,4 @@
-# Katei 家庭 — Brand & Design Identity
+# Katei — Brand & Design Identity
 
 > The single source of truth for how Katei looks, feels, and speaks.
 > New UI should reference this file. When a design decision isn't covered here,
@@ -13,9 +13,16 @@ the unit of people and the life they run together. The app is a **household
 obligation awareness system**: it makes the shared, easily-forgotten duties of a
 home (bills, deadlines, renewals, who-owns-what) calmly visible.
 
-The logo is the wordmark **家庭**, optionally followed by `· {name}` for the
-signed-in user. It is never distorted, recolored, or boxed. Set in the regular
-UI typeface at a light weight.
+The logo is a **monogram**, not the wordmark: a K drawn as three hairline
+strokes — one upright, two diagonals meeting it at a single point, in the same
+`stroke-width: 1.5` line language as the rest of the icon set (see §8) rather
+than a letterform borrowed from a typeface. It sits beside the lowercase
+wordmark **katei** (Inter Light, wide tracking) wherever there's room for both;
+the mark alone stands in for it in tight spaces (the app header, the favicon).
+Defined once in `frontend/src/components/Logo.tsx` — every render site imports
+it rather than redrawing it. Never distorted, recolored, or boxed. On the
+splash screen the three strokes draw themselves in before the wordmark and the
+emerald underline settle — the app's one deliberate signature animation.
 
 ---
 

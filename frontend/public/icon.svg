@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#09090b"/>
-  <text x="256" y="248" font-family="'WenQuanYi Zen Hei', sans-serif" font-size="190" fill="#fafafa" text-anchor="middle" dominant-baseline="central">家庭</text>
-  <rect x="206" y="372" width="100" height="8" rx="4" fill="#10b981"/>
+  <!-- The Katei monogram: three strokes, the diagonals meeting the upright at
+       its midpoint. Real paths, not <text> — the previous version depended on a
+       CJK font installed nowhere in this repo, so it rendered differently on
+       every host. Optically centred: the mark sits above the emerald rule. -->
+  <g fill="none" stroke="#fafafa" stroke-width="22" stroke-linecap="round">
+    <path d="M186 146v190"/>
+    <path d="M186 241l140 -95"/>
+    <path d="M186 241l140 95"/>
+  </g>
+  <rect x="206" y="390" width="100" height="8" rx="4" fill="#10b981"/>
 </svg>

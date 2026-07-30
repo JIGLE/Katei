@@ -93,11 +93,11 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
             className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900 shadow-2xl"
           >
             {/* Identity line — the avatar already lives on the trigger. Shows
-                the household's chosen name (家庭 if unnamed) + the member role. */}
+                the household's chosen name (Katei if unnamed) + the member role. */}
             <div className="border-b border-zinc-800/60 px-4 py-3">
               <p className="truncate text-sm text-zinc-100">{user.name}</p>
               <p className="mt-0.5 truncate text-xs text-zinc-500">
-                {prefs.household_name || '家庭'}
+                {prefs.household_name || 'Katei'}
                 {user.role === 'admin' ? ` · ${t('household.admin')}` : ''}
               </p>
             </div>

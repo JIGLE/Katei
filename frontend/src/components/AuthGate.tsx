@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, TIMEZONES, countryByCode, DEFAULT_COUNTRY } from '../lib/countries';
 import { SUPPORTED_LANGUAGES } from '../lib/i18n';
+import { Logo } from './Logo';
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
@@ -93,9 +94,11 @@ export function AuthGate() {
   return (
     <div className="flex min-h-full items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-light tracking-wide text-zinc-100">家庭</h1>
-          <p className="mt-2 text-xs uppercase tracking-widest text-zinc-500">Katei</p>
+        <div className="mb-8 flex justify-center">
+          <h1 className="text-zinc-100">
+            <Logo size="lg" withWordmark />
+            <span className="sr-only">Katei</span>
+          </h1>
         </div>
 
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-6">

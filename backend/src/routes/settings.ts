@@ -150,7 +150,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
     let delivered = 0;
     for (const sub of subs) {
       try {
-        if ((await sendPush(sub, { title: 'Katei', body: 'Test notification 家庭', url: '/' })) === 'ok') delivered += 1;
+        if ((await sendPush(sub, { title: 'Katei', body: 'Test notification', url: '/' })) === 'ok') delivered += 1;
       } catch { /* ignore a single device's failure */ }
     }
     if (!delivered) return reply.code(502).send({ error: 'Could not deliver to any device' });

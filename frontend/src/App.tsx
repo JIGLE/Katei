@@ -7,6 +7,7 @@ import { Modal } from './components/Modal';
 import { SettingsForm } from './components/SettingsForm';
 import { AccountForm } from './components/AccountForm';
 import { Splash } from './components/Splash';
+import { Logo } from './components/Logo';
 import { AccountMenu } from './components/AccountMenu';
 import { NotificationBell } from './components/NotificationBell';
 import { useAuth } from './lib/auth';
@@ -66,7 +67,7 @@ export default function App() {
     <div className="flex h-full flex-col bg-zinc-950">
       {/* Slim account header */}
       <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
-        <span className="text-base font-light tracking-widest text-zinc-300">家庭</span>
+        <Logo size="sm" withWordmark className="text-zinc-300" />
         <div className="flex items-center gap-1">
           <NotificationBell />
           <AccountMenu

@@ -1,4 +1,4 @@
--- Katei (家庭) — relational schema
+-- Katei — relational schema
 -- Loaded automatically by the postgres container on first boot
 -- (mounted into /docker-entrypoint-initdb.d/).
 -- Tables are declared in dependency order so foreign keys resolve.
