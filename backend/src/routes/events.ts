@@ -1,9 +1,16 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { logActivity } from '../lib/activity.js';
+import { visibleEventOrNull, visibleStreamOrNull } from '../lib/privacy.js';
 
 const COLS =
   'id, title, description, event_type, target_date, is_completed, money_stream_id, actual_amount, created_at';
+// Alias-qualified for the two reads below, which JOIN money_streams to check
+// the linked stream's privacy live — the event's own title is a denormalized
+// snapshot baked in at creation time, so hiding the stream alone would not
+// hide an already-rendered event about it.
+const COLS_JOINED =
+  'he.id, he.title, he.description, he.event_type, he.target_date, he.is_completed, he.money_stream_id, he.actual_amount, he.created_at';
 
 /**
  * Post a savings contribution to the ledger when a "set aside" event is confirmed.
@@ -17,12 +24,15 @@ async function recordSavingsContribution(
   let amount = actualAmount != null ? Number(actualAmount) : null;
   let note: string | null = null;
   if (streamId != null) {
-    const { rows } = await query<{ name: string; amount: string }>(
-      `SELECT name, amount FROM money_streams WHERE id = $1`,
+    const { rows } = await query<{ name: string; amount: string; private: boolean }>(
+      `SELECT name, amount, private FROM money_streams WHERE id = $1`,
       [streamId],
     );
     if (rows.length) {
-      note = rows[0].name;
+      // A private stream's name doesn't belong in the shared savings ledger —
+      // GET /api/savings has no per-viewer filtering, so redact for everyone,
+      // including the owner. The amount still posts; only the label is hidden.
+      note = rows[0].private ? null : rows[0].name;
       if (amount == null) amount = Number(rows[0].amount);
     }
   }
@@ -46,16 +56,21 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
     if (req.query.upcoming === 'true') {
       // Overdue-and-open belongs in "upcoming" — hiding the most urgent item
       // from the planning view's default tab inverts the app's whole point.
-      conditions.push(`is_completed = FALSE`);
+      conditions.push(`he.is_completed = FALSE`);
     }
     if (req.query.type) {
-      conditions.push(`event_type = $${i++}`);
+      conditions.push(`he.event_type = $${i++}`);
       values.push(req.query.type);
     }
+    // An event linked to someone else's private stream doesn't exist for this
+    // viewer — its (already denormalized) title must not leak here either.
+    conditions.push(`(s.id IS NULL OR s.private = FALSE OR s.owner_user_id = $${i++})`);
+    values.push(req.user.id);
 
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const { rows } = await query(
-      `SELECT ${COLS} FROM household_events ${where} ORDER BY target_date ASC`,
+      `SELECT ${COLS_JOINED} FROM household_events he
+         LEFT JOIN money_streams s ON s.id = he.money_stream_id
+        WHERE ${conditions.join(' AND ')} ORDER BY he.target_date ASC`,
       values,
     );
     return rows;
@@ -64,8 +79,10 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/events/:id
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
     const { rows } = await query(
-      `SELECT ${COLS} FROM household_events WHERE id = $1`,
-      [req.params.id],
+      `SELECT ${COLS_JOINED} FROM household_events he
+         LEFT JOIN money_streams s ON s.id = he.money_stream_id
+        WHERE he.id = $1 AND (s.id IS NULL OR s.private = FALSE OR s.owner_user_id = $2)`,
+      [req.params.id, req.user.id],
     );
     if (!rows.length) return reply.code(404).send({ error: 'Event not found' });
     return rows[0];
@@ -108,12 +125,16 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
         target_date,
         money_stream_id = null,
       } = req.body;
+      if (money_stream_id != null) {
+        const stream = await visibleStreamOrNull(money_stream_id, req.user.id);
+        if (!stream) return reply.code(400).send({ error: 'A linked item no longer exists.' });
+      }
       const { rows } = await query(
         `INSERT INTO household_events (title, description, event_type, target_date, money_stream_id)
          VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`,
         [title, description, event_type, target_date, money_stream_id],
       );
-      await logActivity(req.user?.id ?? null, 'event_added', title);
+      await logActivity(req.user?.id ?? null, 'event_added', title, money_stream_id);
       return reply.code(201).send(rows[0]);
     },
   );
@@ -149,6 +170,13 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
+      const visible = await visibleEventOrNull(req.params.id, req.user.id);
+      if (!visible) return reply.code(404).send({ error: 'Event not found' });
+      if (req.body.money_stream_id != null) {
+        const stream = await visibleStreamOrNull(req.body.money_stream_id, req.user.id);
+        if (!stream) return reply.code(400).send({ error: 'A linked item no longer exists.' });
+      }
+
       const allowed = [
         'title', 'description', 'event_type', 'target_date', 'is_completed', 'money_stream_id', 'actual_amount',
       ] as const;
@@ -186,10 +214,14 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
     },
     async (req, reply) => {
       // Read the prior state so we only act on a real false→true transition —
-      // re-confirming an already-done event must not post savings twice.
+      // re-confirming an already-done event must not post savings twice. The
+      // same query also enforces visibility: a private event 404s here exactly
+      // as it would on a GET.
       const before = await query<{ is_completed: boolean }>(
-        `SELECT is_completed FROM household_events WHERE id = $1`,
-        [req.params.id],
+        `SELECT he.is_completed FROM household_events he
+           LEFT JOIN money_streams s ON s.id = he.money_stream_id
+          WHERE he.id = $1 AND (s.id IS NULL OR s.private = FALSE OR s.owner_user_id = $2)`,
+        [req.params.id, req.user.id],
       );
       if (!before.rows.length) return reply.code(404).send({ error: 'Event not found' });
       const wasCompleted = before.rows[0].is_completed;
@@ -208,10 +240,10 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           // Confirming a recurring "set aside" posts the actual amount to the
           // savings ledger — the balance only grows when a contribution is made.
           await recordSavingsContribution(evt.money_stream_id, evt.actual_amount);
-          await logActivity(req.user?.id ?? null, 'savings_added', evt.title);
+          await logActivity(req.user?.id ?? null, 'savings_added', evt.title, evt.money_stream_id);
         } else {
           const action = evt.event_type === 'payment' ? 'payment_paid' : 'event_done';
-          await logActivity(req.user?.id ?? null, action, evt.title);
+          await logActivity(req.user?.id ?? null, action, evt.title, evt.money_stream_id);
         }
       }
       return rows[0];
@@ -220,6 +252,8 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
 
   // DELETE /api/events/:id
   app.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+    const visible = await visibleEventOrNull(req.params.id, req.user.id);
+    if (!visible) return reply.code(404).send({ error: 'Event not found' });
     const { rowCount } = await query('DELETE FROM household_events WHERE id = $1', [req.params.id]);
     if (!rowCount) return reply.code(404).send({ error: 'Event not found' });
     return reply.code(204).send();

@@ -20,6 +20,7 @@ export const analyticsRoutes: FastifyPluginAsync = async (app) => {
         WHERE e.is_completed = TRUE
           AND e.event_type = 'payment'
           AND e.target_date >= $1
+          AND s.private = FALSE
         GROUP BY 1`,
       [since],
     );
@@ -42,6 +43,7 @@ export const analyticsRoutes: FastifyPluginAsync = async (app) => {
         WHERE e.is_completed = TRUE
           AND e.event_type = 'payment'
           AND e.target_date >= $1
+          AND s.private = FALSE
         GROUP BY 1`,
       [since],
     );

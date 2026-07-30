@@ -268,12 +268,16 @@ export async function generateRecurringEvents(
 ): Promise<number> {
   const { rows: streams } = await q<{
     id: number; name: string; frequency: string; stream_type: string; due_day: number; due_shift: string;
+    private: boolean; owner_user_id: number | null;
   }>(
-    `SELECT id, name, frequency, stream_type, due_day, due_shift
+    `SELECT id, name, frequency, stream_type, due_day, due_shift, private, owner_user_id
        FROM money_streams
       WHERE is_recurring = TRUE AND frequency IN ('monthly', 'yearly')
         AND stream_type IN ('income', 'expense', 'savings')
-        AND automated = FALSE`,
+        AND automated = FALSE
+        -- An orphaned private stream (owner removed from the household) never
+        -- generates new events — nobody could see or be notified about them.
+        AND (private = FALSE OR owner_user_id IS NOT NULL)`,
   );
   const country = (await q<{ value: string }>(
     `SELECT value FROM app_settings WHERE key = 'country'`,
@@ -300,11 +304,21 @@ export async function generateRecurringEvents(
         : s.stream_type === 'savings'
           ? { title: s.name, eventType: 'savings' }
           : { title: `${s.name} due`, eventType: 'payment' };
-    await q(
+    const { rows: ins } = await q<{ id: number }>(
       `INSERT INTO household_events (title, event_type, target_date, money_stream_id)
-       VALUES ($1, $2, $3, $4)`,
+       VALUES ($1, $2, $3, $4) RETURNING id`,
       [title, eventType, date, s.id],
     );
+    if (s.private) {
+      // Without an assignment, fanOutForEvent() falls back to broadcasting to
+      // every household member — fine for a shared bill, wrong for a private
+      // one. One owner-only assignment routes delivery through the existing
+      // assignee-scoped path instead, with no change to fanOutForEvent itself.
+      await q(
+        `INSERT INTO assignments (user_id, event_id, money_stream_id, role) VALUES ($1, $2, NULL, 'owner')`,
+        [s.owner_user_id, ins[0].id],
+      );
+    }
     created += 1;
     log?.info(`Generated recurring event for stream "${s.name}"`);
   }

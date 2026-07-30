@@ -163,6 +163,7 @@
     "trendsHigh": "Peak",
     "trendsEmpty": "No completed payments yet — your monthly spending will chart here.",
     "auto": "Auto",
+    "private": "Private",
     "expectedActual": "Expected vs actual",
     "expected": "Expected",
     "actual": "Actual",
@@ -292,6 +293,8 @@
     "dueShiftNext": "Next working day",
     "automated": "Paid automatically",
     "automatedHint": "Direct debit / standing order — no reminder or to-do.",
+    "private": "Private",
+    "privateHint": "Hidden from the rest of the household — only you can see or edit it.",
     "memberKind": "Who is this?",
     "kind_human": "Person",
     "kind_pet": "Pet",
@@ -392,7 +395,12 @@
     "member_added_self": "You welcomed {{item}}",
     "savings_added_self": "You set aside {{item}}",
     "shopping_added": "{{actor}} put {{item}} on the shopping list",
-    "shopping_added_self": "You put {{item}} on the shopping list"
+    "shopping_added_self": "You put {{item}} on the shopping list",
+    "stream_added_plain": "Added {{item}}",
+    "event_added_plain": "Added {{item}}",
+    "event_done_plain": "Finished {{item}}",
+    "payment_paid_plain": "Paid {{item}}",
+    "savings_added_plain": "Set aside {{item}}"
   },
   "notifications": {
     "title": "Notifications",

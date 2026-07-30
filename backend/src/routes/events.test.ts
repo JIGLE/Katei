@@ -26,6 +26,17 @@ const make = (over: Record<string, unknown> = {}) => ({
   title: 'Dentist', event_type: 'appointment', target_date: '2999-01-01', ...over,
 });
 
+/** Invite + join a member under the given name, returning their id and session. */
+async function join(name: string): Promise<{ id: number; session: string }> {
+  const invite = (await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })).json();
+  const res = await app.inject({
+    method: 'POST', url: '/api/auth/register',
+    payload: { name, password: 'password123', invite_code: invite.code },
+  });
+  assert.equal(res.statusCode, 201);
+  return { id: res.json().id ?? res.json().user?.id, session: h.sessionCookie(res) };
+}
+
 test('creates and lists events', opts, async () => {
   const res = await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make() });
   assert.equal(res.statusCode, 201);
@@ -87,4 +98,77 @@ test('deletes an event and 404s afterwards', opts, async () => {
   const created = (await app.inject({ method: 'POST', url: '/api/events', headers: { cookie }, payload: make() })).json();
   assert.equal((await app.inject({ method: 'DELETE', url: `/api/events/${created.id}`, headers: { cookie } })).statusCode, 204);
   assert.equal((await app.inject({ method: 'GET', url: `/api/events/${created.id}`, headers: { cookie } })).statusCode, 404);
+});
+
+test('an event linked to another member\'s private stream is invisible to a non-owner', opts, async () => {
+  const stream = (await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Therapy', amount: 80, private: true },
+  })).json();
+  const event = (await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: make({ title: 'Therapy due', event_type: 'payment', money_stream_id: stream.id }),
+  })).json();
+
+  const robin = await join('Robin');
+  const list = (await app.inject({ method: 'GET', url: '/api/events', headers: { cookie: robin.session } })).json();
+  assert.equal(list.length, 0);
+  assert.equal(
+    (await app.inject({ method: 'GET', url: `/api/events/${event.id}`, headers: { cookie: robin.session } })).statusCode,
+    404,
+  );
+
+  // The owner still sees it.
+  const mine = (await app.inject({ method: 'GET', url: '/api/events', headers: { cookie } })).json();
+  assert.equal(mine.length, 1);
+});
+
+test('POST referencing a private stream you don\'t own is rejected', opts, async () => {
+  const stream = (await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Therapy', amount: 80, private: true },
+  })).json();
+  const robin = await join('Robin');
+  const res = await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie: robin.session },
+    payload: make({ money_stream_id: stream.id }),
+  });
+  assert.equal(res.statusCode, 400);
+});
+
+test('a non-owner 404s completing or deleting an event linked to a private stream', opts, async () => {
+  const stream = (await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Therapy', amount: 80, private: true },
+  })).json();
+  const event = (await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: make({ event_type: 'payment', money_stream_id: stream.id }),
+  })).json();
+  const robin = await join('Robin');
+
+  const complete = await app.inject({
+    method: 'PATCH', url: `/api/events/${event.id}/complete`, headers: { cookie: robin.session },
+    payload: { is_completed: true },
+  });
+  assert.equal(complete.statusCode, 404);
+
+  const del = await app.inject({ method: 'DELETE', url: `/api/events/${event.id}`, headers: { cookie: robin.session } });
+  assert.equal(del.statusCode, 404);
+});
+
+test('confirming a savings event linked to a private stream stores a null note', opts, async () => {
+  const stream = (await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Surprise gift fund', amount: 50, stream_type: 'savings', private: true },
+  })).json();
+  const event = (await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: make({ title: 'Surprise gift fund', event_type: 'savings', money_stream_id: stream.id }),
+  })).json();
+  await app.inject({ method: 'PATCH', url: `/api/events/${event.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
+
+  const savings = (await app.inject({ method: 'GET', url: '/api/savings', headers: { cookie } })).json();
+  assert.equal(savings.entries.length, 1);
+  assert.equal(savings.entries[0].note, null);
 });

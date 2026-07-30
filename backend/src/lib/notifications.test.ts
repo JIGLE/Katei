@@ -15,18 +15,21 @@ interface Call {
 
 type TestStream = {
   id: number; name: string; frequency: string; stream_type: string; due_day: number; due_shift: string;
+  private: boolean; owner_user_id: number | null;
 };
 const stream = (over: Partial<TestStream> & { id: number; name: string }): TestStream => ({
-  frequency: 'monthly', stream_type: 'expense', due_day: 1, due_shift: 'next', ...over,
+  frequency: 'monthly', stream_type: 'expense', due_day: 1, due_shift: 'next',
+  private: false, owner_user_id: null, ...over,
 });
 
 /**
  * Build a fake `query` that returns the given streams, reports whether each
- * stream already has an upcoming event, records INSERTs, and answers the
- * country lookup.
+ * stream already has an upcoming event, records INSERTs (household_events and
+ * assignments separately), and answers the country lookup.
  */
 function fakeQuery(streams: TestStream[], hasUpcoming: (streamId: number) => boolean, country = 'DE') {
   const inserts: Call[] = [];
+  const assignmentInserts: Call[] = [];
   const q = (async (text: string, params?: unknown[]) => {
     if (/FROM app_settings/.test(text)) return { rows: [{ value: country }] };
     if (/FROM money_streams/.test(text)) return { rows: streams };
@@ -36,11 +39,15 @@ function fakeQuery(streams: TestStream[], hasUpcoming: (streamId: number) => boo
     }
     if (/INSERT INTO household_events/.test(text)) {
       inserts.push({ text, params });
+      return { rows: [{ id: inserts.length }] };
+    }
+    if (/INSERT INTO assignments/.test(text)) {
+      assignmentInserts.push({ text, params });
       return { rows: [] };
     }
     throw new Error(`unexpected query: ${text}`);
   }) as unknown as typeof Query;
-  return { q, inserts };
+  return { q, inserts, assignmentInserts };
 }
 
 test('generates a "due" payment event for a recurring expense', async () => {
@@ -70,6 +77,34 @@ test('skips a stream that already has an upcoming event', async () => {
   const created = await generateRecurringEvents(undefined, q);
   assert.equal(created, 0);
   assert.equal(inserts.length, 0);
+});
+
+test('a private stream\'s generated event gets an owner-only assignment', async () => {
+  const { q, assignmentInserts } = fakeQuery(
+    [stream({ id: 1, name: 'Therapy', private: true, owner_user_id: 7 })],
+    () => false,
+  );
+  const created = await generateRecurringEvents(undefined, q);
+  assert.equal(created, 1);
+  assert.equal(assignmentInserts.length, 1);
+  assert.equal(assignmentInserts[0].params?.[0], 7); // owner_user_id
+});
+
+test('a non-private stream\'s generated event gets no assignment', async () => {
+  const { q, assignmentInserts } = fakeQuery([stream({ id: 1, name: 'Rent' })], () => false);
+  await generateRecurringEvents(undefined, q);
+  assert.equal(assignmentInserts.length, 0);
+});
+
+test('the money_streams query excludes orphaned private streams (private with no owner)', async () => {
+  let capturedText = '';
+  const q = (async (text: string) => {
+    if (/FROM money_streams/.test(text)) { capturedText = text; return { rows: [] }; }
+    if (/FROM app_settings/.test(text)) return { rows: [{ value: 'DE' }] };
+    return { rows: [] };
+  }) as unknown as typeof Query;
+  await generateRecurringEvents(undefined, q);
+  assert.match(capturedText, /private = FALSE OR owner_user_id IS NOT NULL/);
 });
 
 // --- nextOccurrence: business-day scheduling ------------------------------

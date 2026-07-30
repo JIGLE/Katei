@@ -461,6 +461,11 @@ export default function MoneyFlow() {
                         {t('money.auto')}
                       </span>
                     )}
+                    {s.private && (
+                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-zinc-400">
+                        {t('money.private')}
+                      </span>
+                    )}
                   </p>
                   <p className="mt-0.5 text-xs text-zinc-500">
                     {t(freqKey[s.frequency])}

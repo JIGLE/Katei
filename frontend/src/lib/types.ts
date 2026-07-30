@@ -44,6 +44,7 @@ export interface MoneyStream {
   due_day: number;
   due_shift: DueShift;
   automated: boolean;
+  private: boolean;
   created_at: string;
 }
 
@@ -81,7 +82,8 @@ export type ActivityAction =
   | 'event_done'
   | 'payment_paid'
   | 'member_added'
-  | 'savings_added';
+  | 'savings_added'
+  | 'shopping_added';
 
 export interface Activity {
   id: number;

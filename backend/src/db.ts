@@ -248,6 +248,14 @@ export async function migrate(): Promise<void> {
      )`,
   );
 
+  // Private money streams: visible only to their owner (see routes/money-streams.ts
+  // and lib/privacy.ts). CASCADE on activity.money_stream_id is deliberate — a
+  // null there reads as "not linked to anything private" = always visible, so an
+  // orphaned row must vanish with its stream rather than silently un-hide.
+  await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS private BOOLEAN NOT NULL DEFAULT FALSE`);
+  await query(`ALTER TABLE money_streams ADD COLUMN IF NOT EXISTS owner_user_id INT REFERENCES users(id) ON DELETE SET NULL`);
+  await query(`ALTER TABLE activity ADD COLUMN IF NOT EXISTS money_stream_id INT REFERENCES money_streams(id) ON DELETE CASCADE`);
+
   await resyncSequences();
 }
 

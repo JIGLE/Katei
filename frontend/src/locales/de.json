@@ -164,6 +164,7 @@
     "trendsHigh": "Spitze",
     "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier.",
     "auto": "Auto",
+    "private": "Privat",
     "expectedActual": "Soll vs. Ist",
     "expected": "Erwartet",
     "actual": "Tatsächlich",
@@ -293,6 +294,8 @@
     "dueShiftNext": "Nächster Werktag",
     "automated": "Automatisch bezahlt",
     "automatedHint": "Lastschrift / Dauerauftrag — keine Erinnerung oder Aufgabe.",
+    "private": "Privat",
+    "privateHint": "Vor dem Rest des Haushalts verborgen — nur du kannst es sehen oder bearbeiten.",
     "memberKind": "Wer ist das?",
     "kind_human": "Person",
     "kind_pet": "Haustier",
@@ -393,7 +396,12 @@
     "member_added_self": "Du hast {{item}} begrüßt",
     "savings_added_self": "Du hast {{item}} zurückgelegt",
     "shopping_added": "{{actor}} hat {{item}} auf die Einkaufsliste gesetzt",
-    "shopping_added_self": "Du hast {{item}} auf die Einkaufsliste gesetzt"
+    "shopping_added_self": "Du hast {{item}} auf die Einkaufsliste gesetzt",
+    "stream_added_plain": "{{item}} hinzugefügt",
+    "event_added_plain": "{{item}} hinzugefügt",
+    "event_done_plain": "{{item}} erledigt",
+    "payment_paid_plain": "{{item}} bezahlt",
+    "savings_added_plain": "{{item}} zurückgelegt"
   },
   "notifications": {
     "title": "Benachrichtigungen",

@@ -164,6 +164,7 @@
     "trendsHigh": "Max",
     "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui.",
     "auto": "Auto",
+    "private": "Privato",
     "expectedActual": "Previsto vs reale",
     "expected": "Previsto",
     "actual": "Reale",
@@ -293,6 +294,8 @@
     "dueShiftNext": "Giorno lavorativo successivo",
     "automated": "Pagato automaticamente",
     "automatedHint": "Addebito diretto / bonifico ricorrente — nessun promemoria o attività.",
+    "private": "Privato",
+    "privateHint": "Nascosto al resto della famiglia — solo tu puoi vederlo o modificarlo.",
     "memberKind": "Chi è?",
     "kind_human": "Persona",
     "kind_pet": "Animale",
@@ -393,7 +396,12 @@
     "member_added_self": "Hai accolto {{item}}",
     "savings_added_self": "Hai messo da parte {{item}}",
     "shopping_added": "{{actor}} ha messo {{item}} nella lista della spesa",
-    "shopping_added_self": "Hai messo {{item}} nella lista della spesa"
+    "shopping_added_self": "Hai messo {{item}} nella lista della spesa",
+    "stream_added_plain": "{{item}} aggiunto",
+    "event_added_plain": "{{item}} aggiunto",
+    "event_done_plain": "{{item}} completato",
+    "payment_paid_plain": "{{item}} pagato",
+    "savings_added_plain": "{{item}} messo da parte"
   },
   "notifications": {
     "title": "Notifiche",

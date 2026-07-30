@@ -34,6 +34,8 @@ CREATE TABLE money_streams (
     due_day SMALLINT NOT NULL DEFAULT 1,           -- day-of-month the stream falls due (1-31)
     due_shift VARCHAR(10) NOT NULL DEFAULT 'next',  -- 'none' | 'prev' | 'next' business-day adjustment
     automated BOOLEAN NOT NULL DEFAULT FALSE,       -- paid automatically (direct debit): no action, no reminder
+    private BOOLEAN NOT NULL DEFAULT FALSE,         -- visible only to owner_user_id when true
+    owner_user_id INT REFERENCES users(id) ON DELETE SET NULL, -- set only while private
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -67,6 +69,12 @@ CREATE TABLE activity (
     actor_id INT REFERENCES users(id) ON DELETE SET NULL,
     action VARCHAR(40) NOT NULL, -- 'stream_added' | 'event_added' | 'event_done' | 'payment_paid' | 'member_added'
     summary TEXT NOT NULL,       -- the entity's name (e.g. 'Rent'), rendered into a sentence client-side
+    -- Set when the action concerns a money stream, so a private stream's
+    -- activity can be filtered the same way the stream itself is. CASCADE
+    -- (not SET NULL): a null here reads as "not linked to anything private" =
+    -- always visible, so an orphaned row must vanish with its stream, not
+    -- silently un-hide.
+    money_stream_id INT REFERENCES money_streams(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

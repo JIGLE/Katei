@@ -22,11 +22,17 @@ export const calendarRoutes: FastifyPluginAsync = async (app) => {
       }
       return reply.code(404).send({ error: 'Calendar not found' });
     }
+    // This feed has no viewer identity at all (a bare shared token, not a
+    // session), so there's no "just the owner" option without a much bigger
+    // per-user-token redesign — private-stream events are excluded for
+    // everyone, including their own owner. A disclosed limitation, not a bug.
     const { rows } = await query<CalEvent>(
-      `SELECT id, title, event_type, to_char(target_date, 'YYYY-MM-DD') AS target_date, description
-         FROM household_events
-        WHERE target_date >= CURRENT_DATE - INTERVAL '90 days'
-        ORDER BY target_date ASC`,
+      `SELECT he.id, he.title, he.event_type, to_char(he.target_date, 'YYYY-MM-DD') AS target_date, he.description
+         FROM household_events he
+         LEFT JOIN money_streams s ON s.id = he.money_stream_id
+        WHERE he.target_date >= CURRENT_DATE - INTERVAL '90 days'
+          AND (s.id IS NULL OR s.private = FALSE)
+        ORDER BY he.target_date ASC`,
     );
     reply
       .header('Content-Type', 'text/calendar; charset=utf-8')

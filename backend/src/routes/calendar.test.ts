@@ -51,3 +51,19 @@ test('rotating the token invalidates the old feed URL', opts, async () => {
   assert.equal((await app.inject({ method: 'GET', url: `/api/calendar/${oldToken}.ics` })).statusCode, 404);
   assert.equal((await app.inject({ method: 'GET', url: `/api/calendar/${newToken}.ics` })).statusCode, 200);
 });
+
+test('an event linked to a private stream is excluded from the ICS feed, even under its owner\'s own token', opts, async () => {
+  const stream = (await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Therapy', amount: 80, private: true },
+  })).json();
+  await app.inject({
+    method: 'POST', url: '/api/events', headers: { cookie },
+    payload: { title: 'Therapy due', event_type: 'payment', target_date: '2999-01-01', money_stream_id: stream.id },
+  });
+  const { token } = (await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })).json();
+
+  const res = await app.inject({ method: 'GET', url: `/api/calendar/${token}.ics` });
+  assert.equal(res.statusCode, 200);
+  assert.ok(!res.body.includes('Therapy due'));
+});

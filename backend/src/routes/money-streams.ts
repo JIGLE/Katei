@@ -3,13 +3,15 @@ import { query, getSetting } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
 const COLS =
-  'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, created_at';
+  'id, name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, private, owner_user_id, created_at';
 
 export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
-  // GET /api/money-streams
-  app.get('/', async () => {
+  // GET /api/money-streams — a private stream is omitted entirely unless the
+  // caller owns it: never masked, never counted for anyone else.
+  app.get('/', async (req) => {
     const { rows } = await query(
-      `SELECT ${COLS} FROM money_streams ORDER BY created_at DESC`,
+      `SELECT ${COLS} FROM money_streams WHERE private = FALSE OR owner_user_id = $1 ORDER BY created_at DESC`,
+      [req.user.id],
     );
     return rows;
   });
@@ -17,9 +19,11 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/money-streams/:id
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
     const { rows } = await query(
-      `SELECT ${COLS} FROM money_streams WHERE id = $1`,
-      [req.params.id],
+      `SELECT ${COLS} FROM money_streams WHERE id = $1 AND (private = FALSE OR owner_user_id = $2)`,
+      [req.params.id, req.user.id],
     );
+    // Same 404 whether the id is unknown or it's a private stream someone
+    // else owns — an oracle-free response either way.
     if (!rows.length) return reply.code(404).send({ error: 'Money stream not found' });
     return rows[0];
   });
@@ -37,6 +41,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       due_day?: number;
       due_shift?: string;
       automated?: boolean;
+      private?: boolean;
     };
   }>(
     '/',
@@ -56,6 +61,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             due_day: { type: 'integer', minimum: 1, maximum: 31 },
             due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
             automated: { type: 'boolean' },
+            private: { type: 'boolean' },
           },
         },
       },
@@ -74,13 +80,15 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
         due_day = 1,
         due_shift = 'next',
         automated = false,
+        private: isPrivate = false,
       } = req.body;
+      const ownerUserId = isPrivate ? req.user.id : null;
       const { rows } = await query(
-        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING ${COLS}`,
-        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated],
+        `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, private, owner_user_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING ${COLS}`,
+        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, isPrivate, ownerUserId],
       );
-      await logActivity(req.user?.id ?? null, 'stream_added', name);
+      await logActivity(req.user?.id ?? null, 'stream_added', name, rows[0].id);
       return reply.code(201).send(rows[0]);
     },
   );
@@ -99,6 +107,7 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       due_day?: number;
       due_shift?: string;
       automated?: boolean;
+      private?: boolean;
     };
   }>(
     '/:id',
@@ -117,11 +126,25 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
             due_day: { type: 'integer', minimum: 1, maximum: 31 },
             due_shift: { type: 'string', enum: ['none', 'prev', 'next'] },
             automated: { type: 'boolean' },
+            private: { type: 'boolean' },
           },
         },
       },
     },
     async (req, reply) => {
+      const current = await query<{ private: boolean; owner_user_id: number | null }>(
+        `SELECT private, owner_user_id FROM money_streams WHERE id = $1`,
+        [req.params.id],
+      );
+      if (!current.rows.length) return reply.code(404).send({ error: 'Money stream not found' });
+      const { private: wasPrivate, owner_user_id: currentOwner } = current.rows[0];
+      // A stream that's already private is off-limits to anyone but its owner —
+      // the whole request 404s, not just the privacy fields, so a non-owner
+      // can't even learn that some other field is editable here.
+      if (wasPrivate && currentOwner !== req.user.id) {
+        return reply.code(404).send({ error: 'Money stream not found' });
+      }
+
       const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category', 'stream_type', 'due_day', 'due_shift', 'automated'] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
@@ -131,6 +154,15 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
           fields.push(`${key} = $${i++}`);
           values.push(req.body[key]);
         }
+      }
+      // private/owner_user_id move together: claiming privacy on an unowned
+      // stream assigns the caller as owner; un-privating clears ownership.
+      if (req.body.private !== undefined) {
+        const nextOwner = req.body.private ? (currentOwner ?? req.user.id) : null;
+        fields.push(`private = $${i++}`);
+        values.push(req.body.private);
+        fields.push(`owner_user_id = $${i++}`);
+        values.push(nextOwner);
       }
       if (!fields.length) return reply.code(400).send({ error: 'Nothing to update' });
       values.push(req.params.id);
@@ -156,6 +188,23 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
 
   // DELETE /api/money-streams/:id
   app.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+    const current = await query<{ private: boolean; owner_user_id: number | null }>(
+      `SELECT private, owner_user_id FROM money_streams WHERE id = $1`,
+      [req.params.id],
+    );
+    if (!current.rows.length) return reply.code(404).send({ error: 'Money stream not found' });
+    const { private: wasPrivate, owner_user_id: currentOwner } = current.rows[0];
+    if (wasPrivate && currentOwner !== req.user.id) {
+      return reply.code(404).send({ error: 'Money stream not found' });
+    }
+    if (wasPrivate) {
+      // household_events.money_stream_id is ON DELETE SET NULL — left as-is,
+      // deleting the stream first would un-link its events and make their
+      // (already denormalized) titles visible to the whole household. Delete
+      // the events first so that leaky state is never reachable, even if the
+      // process dies between the two statements.
+      await query('DELETE FROM household_events WHERE money_stream_id = $1', [req.params.id]);
+    }
     const { rowCount } = await query('DELETE FROM money_streams WHERE id = $1', [req.params.id]);
     if (!rowCount) return reply.code(404).send({ error: 'Money stream not found' });
     return reply.code(204).send();

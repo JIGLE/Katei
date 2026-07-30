@@ -19,16 +19,19 @@ export type ActivityAction =
  * @param actorId the acting user, or null for system actions
  * @param action  a stable verb the client maps to a localized sentence
  * @param summary the entity's display name (e.g. the stream or member name)
+ * @param moneyStreamId the linked stream, when the action concerns one — lets
+ *   the feed hide this row the same way the stream itself is hidden
  */
 export async function logActivity(
   actorId: number | null,
   action: ActivityAction,
   summary: string,
+  moneyStreamId: number | null = null,
 ): Promise<void> {
   try {
     await query(
-      `INSERT INTO activity (actor_id, action, summary) VALUES ($1, $2, $3)`,
-      [actorId, action, summary],
+      `INSERT INTO activity (actor_id, action, summary, money_stream_id) VALUES ($1, $2, $3, $4)`,
+      [actorId, action, summary, moneyStreamId],
     );
   } catch {
     // Intentionally ignored — never let the feed sink the real operation.

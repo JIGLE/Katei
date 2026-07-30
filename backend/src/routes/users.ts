@@ -103,6 +103,21 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   // DELETE /api/users/:id — admin only.
   app.delete<{ Params: { id: string } }>('/:id', { preHandler: requireAdmin }, async (req, reply) => {
+    // owner_user_id is ON DELETE SET NULL, which alone would leave a private
+    // stream's still-pending events intact with no owner-only assignment left
+    // to stop the next scheduler sweep from broadcasting their (denormalized)
+    // titles to the whole household. Clear those pending events first, before
+    // the user delete cascades the assignment rows away.
+    const { rows: owned } = await query<{ id: number }>(
+      `SELECT id FROM money_streams WHERE owner_user_id = $1 AND private = TRUE`,
+      [req.params.id],
+    );
+    if (owned.length) {
+      await query(
+        `DELETE FROM household_events WHERE money_stream_id = ANY($1::int[]) AND is_completed = FALSE`,
+        [owned.map((s) => s.id)],
+      );
+    }
     const { rowCount } = await query('DELETE FROM users WHERE id = $1', [req.params.id]);
     if (!rowCount) return reply.code(404).send({ error: 'User not found' });
     return reply.code(204).send();

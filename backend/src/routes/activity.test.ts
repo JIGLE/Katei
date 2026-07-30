@@ -85,3 +85,23 @@ test('feed is newest-first and respects the limit param', opts, async () => {
   // Most recent stream ('C') comes first.
   assert.equal(limited[0].summary, 'C');
 });
+
+test('a private stream\'s activity entry is invisible to a non-owner, visible to the owner', opts, async () => {
+  await app.inject({
+    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    payload: { name: 'Therapy', amount: 80, private: true },
+  });
+
+  const invite = (await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })).json();
+  const joinRes = await app.inject({
+    method: 'POST', url: '/api/auth/register',
+    payload: { name: 'Robin', password: 'password123', invite_code: invite.code },
+  });
+  const robinCookie = h.sessionCookie(joinRes);
+
+  const forRobin = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie: robinCookie } })).json();
+  assert.equal(forRobin.some((a: { summary: string }) => a.summary === 'Therapy'), false);
+
+  const forSam = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
+  assert.equal(forSam.some((a: { summary: string }) => a.summary === 'Therapy'), true);
+});

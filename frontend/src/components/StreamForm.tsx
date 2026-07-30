@@ -45,6 +45,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   const [dueDay, setDueDay] = useState<number>(initial?.due_day ?? 1);
   const [dueShift, setDueShift] = useState<DueShift>(initial?.due_shift ?? 'next');
   const [automated, setAutomated] = useState<boolean>(initial?.automated ?? false);
+  const [isPrivate, setIsPrivate] = useState<boolean>(initial?.private ?? false);
   const [category, setCategory] = useState(initial?.category ?? '');
 
   const [submitting, setSubmitting] = useState(false);
@@ -91,6 +92,7 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
         due_day: dueDay,
         due_shift: dueShift,
         automated: frequency !== 'one-off' ? automated : false,
+        private: isPrivate,
         category: category.trim() || null,
       };
       const saved = isEdit
@@ -252,6 +254,26 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
           </span>
         </button>
       )}
+
+      {/* Unlike automated, privacy is orthogonal to frequency — shown always. */}
+      <button
+        type="button"
+        onClick={() => setIsPrivate((v) => !v)}
+        aria-pressed={isPrivate}
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-zinc-800 px-3 py-2.5 text-left"
+      >
+        <span className="min-w-0">
+          <span className="block text-sm text-zinc-200">{t('form.private')}</span>
+          <span className="block text-xs text-zinc-500">{t('form.privateHint')}</span>
+        </span>
+        <span
+          className={`relative h-5 w-9 flex-shrink-0 rounded-full transition-colors ${isPrivate ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+        >
+          <span
+            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${isPrivate ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`}
+          />
+        </span>
+      </button>
 
       <div>
         <label htmlFor="category" className={labelCls}>{t('form.category')}</label>

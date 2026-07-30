@@ -164,6 +164,7 @@
     "trendsHigh": "Piek",
     "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier.",
     "auto": "Auto",
+    "private": "Privé",
     "expectedActual": "Verwacht vs werkelijk",
     "expected": "Verwacht",
     "actual": "Werkelijk",
@@ -293,6 +294,8 @@
     "dueShiftNext": "Volgende werkdag",
     "automated": "Automatisch betaald",
     "automatedHint": "Automatische incasso / periodieke overboeking — geen herinnering of taak.",
+    "private": "Privé",
+    "privateHint": "Verborgen voor de rest van het huishouden — alleen jij kunt het zien of bewerken.",
     "memberKind": "Wie is dit?",
     "kind_human": "Persoon",
     "kind_pet": "Huisdier",
@@ -393,7 +396,12 @@
     "member_added_self": "Je hebt {{item}} verwelkomd",
     "savings_added_self": "Je hebt {{item}} opzijgezet",
     "shopping_added": "{{actor}} heeft {{item}} op het boodschappenlijstje gezet",
-    "shopping_added_self": "Je hebt {{item}} op het boodschappenlijstje gezet"
+    "shopping_added_self": "Je hebt {{item}} op het boodschappenlijstje gezet",
+    "stream_added_plain": "{{item}} toegevoegd",
+    "event_added_plain": "{{item}} toegevoegd",
+    "event_done_plain": "{{item}} afgerond",
+    "payment_paid_plain": "{{item}} betaald",
+    "savings_added_plain": "{{item}} opzijgezet"
   },
   "notifications": {
     "title": "Meldingen",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { AssigneeStack, Avatar } from '../components/Avatar';
+import { AssigneeStack } from '../components/Avatar';
 import { OnboardingCard } from '../components/OnboardingCard';
 import { WeekStrip } from '../components/WeekStrip';
 import { DOT } from '../components/CalendarMonth';
@@ -76,21 +76,12 @@ function UpcomingRow({
   );
 }
 
-// Turn an activity row into a localized sentence. The verb lives in the
-// catalog; the actor + item are interpolated (item stays as stored). Your own
-// actions use the `_self` form of each verb — "You added…" — because a plain
-// pronoun swap breaks conjugation in half the catalogs ("Du hat…").
-function activitySentence(
-  a: Activity,
-  t: (k: string, o?: Record<string, unknown>) => string,
-  selfId?: number,
-): string {
-  if (selfId != null && a.actor_id === selfId) {
-    return t(`activity.${a.action}_self`, { item: a.summary });
-  }
-  const actor = a.actor_name ?? t('activity.someone');
-  return t(`activity.${a.action}`, { actor, item: a.summary });
-}
+// Around the house shows a glance at money/event activity only — no who,
+// just what and when. member_added and shopping_added stay in the log (still
+// auditable in storage) but never render here.
+const MONEY_EVENT_ACTIONS = new Set<Activity['action']>([
+  'stream_added', 'event_added', 'event_done', 'payment_paid', 'savings_added',
+]);
 
 // How many dated rows each block shows before deferring to the Timeline.
 const ROW_CAP = 4;
@@ -118,7 +109,7 @@ export default function Overview() {
       api.get<MoneyStream[]>('/money-streams'),
       api.get<AssignmentDetail[]>('/assignments'),
       api.get<User[]>('/users'),
-      api.get<Activity[]>('/activity?limit=8'),
+      api.get<Activity[]>('/activity?limit=20'),
     ])
       .then(([evts, strs, asgs, users, acts]) => {
         setEvents(evts.filter((e) => !e.is_completed));
@@ -198,6 +189,9 @@ export default function Overview() {
     (n, l) => n + l.items.filter((g) => g.status === 'idea').length,
     0,
   );
+
+  // The five rows Around the house actually shows — money/event verbs only.
+  const glanceActivity = activity.filter((a) => MONEY_EVENT_ACTIONS.has(a.action)).slice(0, 5);
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -368,18 +362,22 @@ export default function Overview() {
         </section>
       )}
 
-      {/* Around the house — the shared pulse of recent activity. Five rows;
-          the item is the news, so it wins the space (two lines if needed). */}
-      {!loading && activity.length > 0 && (
+      {/* Around the house — a glance at recent money/event activity, no who.
+          Five rows; the item is the news, so it wins the space (two lines if
+          needed). Still fully auditable in storage — this section just
+          doesn't render the actor, and a private stream's activity never
+          appears here for anyone but its owner. */}
+      {!loading && glanceActivity.length > 0 && (
         <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('overview.activity')}
           </p>
           <ul className="space-y-3">
-            {activity.slice(0, 5).map((a) => (
+            {glanceActivity.map((a) => (
               <li key={a.id} className="flex items-center gap-3">
-                <Avatar name={a.actor_name ?? '·'} url={a.actor_avatar} size="sm" />
-                <span className="line-clamp-2 flex-1 text-sm text-zinc-300">{activitySentence(a, t, user?.id)}</span>
+                <span className="line-clamp-2 flex-1 text-sm text-zinc-300">
+                  {t(`activity.${a.action}_plain`, { item: a.summary })}
+                </span>
                 <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
                   {formatRelativeTime(a.created_at, lang)}
                 </time>
