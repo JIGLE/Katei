@@ -366,7 +366,10 @@
     "sectionMoney": "Denaro",
     "sectionAppearance": "Aspetto",
     "potsHint": "Gli obiettivi vivono su ogni salvadanaio: apri Denaro e toccane uno.",
-    "themeDeviceHint": "Questo dispositivo ricorda la tua scelta del tema."
+    "themeDeviceHint": "Questo dispositivo ricorda la tua scelta del tema.",
+    "moneyEnabled": "Gestione del denaro",
+    "moneyEnabledOn": "Attivo — la scheda Denaro, le bollette e gli importi dei pagamenti sono visibili.",
+    "moneyEnabledOff": "Disattivato — il denaro è nascosto in tutta l'app."
   },
   "account": {
     "title": "Il mio account",
@@ -426,7 +429,8 @@
     "storePlaceholder": "es. Esselunga, IKEA",
     "anywhere": "Ovunque",
     "checkAria": "Segna come comprato",
-    "uncheckAria": "Rimetti in lista"
+    "uncheckAria": "Rimetti in lista",
+    "reorderAria": "Trascina per riordinare"
   },
   "gifts": {
     "forName": "Per {{name}}",

@@ -33,7 +33,7 @@ function roleColor(role: string): string {
 export default function Household() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { household_name } = usePreferences();
+  const { household_name, money_enabled } = usePreferences();
   const isAdmin = user?.role === 'admin';
   const [users, setUsers] = useState<User[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -192,7 +192,7 @@ export default function Household() {
               <li key={a.id} className="flex items-center gap-2 text-xs text-zinc-400">
                 <span className="h-1 w-1 rounded-full bg-zinc-700" />
                 {a.event_id != null && <span>{eventTitle(a.event_id)}</span>}
-                {a.money_stream_id != null && <span>{streamName(a.money_stream_id)}</span>}
+                {a.money_stream_id != null && money_enabled && <span>{streamName(a.money_stream_id)}</span>}
                 <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>{a.role}</span>
                 <button
                   type="button"

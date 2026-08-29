@@ -61,6 +61,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [language, setLanguage] = useState(prefs.language);
   const [savingsOpening, setSavingsOpening] = useState(String(prefs.savings_opening || ''));
   const [theme, setTheme] = useState<Theme>(prefs.theme);
+  const [moneyEnabled, setMoneyEnabled] = useState(prefs.money_enabled);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [tab, setTab] = useState<'general' | 'notifications' | 'data'>('general');
 
@@ -74,7 +75,8 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setLanguage(prefs.language);
     setSavingsOpening(String(prefs.savings_opening || ''));
     setTheme(prefs.theme);
-  }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.savings_opening, prefs.theme]);
+    setMoneyEnabled(prefs.money_enabled);
+  }, [prefs.household_name, prefs.country, prefs.currency, prefs.locale, prefs.timezone, prefs.language, prefs.savings_goal, prefs.savings_opening, prefs.theme, prefs.money_enabled]);
 
   // Apply the theme live as the user toggles, for instant feedback.
   const onThemeChange = (next: Theme) => {
@@ -92,7 +94,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
     setSavingPrefs(true);
     setMessage(null);
     try {
-      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: prefs.savings_goal, savings_opening: Number(savingsOpening) || 0, theme });
+      await prefs.save({ household_name: householdName.trim(), country, currency, locale, timezone, language, savings_goal: prefs.savings_goal, savings_opening: Number(savingsOpening) || 0, theme, money_enabled: moneyEnabled });
       setMessage({ kind: 'ok', text: t('settings.preferencesSaved') });
     } catch (err) {
       setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('settings.saveFailed') });
@@ -302,22 +304,40 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
 
         <section className="space-y-3 border-t border-zinc-800/60 pt-4">
           <p className={sectionCls}>{t('settings.sectionMoney')}</p>
-          <div>
-            <label htmlFor="pref_savings_opening" className={gLabelCls}>{t('settings.currentSavings')}</label>
-            <input
-              id="pref_savings_opening"
-              type="number"
-              min="0"
-              step="0.01"
-              value={savingsOpening}
-              onChange={(e) => setSavingsOpening(e.target.value)}
-              placeholder="0.00"
-              className={`${fieldCls}`}
-            />
-            <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setMoneyEnabled((v) => !v)}
+            aria-pressed={moneyEnabled}
+            className="flex w-full items-center justify-between gap-3 rounded-xl border border-zinc-800 px-3 py-2.5 text-left"
+          >
+            <span className="min-w-0">
+              <span className="block text-sm text-zinc-200">{t('settings.moneyEnabled')}</span>
+              <span className="block text-xs text-zinc-500">
+                {moneyEnabled ? t('settings.moneyEnabledOn') : t('settings.moneyEnabledOff')}
+              </span>
+            </span>
+            <span className={`relative h-5 w-9 flex-shrink-0 rounded-full transition-colors ${moneyEnabled ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
+              <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${moneyEnabled ? 'translate-x-[1.125rem]' : 'translate-x-0.5'}`} />
+            </span>
+          </button>
+          {moneyEnabled && (
+            <div>
+              <label htmlFor="pref_savings_opening" className={gLabelCls}>{t('settings.currentSavings')}</label>
+              <input
+                id="pref_savings_opening"
+                type="number"
+                min="0"
+                step="0.01"
+                value={savingsOpening}
+                onChange={(e) => setSavingsOpening(e.target.value)}
+                placeholder="0.00"
+                className={`${fieldCls}`}
+              />
+              <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
+            </div>
+          )}
           {/* Savings targets now live on each pot (Money → tap a pot). */}
-          <p className="text-xs text-zinc-600">{t('settings.potsHint')}</p>
+          {moneyEnabled && <p className="text-xs text-zinc-600">{t('settings.potsHint')}</p>}
         </section>
         </>)}
 

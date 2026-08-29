@@ -366,7 +366,10 @@
     "sectionMoney": "Geld",
     "sectionAppearance": "Weergave",
     "potsHint": "Spaardoelen horen bij elk potje — open Geld en tik op een potje.",
-    "themeDeviceHint": "Dit apparaat onthoudt je themakeuze."
+    "themeDeviceHint": "Dit apparaat onthoudt je themakeuze.",
+    "moneyEnabled": "Geldbeheer",
+    "moneyEnabledOn": "Aan — het tabblad Geld, rekeningen en betaalbedragen zijn zichtbaar.",
+    "moneyEnabledOff": "Uit — Geld is overal in de app verborgen."
   },
   "account": {
     "title": "Mijn account",
@@ -426,7 +429,8 @@
     "storePlaceholder": "bijv. Albert Heijn, IKEA",
     "anywhere": "Overal",
     "checkAria": "Markeren als gekocht",
-    "uncheckAria": "Terug op de lijst"
+    "uncheckAria": "Terug op de lijst",
+    "reorderAria": "Sleep om te herschikken"
   },
   "gifts": {
     "forName": "Voor {{name}}",

@@ -365,7 +365,10 @@
     "sectionMoney": "Money",
     "sectionAppearance": "Appearance",
     "potsHint": "Savings targets live on each pot — open Money and tap a pot to set one.",
-    "themeDeviceHint": "This device remembers your theme choice."
+    "themeDeviceHint": "This device remembers your theme choice.",
+    "moneyEnabled": "Money tracking",
+    "moneyEnabledOn": "On — the Money tab, bills, and payment amounts are visible.",
+    "moneyEnabledOff": "Off — Money is hidden everywhere in the app."
   },
   "account": {
     "title": "My account",
@@ -425,7 +428,8 @@
     "storePlaceholder": "e.g. Aldi, IKEA",
     "anywhere": "Anywhere",
     "checkAria": "Mark as bought",
-    "uncheckAria": "Put back on the list"
+    "uncheckAria": "Put back on the list",
+    "reorderAria": "Drag to reorder"
   },
   "gifts": {
     "forName": "For {{name}}",

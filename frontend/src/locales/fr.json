@@ -366,7 +366,10 @@
     "sectionMoney": "Argent",
     "sectionAppearance": "Apparence",
     "potsHint": "Les objectifs d'épargne se règlent sur chaque pot — ouvrez Argent et touchez un pot.",
-    "themeDeviceHint": "Cet appareil mémorise votre choix de thème."
+    "themeDeviceHint": "Cet appareil mémorise votre choix de thème.",
+    "moneyEnabled": "Suivi de l'argent",
+    "moneyEnabledOn": "Activé — l'onglet Argent, les factures et les montants des paiements sont visibles.",
+    "moneyEnabledOff": "Désactivé — l'argent est masqué partout dans l'application."
   },
   "account": {
     "title": "Mon compte",
@@ -426,7 +429,8 @@
     "storePlaceholder": "p. ex. Carrefour, IKEA",
     "anywhere": "N'importe où",
     "checkAria": "Marquer comme acheté",
-    "uncheckAria": "Remettre sur la liste"
+    "uncheckAria": "Remettre sur la liste",
+    "reorderAria": "Glisser pour réorganiser"
   },
   "gifts": {
     "forName": "Pour {{name}}",

@@ -44,6 +44,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
         savings_opening: prefs.savings_opening,
         theme,
         household_name: prefs.household_name,
+        money_enabled: prefs.money_enabled,
       })
       .catch(() => {});
   };

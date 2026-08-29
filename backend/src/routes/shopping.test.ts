@@ -68,6 +68,26 @@ test('deleting an unknown item is a 404', opts, async () => {
   assert.equal((await app.inject({ method: 'DELETE', url: '/api/shopping/9999', headers: { cookie } })).statusCode, 404);
 });
 
+test('reorder persists a new sort_order', opts, async () => {
+  const a = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Apples' } })).json();
+  const b = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Bananas' } })).json();
+  const c = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Cherries' } })).json();
+
+  const res = await app.inject({
+    method: 'POST', url: '/api/shopping/reorder', headers: { cookie },
+    payload: { ids: [c.id, a.id, b.id] },
+  });
+  assert.equal(res.statusCode, 200);
+
+  const list = (await app.inject({ method: 'GET', url: '/api/shopping', headers: { cookie } })).json();
+  assert.deepEqual(list.map((i: { name: string }) => i.name), ['Cherries', 'Apples', 'Bananas']);
+});
+
+test('reorder rejects an empty ids array', opts, async () => {
+  const res = await app.inject({ method: 'POST', url: '/api/shopping/reorder', headers: { cookie }, payload: { ids: [] } });
+  assert.equal(res.statusCode, 400);
+});
+
 test('store is settable on add and edit, and defaults to null', opts, async () => {
   const noStore = (await app.inject({ method: 'POST', url: '/api/shopping', headers: { cookie }, payload: { name: 'Batteries' } })).json();
   assert.equal(noStore.store, null);

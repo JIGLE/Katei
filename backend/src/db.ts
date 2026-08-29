@@ -163,6 +163,12 @@ export async function migrate(): Promise<void> {
   );
   // Items can be grouped by where they're bought (Groceries / IKEA / ...).
   await query(`ALTER TABLE shopping_items ADD COLUMN IF NOT EXISTS store VARCHAR(80)`);
+  // Manual drag-reorder within a store group. Backfill: sort_order = id
+  // preserves every existing household's current (insertion) order exactly,
+  // no shuffle on upgrade. Idempotent — no row has NULL sort_order after the
+  // first run, since new inserts always set one (see routes/shopping.ts).
+  await query(`ALTER TABLE shopping_items ADD COLUMN IF NOT EXISTS sort_order INT`);
+  await query(`UPDATE shopping_items SET sort_order = id WHERE sort_order IS NULL`);
   // Gift lists — one wishlist per household member (lazily created) or per
   // external person (a friend/relative who isn't a Katei user). A list's
   // items are visible in full to everyone EXCEPT the list's own owner: the

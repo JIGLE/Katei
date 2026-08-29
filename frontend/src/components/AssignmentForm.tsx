@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { usePreferences } from '../lib/preferences';
 import type { User, HouseholdEvent, MoneyStream, Assignment } from '../lib/types';
 
 interface AssignmentFormProps {
@@ -20,6 +21,8 @@ const fieldCls =
 
 export function AssignmentForm({ users, events, streams, onSaved, onCancel }: AssignmentFormProps) {
   const { t } = useTranslation();
+  const { money_enabled } = usePreferences();
+  const targetKinds: TargetKind[] = money_enabled ? ['event', 'money_stream'] : ['event'];
   const [userId, setUserId] = useState<string>(users[0] ? String(users[0].id) : '');
   const [kind, setKind] = useState<TargetKind>('event');
   const [targetId, setTargetId] = useState<string>('');
@@ -72,26 +75,30 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
         </select>
       </div>
 
-      <div>
-        <span className={labelCls}>{t('household.responsibleFor')}</span>
-        <div className="grid grid-cols-2 gap-2">
-          {(['event', 'money_stream'] as TargetKind[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => { setKind(k); setTargetId(''); }}
-              className={[
-                'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
-                kind === k
-                  ? 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-              ].join(' ')}
-            >
-              {k === 'event' ? t('form.targetEvent') : t('form.targetStream')}
-            </button>
-          ))}
+      {/* A picker with one choice isn't a choice — with money off, event is
+          the only target kind, so skip straight to the event picker below. */}
+      {targetKinds.length > 1 && (
+        <div>
+          <span className={labelCls}>{t('household.responsibleFor')}</span>
+          <div className="grid grid-cols-2 gap-2">
+            {targetKinds.map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => { setKind(k); setTargetId(''); }}
+                className={[
+                  'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                  kind === k
+                    ? 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {k === 'event' ? t('form.targetEvent') : t('form.targetStream')}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <label htmlFor="target" className={labelCls}>

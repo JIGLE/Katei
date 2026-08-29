@@ -41,12 +41,15 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       savings_opening: Number((await getSetting('savings_opening')) ?? 0),
       theme: normalizeTheme(await getSetting('theme')),
       household_name: (await getSetting('household_name')) ?? '',
+      // Opt-out, not opt-in: unset (fresh/existing households alike) reads as
+      // enabled, so money tracking never silently vanishes on upgrade.
+      money_enabled: (await getSetting('money_enabled')) !== 'false',
     };
   });
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; savings_opening?: number; theme?: string; household_name?: string };
+    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; savings_opening?: number; theme?: string; household_name?: string; money_enabled?: boolean };
   }>(
     '/preferences',
     {
@@ -65,6 +68,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
             savings_opening: { type: 'number', minimum: 0 },
             theme: { type: 'string', enum: ['dark', 'light', 'system'] },
             household_name: { type: 'string', maxLength: 60 },
+            money_enabled: { type: 'boolean' },
           },
         },
       },
@@ -84,6 +88,8 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       await setSetting('theme', theme);
       const household_name = (req.body.household_name ?? '').trim();
       await setSetting('household_name', household_name);
+      const money_enabled = req.body.money_enabled !== false;
+      await setSetting('money_enabled', String(money_enabled));
       return {
         country: req.body.country.toUpperCase(),
         currency: req.body.currency.toUpperCase(),
@@ -94,6 +100,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
         savings_opening,
         theme,
         household_name,
+        money_enabled,
       };
     },
   );

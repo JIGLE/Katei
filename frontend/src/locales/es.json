@@ -366,7 +366,10 @@
     "sectionMoney": "Dinero",
     "sectionAppearance": "Apariencia",
     "potsHint": "Las metas de ahorro viven en cada bote: abre Dinero y toca un bote.",
-    "themeDeviceHint": "Este dispositivo recuerda tu elección de tema."
+    "themeDeviceHint": "Este dispositivo recuerda tu elección de tema.",
+    "moneyEnabled": "Seguimiento del dinero",
+    "moneyEnabledOn": "Activado — la pestaña Dinero, las facturas y los importes de pago son visibles.",
+    "moneyEnabledOff": "Desactivado — el dinero está oculto en toda la aplicación."
   },
   "account": {
     "title": "Mi cuenta",
@@ -426,7 +429,8 @@
     "storePlaceholder": "p. ej. Mercadona, IKEA",
     "anywhere": "Cualquier tienda",
     "checkAria": "Marcar como comprado",
-    "uncheckAria": "Devolver a la lista"
+    "uncheckAria": "Devolver a la lista",
+    "reorderAria": "Arrastrar para reordenar"
   },
   "gifts": {
     "forName": "Para {{name}}",

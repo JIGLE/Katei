@@ -46,7 +46,7 @@ const VIEWS: { key: View; labelKey: string }[] = [
 ];
 
 export default function Timeline() {
-  const { locale, timezone, currency } = usePreferences();
+  const { locale, timezone, currency, money_enabled } = usePreferences();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
@@ -98,13 +98,15 @@ export default function Timeline() {
   // Assignments are independent of the upcoming/all toggle — load once.
   useEffect(() => {
     api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
-    // Money streams let "mark as paid" prefill the expected amount + currency.
+    // Money streams let "mark as paid" prefill the expected amount + currency
+    // — skipped outright when money is off, nothing to prefill.
+    if (!money_enabled) return;
     api.get<MoneyStream[]>('/money-streams').then((rows) => {
       const m: Record<number, { amount: string; currency: string }> = {};
       for (const s of rows) m[s.id] = { amount: s.amount, currency: s.currency };
       setStreams(m);
     }).catch(() => {});
-  }, []);
+  }, [money_enabled]);
 
   // Index assignments by event so each row can show who's responsible.
   const membersByEvent = new Map<number, AssignmentDetail[]>();
@@ -152,7 +154,8 @@ export default function Timeline() {
   const toggleComplete = async (evt: HouseholdEvent) => {
     // Completing a payment opens the "mark as paid" prompt to capture the
     // actual amount; everything else (incl. un-completing) toggles directly.
-    if (!evt.is_completed && evt.event_type === 'payment') {
+    // With money off there's nothing to capture — it completes like any event.
+    if (money_enabled && !evt.is_completed && evt.event_type === 'payment') {
       const linked = evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
       setPayAmount(linked ? String(linked.amount) : '');
       setPaying(evt);
@@ -332,9 +335,9 @@ export default function Timeline() {
             // A late open item overrides its type accent — urgency wins.
             const overdue = !evt.is_completed && daysUntil(evt.target_date, timezone) < 0;
             // Bills carry their amount — the fact a person came to check.
-            const linked = evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
+            const linked = money_enabled && evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
             const amount =
-              evt.event_type === 'payment'
+              money_enabled && evt.event_type === 'payment'
                 ? evt.actual_amount != null
                   ? formatMoney(evt.actual_amount, linked?.currency ?? currency, locale)
                   : linked

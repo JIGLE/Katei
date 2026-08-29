@@ -82,6 +82,11 @@ function UpcomingRow({
 const MONEY_EVENT_ACTIONS = new Set<Activity['action']>([
   'stream_added', 'event_added', 'event_done', 'payment_paid', 'savings_added',
 ]);
+// With money off, the glance drops every money-flavored verb too — a
+// note-less savings contribution's summary is a bare number (see savings.ts),
+// which is exactly the kind of thing "never encounters a money concept
+// anywhere" is meant to cover.
+const NON_MONEY_EVENT_ACTIONS = new Set<Activity['action']>(['event_added', 'event_done']);
 
 // How many dated rows each block shows before deferring to the Timeline.
 const ROW_CAP = 4;
@@ -97,7 +102,7 @@ export default function Overview() {
   const [gifts, setGifts] = useState<GiftListsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { timezone, household_name } = usePreferences();
+  const { timezone, household_name, money_enabled } = usePreferences();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -158,8 +163,11 @@ export default function Overview() {
     .filter((b): b is { member: User; days: number } => b.days !== null && b.days <= 30)
     .sort((a, b) => a.days - b.days);
 
-  // Show the first-run checklist until every setup step is satisfied.
-  const onboardingComplete = usersCount > 1 && streams.length > 0 && eventsTotal > 0;
+  // Show the first-run checklist until every setup step is satisfied. With
+  // money off, OnboardingCard drops its own money step, so completion here
+  // must stop requiring one too — otherwise a money-disabled household could
+  // never satisfy streams.length > 0 and the card would never auto-hide.
+  const onboardingComplete = usersCount > 1 && eventsTotal > 0 && (!money_enabled || streams.length > 0);
 
   // Index assignments by event so an appointment can show who it's for.
   const membersByEvent = new Map<number, AssignmentDetail[]>();
@@ -190,8 +198,10 @@ export default function Overview() {
     0,
   );
 
-  // The five rows Around the house actually shows — money/event verbs only.
-  const glanceActivity = activity.filter((a) => MONEY_EVENT_ACTIONS.has(a.action)).slice(0, 5);
+  // The five rows Around the house actually shows — money/event verbs only,
+  // narrowed further to non-money verbs when money is off.
+  const glanceActions = money_enabled ? MONEY_EVENT_ACTIONS : NON_MONEY_EVENT_ACTIONS;
+  const glanceActivity = activity.filter((a) => glanceActions.has(a.action)).slice(0, 5);
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -306,6 +316,7 @@ export default function Overview() {
             usersCount={usersCount}
             streamsCount={streams.length}
             eventsCount={eventsTotal}
+            moneyEnabled={money_enabled}
             onDismiss={hideOnboarding}
           />
         </div>
@@ -335,8 +346,9 @@ export default function Overview() {
       )}
 
       {/* What's leaving the account soon — dates, never amounts. Tapping a row
-          opens the Timeline, where it can be marked paid. */}
-      {datedSection('overview.nextPayments', payments, DOT.payment, () => navigate('/timeline'))}
+          opens the Timeline, where it can be marked paid. Gone entirely when
+          money is off — there's no "leaving the account" to speak of. */}
+      {money_enabled && datedSection('overview.nextPayments', payments, DOT.payment, () => navigate('/timeline'))}
 
       {/* Where the household has to be. Tapping opens that day in the calendar. */}
       {datedSection('overview.upcomingAppointments', appointments, DOT.appointment, ({ evt }) =>

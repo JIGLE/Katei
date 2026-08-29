@@ -91,6 +91,27 @@ test('rejects an invalid currency code', opts, async () => {
   assert.equal(res.statusCode, 400);
 });
 
+test('money_enabled defaults to true and round-trips false', opts, async () => {
+  const p = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  assert.equal(p.money_enabled, true);
+
+  const put = await app.inject({
+    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    payload: { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin', money_enabled: false },
+  });
+  assert.equal(put.json().money_enabled, false);
+  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  assert.equal(got.money_enabled, false);
+});
+
+test('money_enabled defaults true when omitted from PUT', opts, async () => {
+  const put = await app.inject({
+    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    payload: { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' },
+  });
+  assert.equal(put.json().money_enabled, true);
+});
+
 // --- Authorization: sensitive settings are admin-only (S1) ---
 
 /** Invite a member, redeem it, and return their (non-admin) session cookie. */

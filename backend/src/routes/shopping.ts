@@ -5,15 +5,15 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
-const COLS = 'id, name, note, store, added_by, is_done, done_at, created_at';
+const COLS = 'id, name, note, store, sort_order, added_by, is_done, done_at, created_at';
 
 export const shoppingRoutes: FastifyPluginAsync = async (app) => {
-  // GET /api/shopping — open first (oldest added first), done last (most
+  // GET /api/shopping — open first (manual drag order), done last (most
   // recently finished first, so "just checked" sits at the divider).
   app.get('/', async () => {
     const { rows } = await query(
       `SELECT ${COLS} FROM shopping_items
-       ORDER BY is_done ASC, CASE WHEN is_done THEN NULL ELSE id END ASC, done_at DESC`,
+       ORDER BY is_done ASC, CASE WHEN is_done THEN NULL ELSE sort_order END ASC, done_at DESC`,
     );
     return rows;
   });
@@ -37,12 +37,37 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
     async (req, reply) => {
       const name = req.body.name.trim();
       if (!name) return reply.code(400).send({ error: 'Name is required' });
+      // New items land at the end of the current order.
       const { rows } = await query(
-        `INSERT INTO shopping_items (name, note, store, added_by) VALUES ($1, $2, $3, $4) RETURNING ${COLS}`,
+        `INSERT INTO shopping_items (name, note, store, added_by, sort_order)
+         VALUES ($1, $2, $3, $4, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM shopping_items))
+         RETURNING ${COLS}`,
         [name, req.body.note?.trim() || null, req.body.store?.trim() || null, req.user?.id ?? null],
       );
       await logActivity(req.user?.id ?? null, 'shopping_added', name);
       return reply.code(201).send(rows[0]);
+    },
+  );
+
+  // POST /api/shopping/reorder — persist a new relative order for a set of
+  // items (a single store group's ids, front to back, from a drag gesture).
+  app.post<{ Body: { ids: number[] } }>(
+    '/reorder',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['ids'],
+          properties: { ids: { type: 'array', items: { type: 'integer' }, minItems: 1 } },
+        },
+      },
+    },
+    async (req) => {
+      const { ids } = req.body;
+      for (let i = 0; i < ids.length; i++) {
+        await query(`UPDATE shopping_items SET sort_order = $1 WHERE id = $2`, [i, ids[i]]);
+      }
+      return { ok: true, updated: ids.length };
     },
   );
 

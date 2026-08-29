@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { usePreferences } from '../lib/preferences';
 import type { HouseholdEvent, MoneyStream } from '../lib/types';
 
 interface EventFormProps {
@@ -28,6 +29,7 @@ const fieldCls =
 
 export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }: EventFormProps) {
   const { t } = useTranslation();
+  const { money_enabled } = usePreferences();
   const isEdit = Boolean(initial);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [eventType, setEventType] = useState<EventType>(initial?.event_type ?? 'deadline');
@@ -46,10 +48,12 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Money streams are optional links — fetch them so a payment can point
-  // at the recurring cost it settles.
+  // at the recurring cost it settles. Skipped outright when money is off —
+  // there's nothing to link and no reason to make the request.
   useEffect(() => {
+    if (!money_enabled) return;
     api.get<MoneyStream[]>('/money-streams').then(setStreams).catch(() => setStreams([]));
-  }, []);
+  }, [money_enabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +140,7 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
         />
       </div>
 
-      {streams.length > 0 && (
+      {money_enabled && streams.length > 0 && (
         <div>
           <label htmlFor="money_stream" className={labelCls}>{t('form.linkedCost')}</label>
           <select

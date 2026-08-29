@@ -15,11 +15,13 @@ export function OnboardingCard({
   usersCount,
   streamsCount,
   eventsCount,
+  moneyEnabled,
   onDismiss,
 }: {
   usersCount: number;
   streamsCount: number;
   eventsCount: number;
+  moneyEnabled: boolean;
   /** A solo household can never tick "add members" — let them put it away. */
   onDismiss: () => void;
 }) {
@@ -33,12 +35,14 @@ export function OnboardingCard({
       done: usersCount > 1,
       to: '/household',
     },
-    {
-      label: t('onboarding.addMoney'),
-      hint: t('onboarding.addMoneyHint'),
-      done: streamsCount > 0,
-      to: '/money',
-    },
+    ...(moneyEnabled
+      ? [{
+          label: t('onboarding.addMoney'),
+          hint: t('onboarding.addMoneyHint'),
+          done: streamsCount > 0,
+          to: '/money',
+        }]
+      : []),
     {
       label: t('onboarding.addEvent'),
       hint: t('onboarding.addEventHint'),

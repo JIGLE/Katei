@@ -126,6 +126,7 @@ export interface ShoppingItem {
   name: string;
   note: string | null;
   store: string | null;
+  sort_order: number;
   added_by: number | null;
   is_done: boolean;
   done_at: string | null;

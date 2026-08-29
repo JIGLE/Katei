@@ -14,6 +14,7 @@ export interface Preferences {
   savings_opening: number;
   theme: Theme;
   household_name: string;
+  money_enabled: boolean;
 }
 
 const DEFAULTS: Preferences = {
@@ -26,6 +27,7 @@ const DEFAULTS: Preferences = {
   savings_opening: 0,
   theme: 'dark',
   household_name: '',
+  money_enabled: true,
 };
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)');

@@ -366,7 +366,10 @@
     "sectionMoney": "Geld",
     "sectionAppearance": "Darstellung",
     "potsHint": "Sparziele gehören zu den Töpfen – öffne Geld und tippe auf einen Topf.",
-    "themeDeviceHint": "Dieses Gerät merkt sich deine Themenauswahl."
+    "themeDeviceHint": "Dieses Gerät merkt sich deine Themenauswahl.",
+    "moneyEnabled": "Geldverwaltung",
+    "moneyEnabledOn": "An — der Geld-Tab, Rechnungen und Zahlungsbeträge sind sichtbar.",
+    "moneyEnabledOff": "Aus — Geld ist überall in der App ausgeblendet."
   },
   "account": {
     "title": "Mein Konto",
@@ -426,7 +429,8 @@
     "storePlaceholder": "z. B. Aldi, IKEA",
     "anywhere": "Überall",
     "checkAria": "Als gekauft markieren",
-    "uncheckAria": "Zurück auf die Liste"
+    "uncheckAria": "Zurück auf die Liste",
+    "reorderAria": "Zum Sortieren ziehen"
   },
   "gifts": {
     "forName": "Für {{name}}",

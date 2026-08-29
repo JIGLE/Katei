@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from './components/BottomNav';
 import { AuthGate } from './components/AuthGate';
@@ -24,7 +24,7 @@ const SPLASH_MIN_MS = 900;
 
 export default function App() {
   const { user, loading } = useAuth();
-  const { loading: prefsLoading } = usePreferences();
+  const { loading: prefsLoading, money_enabled } = usePreferences();
   const { t } = useTranslation();
   const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
@@ -89,7 +89,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/timeline" element={<Timeline />} />
-            <Route path="/money" element={<MoneyFlow />} />
+            <Route path="/money" element={money_enabled ? <MoneyFlow /> : <Navigate to="/" replace />} />
             <Route path="/lists" element={<Lists />} />
             <Route path="/household" element={<Household />} />
           </Routes>

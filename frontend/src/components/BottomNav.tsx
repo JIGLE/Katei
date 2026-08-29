@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { usePreferences } from '../lib/preferences';
 
 const tabs = [
   {
@@ -67,10 +68,12 @@ const accentColor = {
 
 export function BottomNav() {
   const { t } = useTranslation();
+  const { money_enabled } = usePreferences();
+  const visibleTabs = money_enabled ? tabs : tabs.filter((tab) => tab.to !== '/money');
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
       <div className="mx-4 mb-4 flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
