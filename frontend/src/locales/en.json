@@ -298,7 +298,7 @@
     "photo": "Photo",
     "choosePhoto": "Choose photo",
     "changePhoto": "Change photo",
-    "photoHint": "JPG or PNG, up to 2 MB",
+    "photoHint": "JPG or PNG — we'll resize large photos automatically.",
     "link": "Link (optional)",
     "linkPlaceholder": "Paste a product link…",
     "linkFetching": "Fetching the page title…",
@@ -368,6 +368,8 @@
   "account": {
     "title": "My account",
     "menuAria": "Account menu",
+    "menuAriaUnread_one": "Account menu, {{count}} unread notification",
+    "menuAriaUnread_other": "Account menu, {{count}} unread notifications",
     "email": "Email",
     "emailHint": "Used for identity and account recovery. Optional.",
     "avatarUrl": "Avatar URL",

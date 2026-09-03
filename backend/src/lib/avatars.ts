@@ -1,9 +1,10 @@
 // Uploaded member avatars live in a subdirectory of the data volume (persisted
 // like the backups). Files are served back through GET /api/avatars/:file.
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
+import sharp from 'sharp';
 
 export const AVATAR_DIR = process.env.AVATAR_DIR ?? '/var/lib/postgresql/data/katei_avatars';
 
@@ -41,4 +42,38 @@ export async function saveAvatar(userId: number, buf: Buffer, ext: 'jpg' | 'png'
   const name = `${userId}_${Date.now()}_${randomBytes(4).toString('hex')}.${ext}`;
   await writeFile(path.join(AVATAR_DIR, name), buf);
   return `/api/avatars/${name}`;
+}
+
+// Avatars only ever render as small circles (Avatar.tsx: rounded-full
+// object-cover), so there's no reason to keep a multi-megapixel phone photo
+// around — resize down to what's actually shown, at generous headroom for
+// high-DPI screens.
+const MAX_AVATAR_DIM = 512;
+
+/**
+ * Downscale and re-encode an uploaded avatar: auto-orient from EXIF (a
+ * sideways phone photo would otherwise display sideways), then drop all
+ * metadata on re-encode (the default — EXIF/ICC/GPS aren't preserved unless
+ * .withMetadata() is called, which this deliberately never does — a privacy
+ * win, not just a size one), then fit within MAX_AVATAR_DIM without
+ * upscaling or cropping. Aspect ratio is preserved on purpose: the frontend
+ * already crops to a circle via CSS regardless of the source's shape, so a
+ * server-side crop would only add risk (cutting off an off-center subject)
+ * for no benefit. Output format follows the input's sniffed type, matching
+ * this route's existing "trust the bytes" convention.
+ */
+export async function processAvatarImage(buf: Buffer, ext: 'jpg' | 'png'): Promise<Buffer> {
+  const pipeline = sharp(buf, { failOn: 'truncated' })
+    .rotate()
+    .resize(MAX_AVATAR_DIM, MAX_AVATAR_DIM, { fit: 'inside', withoutEnlargement: true });
+  return ext === 'png'
+    ? pipeline.png({ compressionLevel: 9 }).toBuffer()
+    : pipeline.jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+}
+
+/** Best-effort delete of a previously-stored avatar. Never throws — a failed
+    cleanup should never fail the request that triggered it. */
+export async function deleteAvatar(url: string): Promise<void> {
+  const p = avatarPath(url.split('/').pop() ?? '');
+  if (p) await unlink(p).catch(() => {});
 }

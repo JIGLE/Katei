@@ -81,8 +81,8 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
   if (!user) return null; // BottomNav only ever renders once a session exists
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="relative flex items-center justify-center px-4 pb-4">
-        <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
+      <div className="flex items-center justify-center px-3 pb-4">
+        <div className="flex items-center gap-1 rounded-full border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
           {visibleTabs.map((tab) => (
             <NavLink
               key={tab.to}
@@ -110,10 +110,10 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
               )}
             </NavLink>
           ))}
-        </div>
-        {/* Account control — a satellite beside the tab pill, not a 6th tab:
-            it opens a menu of actions, it isn't a place to navigate to. */}
-        <div className="absolute right-4">
+          {/* Divider marks the account control as a different kind of thing
+              from the route tabs — a menu of actions, not a 6th destination —
+              while staying inside the same continuous rounded-full shape. */}
+          <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
           <AccountMenu user={user} onOpenAccount={onOpenAccount} onOpenSettings={onOpenSettings} />
         </div>
       </div>

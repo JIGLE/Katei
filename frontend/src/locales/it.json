@@ -299,7 +299,7 @@
     "photo": "Foto",
     "choosePhoto": "Scegli foto",
     "changePhoto": "Cambia foto",
-    "photoHint": "JPG o PNG, fino a 2 MB",
+    "photoHint": "JPG o PNG — le foto grandi vengono ridimensionate automaticamente.",
     "link": "Link (facoltativo)",
     "linkPlaceholder": "Incolla un link prodotto…",
     "linkFetching": "Recupero del titolo…",
@@ -369,6 +369,8 @@
   "account": {
     "title": "Il mio account",
     "menuAria": "Menu account",
+    "menuAriaUnread_one": "Menu account, {{count}} notifica non letta",
+    "menuAriaUnread_other": "Menu account, {{count}} notifiche non lette",
     "email": "Email",
     "emailHint": "Per identità e recupero dell'account. Facoltativo.",
     "avatarUrl": "URL avatar",

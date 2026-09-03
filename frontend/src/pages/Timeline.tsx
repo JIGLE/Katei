@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
@@ -37,8 +37,6 @@ const accentMap: Record<Accent, { pill: string }> = {
   rose: { pill: 'border-rose-500/40 bg-rose-500/10 text-rose-500' },
   teal: { pill: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
 };
-
-const ROW_HEIGHT = 56; // px — matches the row template's fixed h-14
 
 export default function Timeline() {
   const { locale, timezone, currency, money_enabled } = usePreferences();
@@ -112,48 +110,9 @@ export default function Timeline() {
   // mine in a non-empty scope"), then search/type narrow further.
   const mineFilteredActive = activeAll.filter((e) => !mineOnly || mineEventIds.has(e.id));
   const searchingActive = query.trim() !== '' || typeFilter !== 'all';
-  const filtering = mineOnly || searchingActive;
   const visibleActive = mineFilteredActive.filter(
     (e) => (typeFilter === 'all' || e.event_type === typeFilter) && matchesQuery(query, e.title, e.description),
   );
-
-  // "Fit without scrolling" — measured, not guessed. Only meaningful in the
-  // ambient default state (no day selected, no filter active); a deliberate
-  // selection or search is allowed to scroll.
-  const listShellRef = useRef<HTMLDivElement>(null);
-  const rowsTopRef = useRef<HTMLDivElement>(null);
-  const [availableHeight, setAvailableHeight] = useState<number | null>(null);
-  useEffect(() => {
-    if (selectedDay != null || filtering || !rowsTopRef.current) return;
-    const mainEl = document.querySelector<HTMLElement>('main');
-    if (!mainEl) return;
-    const recompute = () => {
-      // The rows section unmounts for the duration of every refetch (loading
-      // briefly flips true), and a ResizeObserver callback can fire during
-      // that window — re-check here, not just once at effect setup.
-      if (!rowsTopRef.current) return;
-      const mainRect = mainEl.getBoundingClientRect();
-      // Reads <main>'s live padding-bottom rather than duplicating the pb-44
-      // value, so this self-corrects if that clearance ever changes. The FAB
-      // floats above that reserved strip, into the content area itself
-      // (h-14 circle + its bottom-28 offset), so the last row needs its own
-      // clearance too or the FAB's corner sits on top of it.
-      const reservedBottom = (parseFloat(getComputedStyle(mainEl).paddingBottom) || 176) + 64;
-      const rowsTop = rowsTopRef.current.getBoundingClientRect().top;
-      setAvailableHeight(Math.max(0, mainRect.bottom - reservedBottom - rowsTop - 8));
-    };
-    recompute();
-    const ro = new ResizeObserver(recompute);
-    ro.observe(mainEl);
-    ro.observe(listShellRef.current!); // calendar height varies by month; filter panel toggling changes it too
-    return () => ro.disconnect();
-  }, [selectedDay, filtering, events.length]);
-
-  const MIN_VISIBLE = 3;
-  const visibleCount = availableHeight == null
-    ? Math.min(visibleActive.length, 5) // pre-measurement paint guess; corrects on first layout pass
-    : Math.max(MIN_VISIBLE, Math.min(visibleActive.length, Math.floor(availableHeight / ROW_HEIGHT)));
-  const rowsToRender = selectedDay || filtering ? visibleActive : visibleActive.slice(0, visibleCount);
 
   const selectedDayCaption = selectedDay
     ? new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
@@ -304,7 +263,7 @@ export default function Timeline() {
       {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
 
       {!loading && !error && (
-        <div ref={listShellRef} className="space-y-3">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{selectedDayCaption}</p>
             <button
@@ -404,8 +363,8 @@ export default function Timeline() {
           )}
 
           {visibleActive.length > 0 && (
-            <section ref={rowsTopRef} className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-              {rowsToRender.map((evt, i) => renderRow(evt, i))}
+            <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+              {visibleActive.map((evt, i) => renderRow(evt, i))}
             </section>
           )}
         </div>

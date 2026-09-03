@@ -33,8 +33,8 @@ export const api = {
     form.append('file', file);
     const res = await fetch(`${BASE}${path}`, { method: 'POST', credentials: 'include', body: form });
     if (!res.ok) {
-      const text = await res.text().catch(() => res.statusText);
-      throw new Error(`${res.status} ${text}`);
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(body?.error ?? res.statusText);
     }
     return res.json() as Promise<T>;
   },

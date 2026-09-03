@@ -146,9 +146,13 @@ reinvent.
   primary "add" action on a tab.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
-  Active item brightens to `zinc-100`. The signed-in user's avatar sits as a
-  separate satellite button beside the tab pill, opening the account menu —
-  it's a menu of actions, not a destination, so it's deliberately not a 6th tab.
+  Active item brightens to `zinc-100`. The nav pill itself is `rounded-full`
+  (not `rounded-2xl`), so its end-cap and the signed-in user's circular
+  avatar — the pill's last element, past a hairline divider — read as one
+  continuous shape rather than two objects meeting at a seam. The avatar
+  opens the account menu, which also holds notifications (an unread count
+  shows as a small rose badge on the avatar's corner); it's a menu of
+  actions, not a destination, so it's deliberately not a 6th tab.
 - **Buttons**:
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`
