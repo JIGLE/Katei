@@ -74,8 +74,11 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
     corsOrigins.length ? { origin: corsOrigins, credentials: true } : { origin: false },
   );
   await app.register(cookie);
-  // Avatar uploads — cap at 2 MB, one file per request.
-  await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024, files: 1 } });
+  // Avatar uploads — the only multipart route today. Original photos are
+  // downscaled server-side (lib/avatars.ts), so this ceiling just bounds
+  // worst-case request memory rather than the stored size; 20 MB covers any
+  // realistic phone photo with room to spare.
+  await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024, files: 1 } });
   await app.register(jwt, {
     secret: opts.jwtSecret,
     cookie: { cookieName: 'katei_session', signed: false },

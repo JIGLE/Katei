@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query } from '../db.js';
 import { requireAdmin, isAdmin } from '../lib/authz.js';
 import { logActivity } from '../lib/activity.js';
-import { saveAvatar, sniffImageType } from '../lib/avatars.js';
+import { deleteAvatar, processAvatarImage, saveAvatar, sniffImageType } from '../lib/avatars.js';
 import { hit } from '../lib/ratelimit.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
@@ -123,7 +123,9 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     return reply.code(204).send();
   });
 
-  // POST /api/users/:id/avatar — upload a JPG/PNG (≤2 MB). Self or admin.
+  // POST /api/users/:id/avatar — upload a JPG/PNG (≤20 MB original; downscaled
+  // and re-encoded to a small stored size regardless of source dimensions).
+  // Self or admin.
   app.post<{ Params: { id: string } }>('/:id/avatar', async (req, reply) => {
     const id = Number(req.params.id);
     const uid = req.user?.id;
@@ -138,18 +140,40 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     }
     const file = await req.file();
     if (!file) return reply.code(400).send({ error: 'No image provided' });
-    // toBuffer() enforces the 2 MB limit registered on the multipart plugin.
-    const buf = await file.toBuffer();
+    let buf: Buffer;
+    try {
+      // toBuffer() enforces the 20 MB limit registered on the multipart plugin.
+      buf = await file.toBuffer();
+    } catch (err) {
+      if ((err as { code?: string }).code === 'FST_REQ_FILE_TOO_LARGE') {
+        return reply.code(413).send({ error: 'That photo is too large. Try a smaller one.' });
+      }
+      throw err;
+    }
     // Trust the bytes, not the client's mimetype: sniff the magic numbers and
     // store under the sniffed extension.
     const ext = sniffImageType(buf);
     if (!ext) return reply.code(400).send({ error: 'Please choose a JPG or PNG image.' });
-    const url = await saveAvatar(id, buf, ext);
+    let processed: Buffer;
+    try {
+      processed = await processAvatarImage(buf, ext);
+    } catch {
+      return reply.code(400).send({ error: "That image couldn't be processed. Try a different photo." });
+    }
+    const url = await saveAvatar(id, processed, ext);
+    const { rows: before } = await query<{ avatar_url: string | null }>(
+      'SELECT avatar_url FROM users WHERE id = $1',
+      [id],
+    );
+    const oldUrl = before[0]?.avatar_url ?? null;
     const { rows } = await query(
       `UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING ${COLS}`,
       [url, id],
     );
     if (!rows.length) return reply.code(404).send({ error: 'User not found' });
+    // Best-effort cleanup, only after the new avatar is committed — a failed
+    // delete just leaves today's existing orphan-file baseline, never worse.
+    if (oldUrl && oldUrl !== url) void deleteAvatar(oldUrl);
     return rows[0];
   });
 };

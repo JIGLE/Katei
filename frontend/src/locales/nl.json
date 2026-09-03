@@ -299,7 +299,7 @@
     "photo": "Foto",
     "choosePhoto": "Foto kiezen",
     "changePhoto": "Foto wijzigen",
-    "photoHint": "JPG of PNG, tot 2 MB",
+    "photoHint": "JPG of PNG — grote foto's worden automatisch verkleind.",
     "link": "Link (optioneel)",
     "linkPlaceholder": "Plak een productlink…",
     "linkFetching": "Paginatitel ophalen…",
@@ -369,6 +369,8 @@
   "account": {
     "title": "Mijn account",
     "menuAria": "Accountmenu",
+    "menuAriaUnread_one": "Accountmenu, {{count}} ongelezen melding",
+    "menuAriaUnread_other": "Accountmenu, {{count}} ongelezen meldingen",
     "email": "E-mail",
     "emailHint": "Voor identiteit en accountherstel. Optioneel.",
     "avatarUrl": "Avatar-URL",
