@@ -113,7 +113,7 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
           {/* Divider marks the account control as a different kind of thing
               from the route tabs — a menu of actions, not a 6th destination —
               while staying inside the same continuous rounded-full shape. */}
-          <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
+          <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-600" />
           <AccountMenu user={user} onOpenAccount={onOpenAccount} onOpenSettings={onOpenSettings} />
         </div>
       </div>
