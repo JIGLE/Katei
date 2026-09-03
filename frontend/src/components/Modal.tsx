@@ -18,6 +18,41 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), ' +
   'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Tracks the on-screen keyboard's footprint via visualViewport so the sheet
+// can stay above it. `position: fixed` content lays out against the layout
+// viewport on iOS, so the keyboard opening doesn't move or resize anything by
+// itself — inset pushes the bottom-aligned sheet up, maxHeight shrinks it to
+// what's actually left above the keyboard. Either alone breaks: inset-only
+// lets the sheet overflow off the top of the screen, maxHeight-only sizes it
+// right but leaves its bottom under the keyboard. Where visualViewport isn't
+// supported, both stay at their no-op defaults and the static max-h-[90dvh]
+// class below is the entire fallback — pure progressive enhancement.
+function useKeyboardInset(active: boolean) {
+  const [state, setState] = useState<{ inset: number; maxHeight: number | undefined }>({
+    inset: 0,
+    maxHeight: undefined,
+  });
+  useEffect(() => {
+    if (!active) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      const inset = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
+      setState({ inset, maxHeight: inset > 0 ? Math.round(vv.height * 0.9) : undefined });
+    };
+    onResize();
+    vv.addEventListener('resize', onResize);
+    // iOS also fires this when it auto-pans the page to keep a focused field visible.
+    vv.addEventListener('scroll', onResize);
+    return () => {
+      vv.removeEventListener('resize', onResize);
+      vv.removeEventListener('scroll', onResize);
+      setState({ inset: 0, maxHeight: undefined });
+    };
+  }, [active]);
+  return state;
+}
+
 // A mobile-first bottom sheet. Slides up from the bottom to echo the
 // fixed bottom navigation; on larger screens it stays centred-bottom and
 // capped at the same max width as the app content. Animates in on open and
@@ -36,6 +71,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  const { inset, maxHeight } = useKeyboardInset(open);
 
   useEffect(() => {
     if (open) {
@@ -117,7 +153,10 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center">
+    <div
+      style={{ paddingBottom: inset || undefined }}
+      className="fixed inset-0 z-[60] flex items-end justify-center transition-[padding-bottom] duration-200 ease-out motion-reduce:transition-none"
+    >
       {/* Backdrop — pointer dismissal only. Escape and the header button
           already cover keyboards, so it is not a tab stop. */}
       <div
@@ -127,14 +166,16 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
       />
 
       {/* Sheet — capped at the viewport so a tall form scrolls instead of
-          overflowing off-screen; the handle + header stay pinned. */}
+          overflowing off-screen; the handle + header stay pinned. maxHeight
+          overrides the static 90dvh cap once a keyboard is actually open. */}
       <div
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[90dvh] w-full max-w-lg flex-col rounded-t-3xl border border-zinc-800/60 bg-zinc-900 shadow-2xl outline-none transition-transform duration-[var(--dur-slow)] ease-[var(--ease-drawer)] motion-reduce:transition-none ${entered ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{ maxHeight }}
+        className={`relative flex max-h-[90dvh] w-full max-w-lg flex-col rounded-t-3xl border border-zinc-800/60 bg-zinc-900 shadow-2xl outline-none transition-[transform,max-height] duration-[var(--dur-slow)] ease-[var(--ease-drawer)] motion-reduce:transition-none ${entered ? 'translate-y-0' : 'translate-y-full'}`}
       >
         <div className="flex-shrink-0 px-5 pt-5">
           <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-zinc-700" />

@@ -144,8 +144,11 @@ reinvent.
   frequency). Selected segment fills with the relevant accent.
 - **FAB** — a single floating action button (bottom-right, above the nav) for the
   primary "add" action on a tab.
-- **Bottom nav** (`BottomNav.tsx`) — four destinations: Overview · Timeline ·
-  Money Flow · Household. Active item brightens to `zinc-100`.
+- **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
+  Money Flow (hidden when a household turns Money off) · Lists · Household.
+  Active item brightens to `zinc-100`. The signed-in user's avatar sits as a
+  separate satellite button beside the tab pill, opening the account menu —
+  it's a menu of actions, not a destination, so it's deliberately not a 6th tab.
 - **Buttons**:
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`

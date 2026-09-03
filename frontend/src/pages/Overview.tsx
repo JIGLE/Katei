@@ -303,7 +303,7 @@ export default function Overview() {
             events={events}
             lang={lang}
             timezone={timezone}
-            onSelectDay={(day) => navigate(`/timeline?view=month&day=${day}`)}
+            onSelectDay={(day) => navigate(`/timeline?day=${day}`)}
           />
         </div>
       )}
@@ -352,7 +352,7 @@ export default function Overview() {
 
       {/* Where the household has to be. Tapping opens that day in the calendar. */}
       {datedSection('overview.upcomingAppointments', appointments, DOT.appointment, ({ evt }) =>
-        navigate(`/timeline?view=month&day=${evt.target_date.slice(0, 10)}`))}
+        navigate(`/timeline?day=${evt.target_date.slice(0, 10)}`))}
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
       {!loading && birthdays.length > 0 && (

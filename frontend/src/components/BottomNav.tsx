@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
+import { useAuth } from '../lib/auth';
+import { AccountMenu } from './AccountMenu';
 
 const tabs = [
   {
@@ -66,40 +68,54 @@ const accentColor = {
   teal: 'bg-teal-400',
 };
 
-export function BottomNav() {
+interface BottomNavProps {
+  onOpenAccount: () => void;
+  onOpenSettings: () => void;
+}
+
+export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
   const { t } = useTranslation();
   const { money_enabled } = usePreferences();
+  const { user } = useAuth();
   const visibleTabs = money_enabled ? tabs : tabs.filter((tab) => tab.to !== '/money');
+  if (!user) return null; // BottomNav only ever renders once a session exists
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
-      <div className="mx-4 mb-4 flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
-        {visibleTabs.map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/'}
-            className={({ isActive }) =>
-              [
-                'relative flex flex-col items-center gap-1 rounded-xl px-2.5 py-2 text-[0.7rem] font-medium transition-colors duration-150',
-                isActive
-                  ? 'bg-zinc-800 text-zinc-100'
-                  : 'text-zinc-400 hover:text-zinc-300',
-              ].join(' ')
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {tab.icon}
-                <span className="whitespace-nowrap">{t(tab.labelKey)}</span>
-                {tab.accent && isActive && (
-                  <span
-                    className={`absolute top-1.5 right-2 h-1 w-1 rounded-full ${accentColor[tab.accent]}`}
-                  />
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
+      <div className="relative flex items-center justify-center px-4 pb-4">
+        <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
+          {visibleTabs.map((tab) => (
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end={tab.to === '/'}
+              className={({ isActive }) =>
+                [
+                  'relative flex flex-col items-center gap-1 rounded-xl px-2.5 py-2 text-[0.7rem] font-medium transition-colors duration-150',
+                  isActive
+                    ? 'bg-zinc-800 text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-300',
+                ].join(' ')
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {tab.icon}
+                  <span className="whitespace-nowrap">{t(tab.labelKey)}</span>
+                  {tab.accent && isActive && (
+                    <span
+                      className={`absolute top-1.5 right-2 h-1 w-1 rounded-full ${accentColor[tab.accent]}`}
+                    />
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+        {/* Account control — a satellite beside the tab pill, not a 6th tab:
+            it opens a menu of actions, it isn't a place to navigate to. */}
+        <div className="absolute right-4">
+          <AccountMenu user={user} onOpenAccount={onOpenAccount} onOpenSettings={onOpenSettings} />
+        </div>
       </div>
     </nav>
   );

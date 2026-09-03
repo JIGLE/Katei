@@ -8,11 +8,12 @@ interface CalendarMonthProps {
   /** UI language — month/weekday names are words, so they follow the interface. */
   lang: string;
   timezone?: string;
-  onSelectEvent: (evt: HouseholdEvent) => void;
-  /** Offer "add on this day" in the day panel — no dead-end empty days. */
-  onAddOnDay?: (dayKey: string) => void;
-  /** Open on this day (YYYY-MM-DD) — e.g. a deep-link from the home week strip. */
-  initialDay?: string;
+  /** The day (YYYY-MM-DD) the caller is treating as selected, or null for none. */
+  selectedDay: string | null;
+  /** Fires with the tapped day, or null when re-tapping the selected day (or
+      paging the month) clears the selection — the caller owns what "selected"
+      means for the rest of the page. */
+  onSelectDay: (day: string | null) => void;
 }
 
 // Dot colour per event type (matches the Timeline/BRAND semantic accents).
@@ -35,16 +36,17 @@ const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}
 // and week, Home/End jump within the month, PageUp/PageDown change month.
 // Each day announces its full date, its event count, and today; the dots are
 // decoration only.
-export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDay, initialDay }: CalendarMonthProps) {
+export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay }: CalendarMonthProps) {
   const { t } = useTranslation();
   const today = todayInTimezone(timezone); // 'YYYY-MM-DD'
-  // A deep-link opens on its day/month; otherwise today.
-  const start = initialDay ?? today;
+  // A selected/deep-linked day opens its month; otherwise today's. Read only
+  // once on mount — selectedDay only ever changes via this component's own
+  // callback round-tripping back in, never from an unrelated external trigger.
+  const start = selectedDay ?? today;
   const [cursor, setCursor] = useState(() => {
     const [y, m] = start.split('-').map(Number);
     return { y, m: m - 1 }; // month is 0-indexed
   });
-  const [selected, setSelected] = useState<string | null>(start);
   // The roving tab stop: which day of the displayed month is focusable.
   const [focusDay, setFocusDay] = useState(() => Number(start.slice(8)));
   // Focus moves only on keyboard navigation, never on plain re-renders.
@@ -80,7 +82,7 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
   const shift = (delta: number) => {
     const d = new Date(y, m + delta, 1);
     setCursor({ y: d.getFullYear(), m: d.getMonth() });
-    setSelected(null);
+    onSelectDay(null);
   };
 
   // After keyboard navigation (possibly across a month boundary), put real
@@ -125,7 +127,6 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
   const weeks: (number | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
-  const selectedEvents = selected ? byDay.get(selected) ?? [] : [];
   cellRefs.current.clear();
 
   return (
@@ -163,7 +164,7 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
               const dayKey = keyOf(y, m, day);
               const dayEvents = byDay.get(dayKey) ?? [];
               const isToday = dayKey === today;
-              const isSelected = dayKey === selected;
+              const isSelected = dayKey === selectedDay;
               const label = [
                 dayName(day),
                 ...(dayEvents.length ? [t('timeline.dayEvents', { count: dayEvents.length })] : []),
@@ -179,7 +180,7 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
                   aria-current={isToday ? 'date' : undefined}
                   aria-label={label}
                   tabIndex={day === rovingDay ? 0 : -1}
-                  onClick={() => { setSelected(dayKey); setFocusDay(day); }}
+                  onClick={() => { onSelectDay(dayKey); setFocusDay(day); }}
                   className={[
                     'flex aspect-square flex-col items-center justify-center gap-1 rounded-lg text-sm transition-colors',
                     isSelected ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-300 hover:bg-zinc-800/50',
@@ -200,44 +201,6 @@ export function CalendarMonth({ events, lang, timezone, onSelectEvent, onAddOnDa
           </div>
         ))}
       </div>
-
-      {/* The selected day's events — never a dead end: the day panel always
-          offers adding something on that date. */}
-      {selected && (
-        <div className="mt-4 border-t border-zinc-800/60 pt-3">
-          {selectedEvents.length === 0 ? (
-            <p className="py-2 text-center text-xs text-zinc-600">{t('timeline.noEventsThisDay')}</p>
-          ) : (
-            <ul className="space-y-2">
-              {selectedEvents.map((e) => (
-                <li key={e.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectEvent(e)}
-                    className="-mx-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-zinc-800/40"
-                  >
-                    <span className={`h-2 w-2 flex-shrink-0 rounded-full ${e.is_completed ? 'bg-zinc-600' : DOT[e.event_type]}`} />
-                    <span className={`flex-1 truncate ${e.is_completed ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>{e.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {onAddOnDay && (
-            <button
-              type="button"
-              onClick={() => onAddOnDay(selected)}
-              className="mx-auto mt-2 block text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
-            >
-              ＋ {t('timeline.addOnDay', {
-                date: new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long' }).format(
-                  new Date(`${selected}T00:00:00`),
-                ),
-              })}
-            </button>
-          )}
-        </div>
-      )}
     </section>
   );
 }

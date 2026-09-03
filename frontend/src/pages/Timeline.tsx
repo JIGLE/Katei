@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
@@ -7,12 +7,12 @@ import { EventForm } from '../components/EventForm';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
 import { assignedIds } from '../lib/assignments';
-import { CalendarMonth } from '../components/CalendarMonth';
+import { CalendarMonth, DOT } from '../components/CalendarMonth';
 import { AssigneeStack } from '../components/Avatar';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
-import { formatDate, formatMoney, daysUntil } from '../lib/format';
+import { formatMoney, formatRelativeDay, daysUntil } from '../lib/format';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -31,19 +31,14 @@ const typeConfig: Record<
   savings: { accent: 'teal', labelKey: 'eventType.savings' },
 };
 
-const accentMap: Record<Accent, { date: string; dot: string; badge: string; pill: string }> = {
-  amber: { date: 'text-amber-500', dot: 'bg-amber-500', badge: 'bg-amber-500/10 text-amber-500', pill: 'border-amber-500/40 bg-amber-500/10 text-amber-500' },
-  emerald: { date: 'text-emerald-500', dot: 'bg-emerald-500', badge: 'bg-emerald-500/10 text-emerald-500', pill: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500' },
-  rose: { date: 'text-rose-500', dot: 'bg-rose-500', badge: 'bg-rose-500/10 text-rose-500', pill: 'border-rose-500/40 bg-rose-500/10 text-rose-500' },
-  teal: { date: 'text-teal-300', dot: 'bg-teal-400', badge: 'bg-teal-500/10 text-teal-300', pill: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
+const accentMap: Record<Accent, { pill: string }> = {
+  amber: { pill: 'border-amber-500/40 bg-amber-500/10 text-amber-500' },
+  emerald: { pill: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500' },
+  rose: { pill: 'border-rose-500/40 bg-rose-500/10 text-rose-500' },
+  teal: { pill: 'border-teal-500/40 bg-teal-500/10 text-teal-300' },
 };
 
-type View = 'upcoming' | 'all' | 'done';
-const VIEWS: { key: View; labelKey: string }[] = [
-  { key: 'upcoming', labelKey: 'timeline.viewUpcoming' },
-  { key: 'all', labelKey: 'timeline.viewAll' },
-  { key: 'done', labelKey: 'timeline.viewDone' },
-];
+const ROW_HEIGHT = 56; // px — matches the row template's fixed h-14
 
 export default function Timeline() {
   const { locale, timezone, currency, money_enabled } = usePreferences();
@@ -52,50 +47,34 @@ export default function Timeline() {
   const [events, setEvents] = useState<HouseholdEvent[]>([]);
   const [assignments, setAssignments] = useState<AssignmentDetail[]>([]);
   const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
-  // A deep link from the home week strip lands here as ?view=month&day=…
+  // A deep link from the home week strip or "upcoming" list lands here as ?day=…
   const [searchParams] = useSearchParams();
-  const linkedDay = searchParams.get('day') ?? undefined;
-  const [view, setView] = useState<View>('upcoming');
-  const [mode, setMode] = useState<'list' | 'calendar'>(
-    searchParams.get('view') === 'month' ? 'calendar' : 'list',
-  );
+  const [selectedDay, setSelectedDay] = useState<string | null>(() => searchParams.get('day') ?? null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [mineOnly, setMineOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<HouseholdEvent['event_type'] | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  // Set when the form opens from a calendar day, prefilling that date.
-  const [prefillDate, setPrefillDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<HouseholdEvent | null>(null);
   const [paying, setPaying] = useState<HouseholdEvent | null>(null);
   const [payAmount, setPayAmount] = useState('');
 
-  const fetchEvents = (v: View) => {
+  const fetchEvents = () => {
     setLoading(true);
-    const path = v === 'upcoming' ? '/events?upcoming=true' : '/events';
     api
-      .get<HouseholdEvent[]>(path)
-      .then((rows) => {
-        if (v === 'done') {
-          // History: completed items, most recently due first.
-          setEvents(
-            rows
-              .filter((e) => e.is_completed)
-              .sort((a, b) => b.target_date.localeCompare(a.target_date)),
-          );
-        } else {
-          setEvents(rows);
-        }
-      })
+      .get<HouseholdEvent[]>('/events')
+      .then(setEvents)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  // The calendar needs every event; the list uses the selected view filter.
-  useEffect(() => { fetchEvents(mode === 'calendar' ? 'all' : view); }, [view, mode]);
+  // The calendar needs every event (including completed, for its dots and for
+  // a selected day's history) — there's no separate filtered fetch anymore.
+  useEffect(() => { fetchEvents(); }, []);
 
-  // Assignments are independent of the upcoming/all toggle — load once.
+  // Assignments and money streams are independent of day selection — load once.
   useEffect(() => {
     api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
     // Money streams let "mark as paid" prefill the expected amount + currency
@@ -116,40 +95,85 @@ export default function Timeline() {
     list.push(a);
     membersByEvent.set(a.event_id, list);
   }
-
-  // Events assigned to the logged-in member, for the "Assigned to me" filter.
   const mineEventIds = assignedIds(assignments, user?.id, 'event_id');
-  const mineFiltered = mineOnly ? events.filter((e) => mineEventIds.has(e.id)) : events;
-  // Search + type narrow the list further; both are client-side over the
-  // fetched rows, so they respond on every keystroke.
-  const searching = query.trim() !== '' || typeFilter !== 'all';
-  // Search + type pills appear once the list is big enough to need them.
-  const showFilters = events.length >= 8 || searching;
-  const visible = mineFiltered.filter(
-    (e) =>
-      (typeFilter === 'all' || e.event_type === typeFilter) &&
-      matchesQuery(query, e.title, e.description),
+
+  const dayKeyOf = (e: HouseholdEvent) => e.target_date.slice(0, 10);
+
+  // The two possible base sets: everything on the selected day, or every open
+  // event closest-in-time-first. Only one is ever actually shown.
+  const dayEventsAll = selectedDay ? events.filter((e) => dayKeyOf(e) === selectedDay) : [];
+  const nearestUpcomingAll = events
+    .filter((e) => !e.is_completed)
+    .sort((a, b) => a.target_date.localeCompare(b.target_date)); // ISO dates sort correctly as text
+  const activeAll = selectedDay ? dayEventsAll : nearestUpcomingAll;
+
+  // "Assigned to me" narrows first (mirrors the pre-redesign two-step empty
+  // state priority: a plain empty scope reads differently from "nothing of
+  // mine in a non-empty scope"), then search/type narrow further.
+  const mineFilteredActive = activeAll.filter((e) => !mineOnly || mineEventIds.has(e.id));
+  const searchingActive = query.trim() !== '' || typeFilter !== 'all';
+  const filtering = mineOnly || searchingActive;
+  const visibleActive = mineFilteredActive.filter(
+    (e) => (typeFilter === 'all' || e.event_type === typeFilter) && matchesQuery(query, e.title, e.description),
   );
+
+  // "Fit without scrolling" — measured, not guessed. Only meaningful in the
+  // ambient default state (no day selected, no filter active); a deliberate
+  // selection or search is allowed to scroll.
+  const listShellRef = useRef<HTMLDivElement>(null);
+  const rowsTopRef = useRef<HTMLDivElement>(null);
+  const [availableHeight, setAvailableHeight] = useState<number | null>(null);
+  useEffect(() => {
+    if (selectedDay != null || filtering || !rowsTopRef.current) return;
+    const mainEl = document.querySelector<HTMLElement>('main');
+    if (!mainEl) return;
+    const recompute = () => {
+      // The rows section unmounts for the duration of every refetch (loading
+      // briefly flips true), and a ResizeObserver callback can fire during
+      // that window — re-check here, not just once at effect setup.
+      if (!rowsTopRef.current) return;
+      const mainRect = mainEl.getBoundingClientRect();
+      // Reads <main>'s live padding-bottom rather than duplicating the pb-44
+      // value, so this self-corrects if that clearance ever changes. The FAB
+      // floats above that reserved strip, into the content area itself
+      // (h-14 circle + its bottom-28 offset), so the last row needs its own
+      // clearance too or the FAB's corner sits on top of it.
+      const reservedBottom = (parseFloat(getComputedStyle(mainEl).paddingBottom) || 176) + 64;
+      const rowsTop = rowsTopRef.current.getBoundingClientRect().top;
+      setAvailableHeight(Math.max(0, mainRect.bottom - reservedBottom - rowsTop - 8));
+    };
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(mainEl);
+    ro.observe(listShellRef.current!); // calendar height varies by month; filter panel toggling changes it too
+    return () => ro.disconnect();
+  }, [selectedDay, filtering, events.length]);
+
+  const MIN_VISIBLE = 3;
+  const visibleCount = availableHeight == null
+    ? Math.min(visibleActive.length, 5) // pre-measurement paint guess; corrects on first layout pass
+    : Math.max(MIN_VISIBLE, Math.min(visibleActive.length, Math.floor(availableHeight / ROW_HEIGHT)));
+  const rowsToRender = selectedDay || filtering ? visibleActive : visibleActive.slice(0, visibleCount);
+
+  const selectedDayCaption = selectedDay
+    ? new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+        new Date(`${selectedDay}T00:00:00`),
+      )
+    : t('timeline.upcomingHeading');
 
   const handleSaved = () => {
     setShowForm(false);
     setEditing(null);
-    fetchEvents(view);
+    fetchEvents();
   };
 
   const handleDeleted = () => {
     setEditing(null);
-    fetchEvents(view);
+    fetchEvents();
   };
 
-  // In a filtered view (Upcoming/Done) a toggled item no longer belongs, so
-  // drop it from the list; in All, just reflect the new state.
   const applyUpdate = (updated: HouseholdEvent) =>
-    setEvents((prev) =>
-      view === 'all'
-        ? prev.map((e) => (e.id === updated.id ? updated : e))
-        : prev.filter((e) => e.id !== updated.id),
-    );
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
 
   const toggleComplete = async (evt: HouseholdEvent) => {
     // Completing a payment opens the "mark as paid" prompt to capture the
@@ -189,233 +213,202 @@ export default function Timeline() {
     }
   };
 
+  const renderRow = (evt: HouseholdEvent, i: number) => {
+    const overdue = !evt.is_completed && daysUntil(evt.target_date, timezone) < 0;
+    const linked = money_enabled && evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
+    const amount =
+      money_enabled && evt.event_type === 'payment'
+        ? evt.actual_amount != null
+          ? formatMoney(evt.actual_amount, linked?.currency ?? currency, locale)
+          : linked
+            ? formatMoney(linked.amount, linked.currency, locale)
+            : null
+        : null;
+    return (
+      <div
+        key={evt.id}
+        style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+        className={[
+          'flex h-14 items-center gap-3 px-4 transition-opacity animate-fade-slide-in',
+          evt.is_completed ? 'opacity-50' : '',
+        ].join(' ')}
+      >
+        <button
+          onClick={() => toggleComplete(evt)}
+          className={[
+            'flex-shrink-0 h-5 w-5 rounded-full border-2 transition-colors',
+            evt.is_completed ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-600 hover:border-zinc-400',
+          ].join(' ')}
+          aria-label={evt.is_completed ? t('timeline.markIncomplete') : t('timeline.markComplete')}
+        >
+          {evt.is_completed && (
+            <svg className="m-auto h-3 w-3 text-zinc-900" viewBox="0 0 12 12" fill="currentColor">
+              <path
+                className="check-draw"
+                pathLength={1}
+                d="M10 3L5 8.5 2 5.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </svg>
+          )}
+        </button>
+
+        <button type="button" onClick={() => setEditing(evt)} className="min-w-0 flex-1 text-left">
+          <p className={`truncate text-sm ${evt.is_completed ? 'line-through text-zinc-500' : overdue ? 'text-rose-400' : 'text-zinc-100'}`}>
+            {evt.title}
+          </p>
+        </button>
+
+        {amount && <span className="flex-shrink-0 text-xs tabular-nums text-zinc-400">{amount}</span>}
+
+        <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
+
+        {selectedDay ? (
+          <span className={`h-2 w-2 flex-shrink-0 rounded-full ${evt.is_completed ? 'bg-zinc-600' : DOT[evt.event_type]}`} />
+        ) : (
+          <span
+            className={[
+              'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+              overdue ? 'bg-rose-500/20 text-rose-400' : 'bg-zinc-800 text-zinc-400',
+            ].join(' ')}
+          >
+            {formatRelativeDay(daysUntil(evt.target_date, timezone), i18n.language)}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      <header className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
-            <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
-          </div>
-          {/* List / Calendar mode */}
-          <div className="flex flex-shrink-0 gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
-            {(['list', 'calendar'] as const).map((mk) => (
-              <button
-                key={mk}
-                type="button"
-                onClick={() => setMode(mk)}
-                aria-pressed={mode === mk}
-                className={[
-                  'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-                  mode === mk ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
-                ].join(' ')}
-              >
-                {t(mk === 'list' ? 'timeline.viewList' : 'timeline.viewMonth')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {mode === 'list' && (
-          <>
-            {/* View filter */}
-            <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
-              {VIEWS.map((v) => (
-                <button
-                  key={v.key}
-                  onClick={() => setView(v.key)}
-                  className={[
-                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-                    view === v.key ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
-                  ].join(' ')}
-                >
-                  {t(v.labelKey)}
-                </button>
-              ))}
-            </div>
-            {/* Search and type pills earn their place with volume — short
-                lists don't need three rows of controls before content. */}
-            {showFilters && <SearchInput value={query} onChange={setQuery} label={t('search.events')} />}
-            {/* One row of pill filters — personal first, then event type. The
-                row scrolls sideways at phone width instead of stacking; the
-                right-edge fade signals there's more. */}
-            <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
-              <button
-                type="button"
-                onClick={() => setMineOnly((v) => !v)}
-                aria-pressed={mineOnly}
-                className={[
-                  'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                  mineOnly
-                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-                ].join(' ')}
-              >
-                {t('timeline.assignedToMe')}
-              </button>
-              {showFilters && (
-                <>
-                  <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
-                  {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
-                    <button
-                      key={tk}
-                      type="button"
-                      onClick={() => setTypeFilter(tk)}
-                      aria-pressed={typeFilter === tk}
-                      className={[
-                        'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                        typeFilter === tk
-                          ? tk === 'all'
-                            ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
-                            : accentMap[typeConfig[tk].accent].pill
-                          : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-                      ].join(' ')}
-                    >
-                      {t(tk === 'all' ? 'eventType.all' : typeConfig[tk].labelKey)}
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
-          </>
-        )}
+      <header>
+        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
+        <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
       </header>
 
-      {mode === 'calendar' && !error && (
+      {!error && (
         <CalendarMonth
           events={events}
           lang={i18n.language}
           timezone={timezone}
-          initialDay={linkedDay}
-          onSelectEvent={setEditing}
-          onAddOnDay={(day) => { setPrefillDate(day); setShowForm(true); }}
+          selectedDay={selectedDay}
+          onSelectDay={(day) => setSelectedDay((prev) => (day != null && prev === day ? null : day))}
         />
       )}
 
-      {mode === 'list' && loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
+      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
 
-      {/* A search/type filter that matches nothing states so plainly — the
-          other empty states describe a genuinely empty timeline. */}
-      {mode === 'list' && !loading && !error && visible.length === 0 && searching && mineFiltered.length > 0 && (
-        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
-      )}
+      {!loading && !error && (
+        <div ref={listShellRef} className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{selectedDayCaption}</p>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-pressed={filtersOpen}
+              aria-label={t('timeline.filtersAria')}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800/60 hover:text-zinc-300"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+              </svg>
+            </button>
+          </div>
 
-      {mode === 'list' && !loading && !error && mineFiltered.length === 0 && mineOnly && (
-        <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
-      )}
-
-      {mode === 'list' && !loading && !error && events.length === 0 && !mineOnly && (
-        view === 'done' ? (
-          <EmptyState icon="✅" title={t('timeline.nothingCompleted')} hint={t('timeline.nothingCompletedHint')} />
-        ) : view === 'upcoming' ? (
-          <EmptyState
-            icon="🌱"
-            title={t('timeline.nothingUpcoming')}
-            hint={t('timeline.nothingUpcomingHint')}
-            actionLabel={t('timeline.addEvent')}
-            onAction={() => setShowForm(true)}
-          />
-        ) : (
-          <EmptyState
-            icon="🌱"
-            title={t('timeline.noEventsYet')}
-            hint={t('timeline.nothingUpcomingHint')}
-            actionLabel={t('timeline.addFirstEvent')}
-            onAction={() => setShowForm(true)}
-          />
-        )
-      )}
-
-      {mode === 'list' && !loading && !error && visible.length > 0 && (
-        <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-          {visible.map((evt, i) => {
-            const cfg = typeConfig[evt.event_type];
-            const styles = accentMap[cfg.accent];
-            // A late open item overrides its type accent — urgency wins.
-            const overdue = !evt.is_completed && daysUntil(evt.target_date, timezone) < 0;
-            // Bills carry their amount — the fact a person came to check.
-            const linked = money_enabled && evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
-            const amount =
-              money_enabled && evt.event_type === 'payment'
-                ? evt.actual_amount != null
-                  ? formatMoney(evt.actual_amount, linked?.currency ?? currency, locale)
-                  : linked
-                    ? formatMoney(linked.amount, linked.currency, locale)
-                    : null
-                : null;
-            return (
-              <div
-                key={evt.id}
-                style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
-                className={[
-                  'flex items-center gap-4 p-4 transition-opacity animate-fade-slide-in',
-                  evt.is_completed ? 'opacity-50' : '',
-                ].join(' ')}
-              >
-                {/* Date */}
-                <div
-                  className={`w-14 flex-shrink-0 border-r border-zinc-800/60 pr-4 text-center text-xs font-medium ${overdue ? 'text-rose-500' : styles.date}`}
-                >
-                  {formatDate(evt.target_date, locale, timezone)}
-                </div>
-
-                {/* Content — tap to edit */}
+          {filtersOpen && (
+            <div className="space-y-2">
+              <SearchInput value={query} onChange={setQuery} label={t('search.events')} />
+              <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
                 <button
                   type="button"
-                  onClick={() => setEditing(evt)}
-                  className="flex-1 min-w-0 text-left"
-                >
-                  <p className={`text-sm ${evt.is_completed ? 'line-through text-zinc-500' : overdue ? 'text-rose-400' : 'text-zinc-100'}`}>
-                    {evt.title}
-                  </p>
-                  {(amount || evt.description) && (
-                    <p className="mt-0.5 truncate text-xs text-zinc-500">
-                      {amount && <span className="tabular-nums text-zinc-400">{amount}</span>}
-                      {amount && evt.description ? ' · ' : ''}
-                      {evt.description}
-                    </p>
-                  )}
-                </button>
-
-                {/* Responsible members */}
-                <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
-
-                {/* Type badge */}
-                <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles.badge}`}>
-                  {t(cfg.labelKey)}
-                </span>
-
-                {/* Complete toggle */}
-                <button
-                  onClick={() => toggleComplete(evt)}
+                  onClick={() => setMineOnly((v) => !v)}
+                  aria-pressed={mineOnly}
                   className={[
-                    'flex-shrink-0 h-5 w-5 rounded-full border-2 transition-colors',
-                    evt.is_completed
-                      ? 'border-emerald-500 bg-emerald-500'
-                      : 'border-zinc-600 hover:border-zinc-400',
+                    'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    mineOnly
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                      : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
                   ].join(' ')}
-                  aria-label={evt.is_completed ? t('timeline.markIncomplete') : t('timeline.markComplete')}
                 >
-                  {evt.is_completed && (
-                    <svg className="m-auto h-3 w-3 text-zinc-900" viewBox="0 0 12 12" fill="currentColor">
-                      <path
-                        className="check-draw"
-                        pathLength={1}
-                        d="M10 3L5 8.5 2 5.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                      />
-                    </svg>
-                  )}
+                  {t('timeline.assignedToMe')}
+                </button>
+                <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
+                {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
+                  <button
+                    key={tk}
+                    type="button"
+                    onClick={() => setTypeFilter(tk)}
+                    aria-pressed={typeFilter === tk}
+                    className={[
+                      'flex-shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      typeFilter === tk
+                        ? tk === 'all'
+                          ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
+                          : accentMap[typeConfig[tk].accent].pill
+                        : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                    ].join(' ')}
+                  >
+                    {t(tk === 'all' ? 'eventType.all' : typeConfig[tk].labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {visibleActive.length === 0 && searchingActive && mineFilteredActive.length > 0 && (
+            <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+          )}
+
+          {mineFilteredActive.length === 0 && mineOnly && activeAll.length > 0 && (
+            <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
+          )}
+
+          {activeAll.length === 0 && (
+            selectedDay ? (
+              <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 py-6 text-center">
+                <p className="text-xs text-zinc-600">{t('timeline.noEventsThisDay')}</p>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(true)}
+                  className="mx-auto mt-2 block text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+                >
+                  ＋ {t('timeline.addOnDay', {
+                    date: new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'long' }).format(
+                      new Date(`${selectedDay}T00:00:00`),
+                    ),
+                  })}
                 </button>
               </div>
-            );
-          })}
-        </section>
+            ) : events.length === 0 ? (
+              <EmptyState
+                icon="🌱"
+                title={t('timeline.noEventsYet')}
+                hint={t('timeline.nothingUpcomingHint')}
+                actionLabel={t('timeline.addFirstEvent')}
+                onAction={() => setShowForm(true)}
+              />
+            ) : (
+              <EmptyState
+                icon="🌱"
+                title={t('timeline.nothingUpcoming')}
+                hint={t('timeline.nothingUpcomingHint')}
+                actionLabel={t('timeline.addEvent')}
+                onAction={() => setShowForm(true)}
+              />
+            )
+          )}
+
+          {visibleActive.length > 0 && (
+            <section ref={rowsTopRef} className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+              {rowsToRender.map((evt, i) => renderRow(evt, i))}
+            </section>
+          )}
+        </div>
       )}
 
       {/* Floating add button — sits above the fixed bottom nav. */}
@@ -429,12 +422,12 @@ export default function Timeline() {
         </svg>
       </button>
 
-      <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => { setShowForm(false); setPrefillDate(null); }}>
+      <Modal open={showForm} title={t('timeline.newEvent')} onClose={() => setShowForm(false)}>
         <EventForm
-          key={prefillDate ?? 'blank'}
-          initialDate={prefillDate ?? undefined}
-          onSaved={() => { setPrefillDate(null); handleSaved(); }}
-          onCancel={() => { setShowForm(false); setPrefillDate(null); }}
+          key={selectedDay ?? 'blank'}
+          initialDate={selectedDay ?? undefined}
+          onSaved={handleSaved}
+          onCancel={() => setShowForm(false)}
         />
       </Modal>
 

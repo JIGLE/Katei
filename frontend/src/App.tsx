@@ -8,7 +8,6 @@ import { SettingsForm } from './components/SettingsForm';
 import { AccountForm } from './components/AccountForm';
 import { Splash } from './components/Splash';
 import { Logo } from './components/Logo';
-import { AccountMenu } from './components/AccountMenu';
 import { NotificationBell } from './components/NotificationBell';
 import { useAuth } from './lib/auth';
 import { usePreferences } from './lib/preferences';
@@ -65,17 +64,11 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-zinc-950">
-      {/* Slim account header */}
+      {/* Slim header — the account control lives in the bottom nav instead,
+          so this is just the wordmark and notifications. */}
       <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
         <Logo size="sm" withWordmark className="text-zinc-300" />
-        <div className="flex items-center gap-1">
-          <NotificationBell />
-          <AccountMenu
-            user={user}
-            onOpenAccount={() => setShowAccount(true)}
-            onOpenSettings={() => setShowSettings(true)}
-          />
-        </div>
+        <NotificationBell />
       </header>
 
       {/* Scrollable content area — padded above the fixed bottom nav plus
@@ -96,7 +89,7 @@ export default function App() {
         </div>
       </main>
 
-      <BottomNav />
+      <BottomNav onOpenAccount={() => setShowAccount(true)} onOpenSettings={() => setShowSettings(true)} />
 
       <Modal open={showAccount} title={t('account.title')} onClose={() => setShowAccount(false)}>
         <AccountForm onClose={() => setShowAccount(false)} />

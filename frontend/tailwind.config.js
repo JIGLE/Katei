@@ -45,6 +45,11 @@ export default {
           'sans-serif',
         ],
       },
+      // Wires up the `pb-safe` class BottomNav already uses — index.html sets
+      // viewport-fit=cover, so env() resolves to a real inset on notched phones.
+      spacing: {
+        safe: 'env(safe-area-inset-bottom)',
+      },
     },
   },
   plugins: [],

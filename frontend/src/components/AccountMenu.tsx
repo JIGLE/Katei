@@ -11,9 +11,9 @@ interface AccountMenuProps {
   onOpenSettings: () => void;
 }
 
-// Right-aligned account control: avatar + name that opens a small popover menu
-// for Settings, a quick appearance toggle, and sign out. Closes on outside
-// click, Escape, or item selection.
+// Avatar-only account control, living in the bottom nav — opens a small
+// popover menu (upward, above the trigger) for Settings, a quick appearance
+// toggle, and sign out. Closes on outside click, Escape, or item selection.
 export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenuProps) {
   const { t } = useTranslation();
   const { logout } = useAuth();
@@ -65,19 +65,10 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-zinc-800/60"
+        aria-label={t('account.menuAria')}
+        className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-800/60 bg-zinc-900/95 shadow-2xl backdrop-blur-sm transition-colors hover:border-zinc-700"
       >
-        <Avatar name={user.name} url={user.avatar_url} size="md" />
-        <span className="max-w-[8rem] truncate text-sm font-light text-zinc-300">{user.name}</span>
-        <svg
-          className={`h-4 w-4 text-zinc-500 transition-transform ${open ? 'rotate-180' : ''}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
+        <Avatar name={user.name} url={user.avatar_url} size="xs" />
       </button>
 
       {open && (
@@ -91,7 +82,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
           />
           <div
             role="menu"
-            className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900 shadow-2xl"
+            className="absolute right-0 bottom-full z-50 mb-2 w-56 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900 shadow-2xl"
           >
             {/* Identity line — the avatar already lives on the trigger. Shows
                 the household's chosen name (Katei if unnamed) + the member role. */}

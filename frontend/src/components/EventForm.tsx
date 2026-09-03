@@ -171,7 +171,10 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      <div className="flex gap-3 pt-1">
+      {/* Sticky within Modal's own scrollable body, so Save stays reachable
+          without scrolling through the whole form first — the same "the
+          primary action stays reachable" idea as the shopping quick-add bar. */}
+      <div className="sticky bottom-0 flex gap-3 border-t border-zinc-800/60 bg-zinc-900/95 pt-3 pb-1 backdrop-blur-sm">
         <button
           type="button"
           onClick={onCancel}
