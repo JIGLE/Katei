@@ -34,7 +34,7 @@ export async function logActivity(
       `INSERT INTO activity (actor_id, action, summary, money_stream_id) VALUES ($1, $2, $3, $4)`,
       [actorId, action, summary, moneyStreamId],
     );
-    await recordGraphitiEpisode({
+    void recordGraphitiEpisode({
       type: `activity.${action}`,
       title: summary,
       actorId,

@@ -106,7 +106,7 @@ export async function createNotification(
       `INSERT INTO notifications (user_id, type, title, body, event_id) VALUES ($1, $2, $3, $4, $5)`,
       [userId, type, title, body, eventId],
     );
-    await recordGraphitiEpisode({
+    void recordGraphitiEpisode({
       type: `notification.${type}`,
       title,
       actorId: userId,

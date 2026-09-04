@@ -32,7 +32,7 @@ Avoid repository-wide scans and repeated full-file reads when the required conte
 
 ## i18n
 
-All user-facing strings must be updated in:
+Frontend UI strings must be updated in:
 `frontend/src/locales/{en,de,fr,es,it,nl}.json`.
 
 ## Security and quality
