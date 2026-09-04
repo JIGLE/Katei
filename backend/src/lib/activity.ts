@@ -3,6 +3,7 @@
 // (action, summary) pair into a localized sentence, so no prose is stored.
 
 import { query } from '../db.js';
+import { recordGraphitiEpisode } from './graphiti.js';
 
 export type ActivityAction =
   | 'stream_added'
@@ -33,6 +34,13 @@ export async function logActivity(
       `INSERT INTO activity (actor_id, action, summary, money_stream_id) VALUES ($1, $2, $3, $4)`,
       [actorId, action, summary, moneyStreamId],
     );
+    void recordGraphitiEpisode({
+      type: `activity.${action}`,
+      title: summary,
+      actorId,
+      entityId: moneyStreamId,
+      metadata: { action, stream_id: moneyStreamId },
+    });
   } catch {
     // Intentionally ignored — never let the feed sink the real operation.
   }

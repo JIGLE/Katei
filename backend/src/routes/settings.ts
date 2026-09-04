@@ -9,6 +9,7 @@ import { listBackups, backupPath, runBackup } from '../lib/backups.js';
 import { getSetting, setSetting, query } from '../db.js';
 import { requireAdmin } from '../lib/authz.js';
 import { randomBytes } from 'node:crypto';
+import { graphitiStatus, graphitiEnabled, queryGraphiti } from '../lib/graphiti.js';
 
 // Guarding sensitive settings routes. Household-wide writes and infrastructure
 // (backups, calendar token, notification sweeps) are admin-only; the reads the
@@ -166,6 +167,36 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/settings/notifications/run — trigger a due-soon sweep now.
   app.post('/notifications/run', adminOnly, async () => ({ sent: await checkAndNotify() }));
+
+  // GET /api/settings/graphiti — runtime knowledge integration status.
+  app.get('/graphiti', adminOnly, async () => graphitiStatus());
+
+  // POST /api/settings/graphiti/query — bounded Graphiti lookup for diagnostics/AI.
+  app.post<{ Body: { query: string; limit?: number } }>(
+    '/graphiti/query',
+    {
+      preHandler: requireAdmin,
+      schema: {
+        body: {
+          type: 'object',
+          required: ['query'],
+          properties: {
+            query: { type: 'string', minLength: 1, maxLength: 400 },
+            limit: { type: 'integer', minimum: 1, maximum: 20 },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      if (!graphitiEnabled()) return reply.code(503).send({ error: 'Graphiti is not configured' });
+      try {
+        return await queryGraphiti(req.body.query, req.body.limit ?? 5);
+      } catch (err) {
+        req.log.error({ err }, 'Graphiti query failed');
+        return reply.code(502).send({ error: 'Graphiti query failed' });
+      }
+    },
+  );
 
   // GET /api/settings/backups — list available database backups.
   app.get('/backups', adminOnly, async () => listBackups());
