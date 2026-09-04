@@ -18,6 +18,15 @@ permissions:
   contents: read
   packages: write
 
+# Two merges seconds apart produced two concurrent runs both pushing `latest`,
+# where whichever finished last won regardless of which commit was newer.
+# `latest` is what the TrueNAS deployment pulls, so it has to track the newest
+# commit on main; the superseded run is cancelled and that commit gets no
+# `sha-` image, which is the right trade here.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Backend tests
@@ -64,7 +73,8 @@ jobs:
   e2e:
     name: E2E smoke (Playwright)
     runs-on: ubuntu-latest
-    needs: test
+    # Deliberately not `needs: test` — they're independent signals, and
+    # serialising them added ~90s to every run. `build` still gates on both.
 
     services:
       postgres:
@@ -92,28 +102,48 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: |
-            frontend/package-lock.json
-            backend/package-lock.json
-            e2e/package-lock.json
+
+      # Cached per package, not as one combined key. `cache: npm` with three
+      # lockfiles hashes them together, so touching one package's lockfile
+      # cold-installed all three — which is what happened when sharp landed.
+      # Keys carry the OS and node version so a cached native binary can never
+      # be restored onto a runner it wasn't built for.
+      - name: Cache frontend node_modules
+        id: fe-modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-${{ runner.os }}-node22-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install frontend dependencies
+        if: steps.fe-modules.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: npm ci
 
       - name: Build frontend
         working-directory: frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       # The backend serves the SPA from ./public in production; mirror that
       # shape so the suite exercises the real single-origin deployment.
       - name: Copy SPA into backend
         run: cp -r frontend/dist backend/public
 
+      - name: Cache backend node_modules
+        id: be-modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: be-${{ runner.os }}-node22-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install backend dependencies
+        if: steps.be-modules.outputs.cache-hit != 'true'
+        working-directory: backend
+        run: npm ci
+
       - name: Build backend
         working-directory: backend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       # schema.sql normally runs via the postgres image's init hook; a CI
       # service container starts before checkout, so apply it explicitly.
@@ -137,11 +167,30 @@ jobs:
           JWT_SECRET: e2e-ci-secret
           PORT: "3000"
 
+      - name: Cache e2e node_modules
+        id: e2e-modules
+        uses: actions/cache@v4
+        with:
+          path: e2e/node_modules
+          key: e2e-${{ runner.os }}-node22-${{ hashFiles('e2e/package-lock.json') }}
+
+      # The browser download is the slow part (~2.5 min). `playwright install`
+      # skips browsers already on disk, so a cache hit leaves only the apt
+      # system-deps step to run.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('e2e/package-lock.json') }}
+
+      - name: Install e2e dependencies
+        if: steps.e2e-modules.outputs.cache-hit != 'true'
+        working-directory: e2e
+        run: npm ci
+
       - name: Install Playwright
         working-directory: e2e
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run smoke suite
         working-directory: e2e
