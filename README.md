@@ -59,6 +59,43 @@ cd frontend && npm install && npm run dev
 
 A local postgres instance is required for dev. The `DATABASE_URL` env var must be set.
 
+## AI Knowledge Architecture (token-efficient)
+
+This repository uses a two-layer approach:
+
+- **Graphify (development knowledge):** map code relationships first, then read only targeted files.
+- **Graphiti (runtime knowledge):** optional event/relationship memory for diagnostics and AI investigation.
+
+### Development flow (preferred)
+
+1. Graphify traversal
+2. Identify smallest relevant file set
+3. Targeted file reads
+4. Implementation and validation
+
+Avoid broad repository scans unless Graphify cannot answer the question.
+
+### Copilot setup workflow
+
+`/home/runner/work/Katei/Katei/.github/workflows/copilot-setup-steps.yml` preinstalls project dependencies and Graphify tooling, then builds `graphify-out/graph.json` so cloud-agent sessions start with deterministic setup.
+
+### Optional Graphiti runtime integration
+
+Graphiti is additive only. PostgreSQL remains the source of truth.
+
+Environment variables:
+
+| Env var | Effect |
+|---|---|
+| `GRAPHITI_URL` | Base URL for Graphiti API (enables integration when set) |
+| `GRAPHITI_API_KEY` | Optional bearer token for Graphiti API |
+| `GRAPHITI_TIMEOUT_MS` | Optional request timeout (default `2000`) |
+
+Admin endpoints:
+
+- `GET /api/settings/graphiti` — integration status
+- `POST /api/settings/graphiti/query` — bounded retrieval (`query`, optional `limit` up to 20)
+
 ## Deploying to TrueNAS SCALE (Custom App GUI)
 
 Images are built and pushed to GHCR automatically by GitHub Actions on every push to `main`.

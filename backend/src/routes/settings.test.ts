@@ -143,6 +143,20 @@ test('a member cannot read or rotate the calendar token', opts, async () => {
   assert.equal((await app.inject({ method: 'POST', url: '/api/settings/calendar/rotate', headers: { cookie: member }, payload: {} })).statusCode, 403);
 });
 
+test('a member cannot access Graphiti settings routes', opts, async () => {
+  const member = await memberCookie();
+  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/graphiti', headers: { cookie: member } })).statusCode, 403);
+  assert.equal(
+    (await app.inject({
+      method: 'POST',
+      url: '/api/settings/graphiti/query',
+      headers: { cookie: member },
+      payload: { query: 'overdue payments' },
+    })).statusCode,
+    403,
+  );
+});
+
 test('a member cannot change household preferences or the reminder window', opts, async () => {
   const member = await memberCookie();
   const putPrefs = await app.inject({
@@ -167,4 +181,16 @@ test('an admin is allowed through the guarded routes', opts, async () => {
   // The admin (registered in beforeEach) is not 403'd on the sensitive routes.
   assert.equal((await app.inject({ method: 'GET', url: '/api/settings/backups', headers: { cookie } })).statusCode, 200);
   assert.notEqual((await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })).statusCode, 403);
+  const graphiti = await app.inject({ method: 'GET', url: '/api/settings/graphiti', headers: { cookie } });
+  assert.equal(graphiti.statusCode, 200);
+  assert.equal(graphiti.json().enabled, false);
+  assert.equal(
+    (await app.inject({
+      method: 'POST',
+      url: '/api/settings/graphiti/query',
+      headers: { cookie },
+      payload: { query: 'anything' },
+    })).statusCode,
+    503,
+  );
 });

@@ -8,6 +8,13 @@ function required(name: string): string {
   return value;
 }
 
+function positiveInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const value = Number(raw);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
 export const config = {
   port: Number(process.env.BACKEND_PORT ?? 3000),
   host: process.env.BACKEND_HOST ?? '0.0.0.0',
@@ -33,4 +40,7 @@ export const config = {
   locale: process.env.LOCALE || undefined,
   timezone: process.env.TZ || undefined,
   language: process.env.LANGUAGE || undefined,
+  graphitiUrl: process.env.GRAPHITI_URL?.replace(/\/+$/, '') || undefined,
+  graphitiApiKey: process.env.GRAPHITI_API_KEY || undefined,
+  graphitiTimeoutMs: positiveInt('GRAPHITI_TIMEOUT_MS', 2000),
 } as const;

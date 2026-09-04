@@ -7,6 +7,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import Holidays from 'date-holidays';
 import webpush from 'web-push';
 import { query, getSetting, setSetting } from '../db.js';
+import { recordGraphitiEpisode } from './graphiti.js';
 
 export type DueShift = 'none' | 'prev' | 'next';
 
@@ -105,6 +106,13 @@ export async function createNotification(
       `INSERT INTO notifications (user_id, type, title, body, event_id) VALUES ($1, $2, $3, $4, $5)`,
       [userId, type, title, body, eventId],
     );
+    await recordGraphitiEpisode({
+      type: `notification.${type}`,
+      title,
+      actorId: userId,
+      entityId: eventId,
+      metadata: { body, event_id: eventId },
+    });
   } catch {
     // Intentionally ignored.
   }
