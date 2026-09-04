@@ -51,7 +51,11 @@ jobs:
         working-directory: e2e
         run: npm ci
 
+      # --code-only indexes the code via local AST. Without it graphify wants an
+      # LLM API key to semantically extract the repo's docs and images, and with
+      # no key configured the step exits 1 — this job has never passed without
+      # the flag. Drop it if a key is ever added as a repo secret.
       - name: Build Graphify knowledge graph
         run: |
           mkdir -p graphify-out
-          graphify . --output graphify-out/graph.json
+          graphify . --code-only --output graphify-out/graph.json
