@@ -146,9 +146,13 @@ reinvent.
   primary "add" action on a tab.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
-  Active item brightens to `zinc-100`. The nav pill itself is `rounded-full`
-  (not `rounded-2xl`), so its end-cap and the signed-in user's circular
-  avatar — the pill's last element, past a hairline divider — read as one
+  Active item brightens to `zinc-100` on a `zinc-700` chip — deliberately one
+  step stronger than the `zinc-800`-on-`zinc-900` used for selected segments
+  elsewhere (`Lists.tsx`), because at nav scale that pair is nearly invisible;
+  inactive items sit back at `zinc-500`. Every tab carries a `min-w-11` floor
+  so short labels ("Lists") still clear a 44px tap target. The nav pill is
+  `rounded-full` (not `rounded-2xl`), so its end-cap and the signed-in user's
+  circular avatar — the pill's last element, past a hairline divider — read as one
   continuous shape rather than two objects meeting at a seam. The avatar
   opens the account menu, which also holds notifications (an unread count
   shows as a small rose badge on the avatar's corner); it's a menu of

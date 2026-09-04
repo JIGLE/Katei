@@ -111,7 +111,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
           aria-haspopup="menu"
           aria-expanded={open}
           aria-label={unread > 0 ? t('account.menuAriaUnread', { count: unread }) : t('account.menuAria')}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full ring-1 ring-zinc-700/70 transition-colors hover:bg-zinc-800/60"
+          className="relative flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:bg-zinc-800/60"
         >
           <Avatar name={user.name} url={user.avatar_url} size="lg" />
           {unread > 0 && (
