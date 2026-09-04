@@ -11,7 +11,7 @@ const sizeCls: Record<NonNullable<AvatarProps['size']>, string> = {
   xs: 'h-5 w-5 text-[0.55rem]',
   sm: 'h-6 w-6 text-[0.6rem]',
   md: 'h-8 w-8 text-xs',
-  lg: 'h-10 w-10 text-sm', // the nav's account control
+  lg: 'h-11 w-11 text-sm', // the nav's account control
 };
 
 export function initials(name: string): string {

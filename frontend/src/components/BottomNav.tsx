@@ -82,7 +82,7 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
       <div className="flex items-center justify-center px-3 pb-4">
-        <div className="flex items-center gap-1 rounded-full border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
+        <div className="flex items-center gap-0.5 rounded-full border border-zinc-800/60 bg-zinc-900/95 px-2 py-1.5 shadow-2xl backdrop-blur-sm">
           {visibleTabs.map((tab) => (
             <NavLink
               key={tab.to}
@@ -90,7 +90,7 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
               end={tab.to === '/'}
               className={({ isActive }) =>
                 [
-                  'relative flex flex-col items-center gap-1 rounded-xl px-2.5 py-2 text-[0.7rem] font-medium transition-colors duration-150',
+                  'relative flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[0.7rem] font-medium transition-colors duration-150',
                   isActive
                     ? 'bg-zinc-800 text-zinc-100'
                     : 'text-zinc-400 hover:text-zinc-300',
