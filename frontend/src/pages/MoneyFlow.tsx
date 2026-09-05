@@ -489,7 +489,7 @@ export default function MoneyFlow() {
           className="fixed inset-0 z-40 bg-black/40"
         />
       )}
-      <div className="fixed bottom-28 right-4 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2">
         {addMenuOpen && (
           <div className="flex flex-col items-end gap-2">
             {([

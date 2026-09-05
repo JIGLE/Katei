@@ -146,17 +146,26 @@ reinvent.
   primary "add" action on a tab.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
-  Active item brightens to `zinc-100` on a `zinc-700` chip — deliberately one
-  step stronger than the `zinc-800`-on-`zinc-900` used for selected segments
-  elsewhere (`Lists.tsx`), because at nav scale that pair is nearly invisible;
-  inactive items sit back at `zinc-500`. Every tab carries a `min-w-11` floor
-  so short labels ("Lists") still clear a 44px tap target. The nav pill is
-  `rounded-full` (not `rounded-2xl`), so its end-cap and the signed-in user's
-  circular avatar — the pill's last element, past a hairline divider — read as one
-  continuous shape rather than two objects meeting at a seam. The avatar
-  opens the account menu, which also holds notifications (an unread count
-  shows as a small rose badge on the avatar's corner); it's a menu of
-  actions, not a destination, so it's deliberately not a 6th tab.
+  **Edge-to-edge, not a floating pill.** The pill version measured 381.9px and
+  clipped 10.9px off each side of a 360px phone; a full-width bar cannot
+  overflow at any viewport, which is the whole point of the shape. Tabs are
+  sized to their own label rather than into equal slots — six equal slots at
+  360px are 60px each, and `Huishouden` (nl) and `Panoramica` (it) are wider
+  than that. Icons are 24px with a 4px gap to a `text-[0.65rem]` label; below
+  360px the labels drop out entirely rather than ellipsise, and `truncate`
+  above that is a safety net so no future translation can push the bar
+  off-screen. Active item brightens to `zinc-100` on a `zinc-700` chip —
+  deliberately one step stronger than the `zinc-800`-on-`zinc-900` used for
+  selected segments elsewhere (`Lists.tsx`), because at nav scale that pair is
+  nearly invisible; inactive items sit back at `zinc-500`. The signed-in
+  user's avatar sits last, past a hairline divider, at 32px inside a 44px
+  target — smaller than the tab icons' visual weight would suggest so it
+  doesn't pull the eye off the destinations. It opens the account menu, which
+  also holds notifications (an unread count shows as a small rose badge on
+  its corner); it's a menu of actions, not a destination, so it's deliberately
+  not a 6th tab. The bar is ~59px tall plus `pb-safe`, and `App.tsx`'s
+  `main` padding and the pages' FAB offsets are sized against that — they move
+  together if the bar is ever resized.
 - **Buttons**:
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`

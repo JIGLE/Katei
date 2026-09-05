@@ -301,12 +301,13 @@ export default function Lists() {
 
           {/* Quick add — sits at the end of the list, docked above the bottom
               nav so it's always reachable no matter how long the list gets.
-              bottom-0, not bottom-28: <main> already reserves clearance for
-              the floating nav via pb-44, and sticky's offset resolves against
-              that padding edge — unlike the fixed-position FABs elsewhere
-              that reuse bottom-28 directly against the viewport, stacking
-              bottom-28 on top of pb-44 here would double the gap and strand
-              the bar mid-list instead of flush above the nav. */}
+              bottom-0, not a fixed offset: <main> already reserves clearance
+              for the nav via pb-32, and sticky's offset resolves against that
+              padding edge — unlike the fixed-position FABs elsewhere that sit
+              against the viewport, adding an offset on top of that padding
+              here would double the gap and strand the bar mid-list instead of
+              flush above the nav. Both numbers track the nav's height, so they
+              move together if the bar is ever resized. */}
           <form
             onSubmit={addQuick}
             className="sticky bottom-0 flex gap-2 border-t border-zinc-800/60 bg-zinc-950/95 py-3 backdrop-blur-sm"
