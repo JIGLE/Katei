@@ -111,13 +111,15 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
           aria-haspopup="menu"
           aria-expanded={open}
           aria-label={unread > 0 ? t('account.menuAriaUnread', { count: unread }) : t('account.menuAria')}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:bg-zinc-800/60"
+          className="relative flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-zinc-800/60"
         >
-          <Avatar name={user.name} url={user.avatar_url} size="lg" />
+          {/* md, not lg: against the nav's 24px icons a 44px avatar reads as
+              nearly double their weight and pulls the eye off the tabs. */}
+          <Avatar name={user.name} url={user.avatar_url} size="md" />
           {unread > 0 && (
             <span
               aria-hidden
-              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.6rem] font-semibold text-white ring-2 ring-zinc-900"
+              className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.6rem] font-semibold text-white ring-2 ring-zinc-900"
             >
               {unread > 9 ? '9+' : unread}
             </span>
