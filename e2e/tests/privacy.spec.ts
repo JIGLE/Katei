@@ -64,7 +64,7 @@ test('private money streams stay invisible to other members; Around the house ne
 
   const nosy = await test.step('invite Nosy, who must never see the private stream', async () => {
     const invite = await (await page.request.post('/api/invites', { data: {} })).json();
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const context = await browser.newContext({ viewport: { width: 360, height: 780 } });
     const nosyPage = await context.newPage();
     await nosyPage.goto(`/?invite=${invite.code}`);
     await nosyPage.locator('#name').fill('Nosy');

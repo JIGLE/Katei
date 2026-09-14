@@ -97,7 +97,13 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
                 'relative flex min-w-0 flex-col items-center gap-1 rounded-xl px-2 pb-1.5 pt-2 text-[0.65rem] transition-colors duration-150',
                 isActive
                   ? 'bg-zinc-700 font-semibold text-zinc-100'
-                  : 'font-medium text-zinc-500 hover:text-zinc-300',
+                  : // zinc-500 (113 113 122) is the one step the light theme
+                    // leaves unchanged, and it lands at 3.69:1 on the dark nav —
+                    // under the 4.5:1 AA floor for text this size. zinc-400 swaps
+                    // with the theme and holds 6.96:1 dark / 7.70:1 light.
+                    // nav-geometry.spec.ts recomputes both from the live palette
+                    // rather than trusting these numbers.
+                    'font-medium text-zinc-400 hover:text-zinc-300',
               ].join(' ')
             }
           >
