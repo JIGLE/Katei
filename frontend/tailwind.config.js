@@ -47,8 +47,15 @@ export default {
       },
       // Wires up the `pb-safe` class BottomNav already uses — index.html sets
       // viewport-fit=cover, so env() resolves to a real inset on notched phones.
+      //
+      // The var() wrapper exists only so the inset is testable: headless
+      // Chromium always resolves env(safe-area-inset-bottom) to 0 and
+      // Playwright has no API to emulate a gesture bar, which left pb-safe
+      // unverifiable. nav-geometry.spec.ts sets --katei-safe-bottom to stand
+      // one up. Nothing sets it in a real browser, where env() answers as
+      // before.
       spacing: {
-        safe: 'env(safe-area-inset-bottom)',
+        safe: 'var(--katei-safe-bottom, env(safe-area-inset-bottom))',
       },
     },
   },

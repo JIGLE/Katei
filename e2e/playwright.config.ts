@@ -12,7 +12,11 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
-    viewport: { width: 390, height: 844 }, // the phone size the app is designed at
+    // 360×780 is the Galaxy S24's CSS viewport and the narrowest width any
+    // mainstream phone reports. This was 390 until a nav change shipped
+    // clipping ~9px off each edge of a real S24 — every check had passed,
+    // because every check ran at 390. The tight case is the default now.
+    viewport: { width: 360, height: 780 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

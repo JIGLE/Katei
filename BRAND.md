@@ -106,6 +106,13 @@ Accent usage patterns:
 Text hierarchy: primary `text-zinc-100`, secondary `text-zinc-400`, tertiary /
 captions `text-zinc-500`, disabled / faint `text-zinc-600`.
 
+One caveat on `zinc-500`: it is the one step the light theme leaves unchanged
+(`113 113 122` in both), and on a `zinc-900` card it measures **3.7:1** — under
+the 4.5:1 AA floor for normal-size text. That is acceptable for genuinely
+de-emphasised meta a reader can skip, but anything they have to read needs
+`zinc-400`, which swaps with the theme and holds ≥ 6.9:1 either way. The bottom
+nav's labels moved for exactly this reason.
+
 ---
 
 ## 6. Typography
@@ -157,7 +164,10 @@ reinvent.
   off-screen. Active item brightens to `zinc-100` on a `zinc-700` chip —
   deliberately one step stronger than the `zinc-800`-on-`zinc-900` used for
   selected segments elsewhere (`Lists.tsx`), because at nav scale that pair is
-  nearly invisible; inactive items sit back at `zinc-500`. The signed-in
+  nearly invisible; inactive items sit back at `zinc-400`, the lightest step
+  that still clears 4.5:1 against the bar in both themes (6.96:1 dark, 7.70:1
+  light — `zinc-500` managed only 3.69:1 dark, which is why it isn't used here
+  despite being §5's caption token). The signed-in
   user's avatar sits last, past a hairline divider, at 32px inside a 44px
   target — smaller than the tab icons' visual weight would suggest so it
   doesn't pull the eye off the destinations. It opens the account menu, which
@@ -165,7 +175,13 @@ reinvent.
   its corner); it's a menu of actions, not a destination, so it's deliberately
   not a 6th tab. The bar is ~59px tall plus `pb-safe`, and `App.tsx`'s
   `main` padding and the pages' FAB offsets are sized against that — they move
-  together if the bar is ever resized.
+  together if the bar is ever resized. None of these numbers are maintained by
+  eye: `e2e/tests/nav-geometry.spec.ts` measures the bar at 320/360/390/430px
+  in all six languages every CI run, asserts no label is ellipsised and no
+  contrast falls under AA, and stands up a synthetic safe-area inset to check
+  the content padding and FAB still clear a taller bar. The suite's own default
+  viewport is 360×780 for the same reason — the clipping bug survived three
+  hand checks because every one of them ran at 390.
 - **Buttons**:
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`
