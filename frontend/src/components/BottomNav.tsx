@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
-import { AccountMenu } from './AccountMenu';
 
 const tabs = [
   {
@@ -68,25 +67,30 @@ const accentColor = {
   teal: 'bg-teal-400',
 };
 
-interface BottomNavProps {
-  onOpenAccount: () => void;
-  onOpenSettings: () => void;
-}
-
-export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
+export function BottomNav() {
   const { t } = useTranslation();
   const { money_enabled } = usePreferences();
   const { user } = useAuth();
   const visibleTabs = money_enabled ? tabs : tabs.filter((tab) => tab.to !== '/money');
   if (!user) return null; // BottomNav only ever renders once a session exists
   return (
-    // Edge-to-edge rather than a floating pill: five labelled destinations plus
-    // the account control measured 381.9px, which clipped 10.9px off each side
-    // of a 360px phone (Galaxy S24). A full-width bar cannot overflow at any
-    // viewport. Tabs are sized to their own label — six equal slots would be
-    // 60px each, and `Huishouden` (nl) and `Panoramica` (it) are wider than that.
+    // Edge-to-edge rather than a floating pill: as a pill this measured 381.9px
+    // and clipped ~9px off each side of a 360px phone (Galaxy S24). A full-width
+    // bar cannot overflow at any viewport.
+    //
+    // Five equal slots (`flex-1 basis-0`), not content-sized tabs. Content
+    // sizing made every destination's centre land wherever its label length
+    // happened to fall: centre-to-centre spacing varied by 20.3px in English
+    // and 33.3px in Italian, which reads as a wobble even though nothing
+    // clipped. Equal slots put all five on one pitch, identically in every
+    // language.
+    //
+    // The account control is in the header rather than here because six items
+    // do not fit: the widest label is ~70px (`Huishouden` semibold), five of
+    // those is 350px of a 360px screen, leaving nothing for a 44px avatar. It
+    // keeps its merged notification badge there — only its position moved.
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-800/60 bg-zinc-900/95 backdrop-blur-sm pb-safe">
-      <div className="flex items-stretch justify-evenly px-2">
+      <div className="flex items-stretch px-1">
         {visibleTabs.map((tab) => (
           <NavLink
             key={tab.to}
@@ -94,16 +98,16 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
             end={tab.to === '/'}
             className={({ isActive }) =>
               [
-                'relative flex min-w-0 flex-col items-center gap-1 rounded-xl px-2 pb-1.5 pt-2 text-[0.65rem] transition-colors duration-150',
+                'relative flex min-w-0 flex-1 basis-0 flex-col items-center gap-1 rounded-xl px-0 pb-1.5 pt-2 text-[0.65rem] transition-colors duration-150',
                 isActive
-                  ? 'bg-zinc-700 font-semibold text-zinc-100'
+                  ? 'bg-zinc-700 font-medium text-zinc-100'
                   : // zinc-500 (113 113 122) is the one step the light theme
                     // leaves unchanged, and it lands at 3.69:1 on the dark nav —
                     // under the 4.5:1 AA floor for text this size. zinc-400 swaps
                     // with the theme and holds 6.96:1 dark / 7.70:1 light.
                     // nav-geometry.spec.ts recomputes both from the live palette
                     // rather than trusting these numbers.
-                    'font-medium text-zinc-400 hover:text-zinc-300',
+                    'font-normal text-zinc-400 hover:text-zinc-300',
               ].join(' ')
             }
           >
@@ -125,10 +129,6 @@ export function BottomNav({ onOpenAccount, onOpenSettings }: BottomNavProps) {
             )}
           </NavLink>
         ))}
-        {/* Divider still marks the account control as a different kind of thing
-            from the route tabs — a menu of actions, not a 6th destination. */}
-        <span aria-hidden className="h-7 w-px flex-shrink-0 self-center bg-zinc-700" />
-        <AccountMenu user={user} onOpenAccount={onOpenAccount} onOpenSettings={onOpenSettings} />
       </div>
     </nav>
   );

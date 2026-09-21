@@ -154,34 +154,46 @@ reinvent.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
   **Edge-to-edge, not a floating pill.** The pill version measured 381.9px and
-  clipped 10.9px off each side of a 360px phone; a full-width bar cannot
-  overflow at any viewport, which is the whole point of the shape. Tabs are
-  sized to their own label rather than into equal slots — six equal slots at
-  360px are 60px each, and `Huishouden` (nl) and `Panoramica` (it) are wider
-  than that. Icons are 24px with a 4px gap to a `text-[0.65rem]` label; below
-  360px the labels drop out entirely rather than ellipsise, and `truncate`
-  above that is a safety net so no future translation can push the bar
-  off-screen. Active item brightens to `zinc-100` on a `zinc-700` chip —
-  deliberately one step stronger than the `zinc-800`-on-`zinc-900` used for
-  selected segments elsewhere (`Lists.tsx`), because at nav scale that pair is
-  nearly invisible; inactive items sit back at `zinc-400`, the lightest step
-  that still clears 4.5:1 against the bar in both themes (6.96:1 dark, 7.70:1
-  light — `zinc-500` managed only 3.69:1 dark, which is why it isn't used here
-  despite being §5's caption token). The signed-in
-  user's avatar sits last, past a hairline divider, at 32px inside a 44px
-  target — smaller than the tab icons' visual weight would suggest so it
-  doesn't pull the eye off the destinations. It opens the account menu, which
-  also holds notifications (an unread count shows as a small rose badge on
-  its corner); it's a menu of actions, not a destination, so it's deliberately
-  not a 6th tab. The bar is ~59px tall plus `pb-safe`, and `App.tsx`'s
-  `main` padding and the pages' FAB offsets are sized against that — they move
-  together if the bar is ever resized. None of these numbers are maintained by
-  eye: `e2e/tests/nav-geometry.spec.ts` measures the bar at 320/360/390/430px
-  in all six languages every CI run, asserts no label is ellipsised and no
-  contrast falls under AA, and stands up a synthetic safe-area inset to check
-  the content padding and FAB still clear a taller bar. The suite's own default
-  viewport is 360×780 for the same reason — the clipping bug survived three
-  hand checks because every one of them ran at 390.
+  clipped ~9px off each side of a 360px phone; a full-width bar cannot overflow
+  at any viewport, which is the whole point of the shape.
+  **Equal slots (`flex-1 basis-0`), not content-sized tabs.** Sizing each tab to
+  its own label put every destination's centre wherever that label's length
+  happened to fall: centre-to-centre spacing varied by 20.3px in English and
+  33.3px in Italian. `justify-evenly` does not fix this — it equalises the gaps
+  *between* boxes, and unequal boxes with equal gaps still land on an uneven
+  pitch. Equal slots put all five on one pitch, identically in every language.
+  Icons are 24px with a 4px gap to a `text-[0.65rem]` label; below 360px the
+  labels drop out entirely rather than ellipsise, and `truncate` above that is
+  a safety net so no future translation can push the bar off-screen.
+  Active item brightens to `zinc-100` on a `zinc-700` chip — deliberately one
+  step stronger than the `zinc-800`-on-`zinc-900` used for selected segments
+  elsewhere (`Lists.tsx`), because at nav scale that pair is nearly invisible;
+  inactive items sit back at `zinc-400`, the lightest step that still clears
+  4.5:1 against the bar in both themes (6.96:1 dark, 7.70:1 light — `zinc-500`
+  managed only 3.69:1 dark, which is why it isn't used here despite being §5's
+  caption token). Weights are 500 active / 400 inactive, one step below the
+  600/500 pair they replaced: semibold pushed `Huishouden` to 69.7px and
+  `Panoramica` to 68.6px, which left about a pixel between the label and the
+  screen edge. The chip fill, the `zinc-100` lift and the accent dot carry the
+  active state; the weight step is the fourth signal, not the only one. The row
+  keeps `px-1` so the outermost active chip's rounded corners are not sliced
+  off by the screen edge.
+  **The account control lives in the header, not the bar.** Six items do not
+  fit: the widest label is ~70px, five of those is 350px of a 360px screen, and
+  a 44px avatar has nowhere to go. It keeps the merged notification badge (an
+  unread count as a small rose badge on the avatar's corner) — only its
+  position moved, and from a header its menu opens downward, which is the
+  direction it wanted anyway.
+  The bar is ~59px tall plus `pb-safe`, and `App.tsx`'s `main` padding and the
+  pages' FAB offsets are sized against that — they move together if the bar is
+  ever resized. None of these numbers are maintained by eye:
+  `e2e/tests/nav-geometry.spec.ts` measures the bar at 320/360/390/430px in all
+  six languages every CI run and asserts the centre pitch is even to within
+  1px, no label is ellipsised, no label or chip comes within 4px of the screen
+  edge whichever tab is active, and no contrast falls under AA; it also stands
+  up a synthetic safe-area inset to check the content padding and FAB still
+  clear a taller bar. The suite's own default viewport is 360×780 — the
+  clipping bug survived three hand checks because every one of them ran at 390.
 - **Buttons**:
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`

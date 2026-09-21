@@ -76,8 +76,11 @@ async function measureNav(page: Page): Promise<NavGeometry> {
   return page.evaluate(() => {
     const nav = document.querySelector('nav');
     if (!nav) throw new Error('no <nav> rendered');
-    const account = nav.querySelector('button[aria-haspopup="menu"]');
-    if (!account) throw new Error('no account trigger inside the nav');
+    // The account control lives in the header, not the bar: six items do not
+    // fit five labels plus a 44px avatar at 360px. Still measured here because
+    // it has to stay on-screen and hittable wherever it lives.
+    const account = document.querySelector('header button[aria-haspopup="menu"]');
+    if (!account) throw new Error('no account trigger in the header');
 
     const box = (el: Element) => {
       const r = el.getBoundingClientRect();
@@ -132,6 +135,17 @@ test('the nav fits every supported language at every phone width', async ({ page
 
       expect(g.tabs.length, `${at}: expected five destinations`).toBe(5);
 
+      // Equal slots are the point: every destination on one pitch, identically
+      // in every language. Content-sized tabs varied by 20.3px in English and
+      // 33.3px in Italian, which reads as a wobble even though nothing clipped.
+      const centres = g.tabs.map((t) => t.x + t.width / 2);
+      const pitch = centres.slice(1).map((c, i) => c - centres[i]);
+      const spread = Math.max(...pitch) - Math.min(...pitch);
+      expect(
+        spread,
+        `${at}: centre spacing varies by ${spread.toFixed(1)}px (${pitch.map((v) => v.toFixed(1)).join(', ')})`,
+      ).toBeLessThanOrEqual(1);
+
       // Nothing overflows the bar's own box...
       expect(g.nav.scrollWidth, `${at}: the bar overflows itself`).toBeLessThanOrEqual(
         g.nav.clientWidth + EPSILON,
@@ -185,13 +199,52 @@ test('every nav target stays comfortable to hit', async ({ page }) => {
     // Height is the dimension that carries a thumb: the bar is ~59px, well
     // clear of the 44px comfort figure and of WCAG 2.2's 24px floor.
     expect(item.height, `${item.href} is only ${item.height.toFixed(1)}px tall`).toBeGreaterThanOrEqual(44);
-    // Width is content-sized, so the shortest label ("Geld") bottoms out at
-    // the icon plus its padding — 24 + 8 + 8. A 44px floor was considered and
-    // rejected: at 360px in Dutch the row already has ~7px of slack, and
-    // padding a short tab out to 44 would spend half of it. Anything under 40
-    // means the padding itself shrank.
+    // Every tab is an equal slot now — 70.4px at 360px — so width is no longer
+    // label-dependent. 40px is kept as the floor a slot can never fall under
+    // without the layout having changed shape.
     expect(item.width, `${item.href} is only ${item.width.toFixed(1)}px wide`).toBeGreaterThanOrEqual(40);
   }
+});
+
+test('nothing in the bar runs into the screen edge, whichever tab is active', async ({ page }) => {
+  test.setTimeout(180_000);
+  await signIn(page);
+  await page.setViewportSize({ width: 360, height: HEIGHT });
+
+  // Dutch and Italian carry the two longest labels; the first and last slots
+  // are where a wide active label has nowhere left to go. An earlier build of
+  // this layout put `Panoramica` 1.1px from the edge and `Huishouden` 0.6px
+  // from its neighbour — both passed every other assertion in this file.
+  for (const language of ['nl', 'it'] as const) {
+    await setPreferences(page, language, 'dark');
+
+    for (const route of ['/', '/timeline', '/money', '/lists', '/household']) {
+      await page.locator(`nav a[href="${route}"]`).click();
+      await expect(page.locator(`nav a[href="${route}"]`)).toHaveAttribute('aria-current', 'page');
+
+      const edges = await page.evaluate(() => {
+        const nav = document.querySelector('nav')!;
+        const labels = Array.from(nav.querySelectorAll('a[href] span'))
+          .filter((s) => (s.textContent ?? '').trim() && getComputedStyle(s).display !== 'none');
+        const first = labels[0].getBoundingClientRect();
+        const last = labels[labels.length - 1].getBoundingClientRect();
+        const chip = nav.querySelector('a[aria-current="page"]')!.getBoundingClientRect();
+        return {
+          label: Math.min(first.x, window.innerWidth - last.right),
+          chip: Math.min(chip.x, window.innerWidth - chip.right),
+        };
+      });
+
+      expect(edges.label, `${language} ${route}: label is ${edges.label.toFixed(1)}px from the screen edge`)
+        .toBeGreaterThanOrEqual(4);
+      // The chip is a filled surface with rounded corners — flush to the edge
+      // and the corners get sliced off.
+      expect(edges.chip, `${language} ${route}: active chip is ${edges.chip.toFixed(1)}px from the screen edge`)
+        .toBeGreaterThanOrEqual(2);
+    }
+  }
+
+  await setPreferences(page, 'en', 'dark');
 });
 
 test('nav labels hold AA contrast in both themes', async ({ page }) => {

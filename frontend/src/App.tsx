@@ -8,6 +8,7 @@ import { SettingsForm } from './components/SettingsForm';
 import { AccountForm } from './components/AccountForm';
 import { Splash } from './components/Splash';
 import { Logo } from './components/Logo';
+import { AccountMenu } from './components/AccountMenu';
 import { useAuth } from './lib/auth';
 import { usePreferences } from './lib/preferences';
 import Overview from './pages/Overview';
@@ -63,10 +64,13 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-zinc-950">
-      {/* Slim header — the account control and notifications both live in
-          the bottom nav's merged avatar control instead. */}
-      <header className="flex items-center border-b border-zinc-800/60 px-4 py-2.5">
+      {/* Slim header — wordmark left, account control right. The control is
+          here rather than in the bottom bar because six items do not fit five
+          labelled destinations plus a 44px avatar at 360px; notifications stay
+          merged into it either way. */}
+      <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
         <Logo size="sm" withWordmark className="text-zinc-300" />
+        <AccountMenu user={user} onOpenAccount={() => setShowAccount(true)} onOpenSettings={() => setShowSettings(true)} />
       </header>
 
       {/* Scrollable content area — padded above the fixed bottom nav plus
@@ -87,7 +91,7 @@ export default function App() {
         </div>
       </main>
 
-      <BottomNav onOpenAccount={() => setShowAccount(true)} onOpenSettings={() => setShowSettings(true)} />
+      <BottomNav />
 
       <Modal open={showAccount} title={t('account.title')} onClose={() => setShowAccount(false)}>
         <AccountForm onClose={() => setShowAccount(false)} />
