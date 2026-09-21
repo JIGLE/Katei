@@ -206,8 +206,21 @@ reinvent.
 ## 8. Iconography & motion
 
 - **Icons**: thin line icons only, `stroke-width: 1.5`, sized `h-4 w-4` to
-  `h-5 w-5`, in `currentColor`. Heroicons "outline" style is the reference.
-  Never filled/duotone icons.
+  `h-6 w-6` (the bottom nav sits at the top of that range), in `currentColor`.
+  Heroicons "outline" style is the reference. Never filled/duotone icons.
+- **Notification badge** (`public/badge.svg` → `badge-96.png`) — the one asset
+  that must be **transparent with an opaque mark**, never a filled plate.
+  Android builds the status-bar icon from the alpha channel alone: colour is
+  discarded and whatever is opaque gets tinted flat white. `icon.svg` opens
+  with a full-bleed background rect and so has no alpha at all, which is why
+  pointing `badge` at the app icon drew a plain white square on the phone.
+  The badge is the monogram only — no wordmark, no emerald rule, since a
+  second colour cannot survive the flattening — at `stroke-width: 12` in a
+  96px box, heavier than scaling `icon.svg` down would give: at 24dp the
+  scaled-down stroke goes faint, and much heavier closes the counters where
+  the diagonals meet the upright. `sw.ts` keeps the full-colour app icon for
+  `icon`, which is the large in-body image and wants to be opaque.
+  `e2e/tests/pwa-assets.spec.ts` asserts both the alpha and the wiring.
 - **Motion**: subtle and short. `transition-colors` on hover, slide-up for
   sheets. No bounce, no spin, no attention-grabbing animation. Reduced motion
   should feel native.

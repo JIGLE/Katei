@@ -31,8 +31,14 @@ self.addEventListener('push', (event: PushEvent) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',
+      // icon is the large full-colour image in the notification body, so the
+      // opaque app icon is right there.
       icon: '/pwa-192.png',
-      badge: '/pwa-192.png',
+      // badge is the status-bar icon, and Android builds it from the alpha
+      // channel alone — colour discarded, silhouette tinted flat white. The
+      // app icon has no alpha channel at all, so pointing badge at it drew a
+      // solid white square. badge-96.png is a transparent monochrome mark.
+      badge: '/badge-96.png',
       data: { url: data.url || '/' },
     }),
   );
