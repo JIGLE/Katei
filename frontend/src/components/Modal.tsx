@@ -194,7 +194,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
           </header>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-sheet-end pt-5">
           {children}
         </div>
       </div>

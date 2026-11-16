@@ -68,7 +68,7 @@ export default function App() {
           here rather than in the bottom bar because six items do not fit five
           labelled destinations plus a 44px avatar at 360px; notifications stay
           merged into it either way. */}
-      <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 py-2.5">
+      <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 pb-2.5 pt-header-top">
         <Logo size="sm" withWordmark className="text-zinc-300" />
         <AccountMenu user={user} onOpenAccount={() => setShowAccount(true)} onOpenSettings={() => setShowSettings(true)} />
       </header>
@@ -76,7 +76,7 @@ export default function App() {
       {/* Scrollable content area — padded above the fixed bottom nav plus
           the floating add button's envelope, so the last row's right edge
           is never trapped underneath it. */}
-      <main className="flex-1 overflow-y-auto pb-32">
+      <main className="flex-1 overflow-y-auto pb-main-end">
         {/* Keyed on the path so each tab change re-runs the calm reveal.
             Opacity-only: a transform here would become the containing block
             for the pages' position:fixed add buttons and un-float them. */}
