@@ -14,7 +14,7 @@ import { Avatar } from './Avatar';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 interface FamilyGiftListsProps {
   lists: GiftListSummary[];
@@ -74,7 +74,7 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
             {list.owner_name ? (
               <Avatar name={list.owner_name} url={list.owner_avatar} size="sm" />
             ) : (
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[0.6rem] font-medium text-zinc-300">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[0.6875rem] font-medium text-zinc-300">
                 {(list.external_name ?? '?').trim().slice(0, 1).toUpperCase()}
               </span>
             )}
@@ -94,7 +94,7 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
           </div>
 
           {list.items.length === 0 ? (
-            <p className="px-1 text-xs text-zinc-600">{t('gifts.noIdeasYet')}</p>
+            <p className="px-1 text-xs text-zinc-500">{t('gifts.noIdeasYet')}</p>
           ) : (
             <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
               {list.items.map((g) => (

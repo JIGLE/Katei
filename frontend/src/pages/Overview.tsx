@@ -65,7 +65,7 @@ function UpcomingRow({
         <span
           className={[
             'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-            overdue ? 'bg-rose-500/20 text-rose-400' : 'bg-zinc-800 text-zinc-400',
+            overdue ? 'bg-rose-500/15 text-rose-400' : 'bg-zinc-800 text-zinc-400',
           ].join(' ')}
         >
           {formatRelativeDay(days, lang)}
@@ -394,7 +394,7 @@ export default function Overview() {
                 <span className="line-clamp-2 flex-1 text-sm text-zinc-300">
                   {t(`activity.${a.action}_plain`, { item: a.summary })}
                 </span>
-                <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
+                <time className="flex-shrink-0 text-xs tabular-nums text-zinc-500">
                   {formatRelativeTime(a.created_at, lang)}
                 </time>
               </li>

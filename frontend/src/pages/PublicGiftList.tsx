@@ -18,7 +18,7 @@ const NAME_KEY = 'katei-gift-share-name';
 
 const fieldCls =
   'w-full max-w-xs rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 // A share-link visitor's view of one wishlist — no session, no app chrome.
 // Marking an item is anonymous: nothing here ever reaches the list's owner.

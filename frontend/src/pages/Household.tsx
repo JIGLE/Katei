@@ -168,7 +168,7 @@ export default function Household() {
             <p className="flex items-center gap-2 text-sm text-zinc-100">
               <span className="truncate">{u.name}</span>
               {u.role === 'admin' && (
-                <span className="flex-shrink-0 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-amber-500">
+                <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
                   {t('household.admin')}
                 </span>
               )}
@@ -200,7 +200,7 @@ export default function Household() {
                   onClick={() => (confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id))}
                   className={[
                     'rounded-md px-1.5 transition-colors',
-                    confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-600 hover:text-zinc-400',
+                    confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-500 hover:text-zinc-400',
                   ].join(' ')}
                   aria-label={t('household.removeAssignmentAria')}
                 >
@@ -305,7 +305,7 @@ export default function Household() {
                   <button
                     type="button"
                     onClick={() => revokeInvite(i.id)}
-                    className="rounded-md px-1.5 text-zinc-600 transition-colors hover:text-rose-400"
+                    className="rounded-md px-1.5 text-zinc-500 transition-colors hover:text-rose-400"
                     aria-label={t('household.revokeInvite')}
                   >
                     ×
@@ -314,7 +314,7 @@ export default function Household() {
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-zinc-600">{t('household.noInvites')}</p>
+            <p className="text-xs text-zinc-500">{t('household.noInvites')}</p>
           )}
           <p className="text-xs leading-relaxed text-zinc-500">{t('household.invitesHint')}</p>
         </section>

@@ -8,8 +8,8 @@ interface AvatarProps {
 }
 
 const sizeCls: Record<NonNullable<AvatarProps['size']>, string> = {
-  xs: 'h-5 w-5 text-[0.55rem]',
-  sm: 'h-6 w-6 text-[0.6rem]',
+  xs: 'h-5 w-5 text-[0.6875rem]',
+  sm: 'h-6 w-6 text-[0.6875rem]',
   md: 'h-8 w-8 text-xs',
   lg: 'h-11 w-11 text-sm', // the nav's account control
 };
@@ -62,7 +62,7 @@ export function AssigneeStack({
         <Avatar key={i} name={m.user_name} url={m.user_avatar} size={size} />
       ))}
       {extra > 0 && (
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-[0.6rem] font-medium text-zinc-400 ring-2 ring-zinc-900">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-[0.6875rem] font-medium text-zinc-400 ring-2 ring-zinc-900">
           +{extra}
         </span>
       )}

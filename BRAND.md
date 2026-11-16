@@ -100,18 +100,23 @@ appointment → amber     (a time to be somewhere)
 Accent usage patterns:
 - **Dot** (status): `bg-{accent}-500`, `h-2 w-2 rounded-full`
 - **Pill** (label): `bg-{accent}-500/10 text-{accent}-500 rounded-full px-2 py-0.5 text-xs`
-- **Emphasis pill** (overdue): bump fill to `/20` and text to `-400`
+- **Emphasis pill** (overdue): bump fill to `/15` and text to `-400` (`/20`
+  dropped the light theme's deep-rose text to 4.4:1 against its own fill)
 - **De-emphasized** ("later"/done): drop to `zinc` (`bg-zinc-800 text-zinc-500`)
 
 Text hierarchy: primary `text-zinc-100`, secondary `text-zinc-400`, tertiary /
-captions `text-zinc-500`, disabled / faint `text-zinc-600`.
+captions `text-zinc-500`, and `zinc-600` for **non-text only** (icons, drag
+grips, focus borders) or genuinely disabled controls.
 
-One caveat on `zinc-500`: it is the one step the light theme leaves unchanged
-(`113 113 122` in both), and on a `zinc-900` card it measures **3.7:1** — under
-the 4.5:1 AA floor for normal-size text. That is acceptable for genuinely
-de-emphasised meta a reader can skip, but anything they have to read needs
-`zinc-400`, which swaps with the theme and holds ≥ 6.9:1 either way. The bottom
-nav's labels moved for exactly this reason.
+**Every visible text clears WCAG AA in both themes** — 4.5:1, or 3:1 at 24px+.
+`zinc-500` is tuned per theme to make that true for captions and eyebrows:
+`132 132 141` in dark (4.8:1 on a `zinc-900` card; Tailwind's `113 113 122`
+measured 3.7:1) and `108 108 117` in light (4.8:1 on the warm page). `zinc-600`
+fails as text in both themes (2.3:1 dark, 2.6:1 light), which is why it is
+reserved for non-text. Text on an accent fill uses `text-zinc-950`, which
+inverts with the theme, never `text-white` (3.7:1 on `rose-500` in dark).
+`e2e/tests/text-legibility.spec.ts` recomputes all of this from the live page
+on every tab, in both themes.
 
 ---
 
@@ -128,6 +133,10 @@ Weights used: **300 / 400 / 500 / 600** only.
 | Body | `text-sm text-zinc-200` |
 | Stat figure | `text-xl font-light` (in its semantic accent) |
 | Caption / meta | `text-xs text-zinc-500` |
+
+Size floor: no text below **11px** (`text-[0.6875rem]`), including avatar
+initials, badges, weekday letters and nav labels. Anything a reader must read
+is `text-xs` (12px) or larger.
 
 Rules: titles are **light** (300), not bold. Labels and eyebrows are
 **uppercase with wide tracking**. Body stays at `text-sm`. Let weight and

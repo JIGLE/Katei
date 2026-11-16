@@ -42,7 +42,7 @@ export function AvatarPicker({ name, url, file, onPick }: AvatarPickerProps) {
         >
           {file || url ? t('form.changePhoto') : t('form.choosePhoto')}
         </button>
-        <p className="mt-1 text-xs text-zinc-600">{t('form.photoHint')}</p>
+        <p className="mt-1 text-xs text-zinc-500">{t('form.photoHint')}</p>
       </div>
       <input
         ref={inputRef}
