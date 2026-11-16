@@ -4,8 +4,9 @@ All notable changes to Katei are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/) once versioned releases begin.
 
-Until then, Katei is a rolling release: every merge to `main` publishes
-`ghcr.io/jigle/katei:latest` plus an immutable `sha-<commit>` tag.
+Every merge to `main` publishes `ghcr.io/jigle/katei:latest` plus an immutable
+`sha-<commit>` tag. Pushing a `vX.Y.Z` tag also publishes `:X.Y.Z` and `:X.Y`
+images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 
 ## [Unreleased]
 
@@ -18,6 +19,10 @@ Until then, Katei is a rolling release: every merge to `main` publishes
 - A CI workflow that type-checks the backend and frontend and builds the Docker
   image on every pull request.
 
+- Versioned releases: a `vX.Y.Z` tag publishes matching image tags and a GitHub
+  Release. Images now carry OCI labels linking them to their source commit.
+
 ### Changed
 
 - The Docker image now runs on Node.js 22, matching CI.
+- End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
