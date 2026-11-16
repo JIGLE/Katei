@@ -5,8 +5,8 @@ appointments. Security reports are taken seriously and handled privately.
 
 ## Supported versions
 
-Katei ships as a rolling release. Only the latest image
-(`ghcr.io/jigle/katei:latest`, built from `main`) receives fixes. Please make
+Only the latest image (`ghcr.io/jigle/katei:latest`, built from `main`) and
+the most recent versioned release receive fixes. Please make
 sure you can reproduce an issue on it before reporting.
 
 ## Reporting a vulnerability

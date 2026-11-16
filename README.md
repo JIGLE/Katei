@@ -96,7 +96,7 @@ Images are built and pushed to GHCR automatically by GitHub Actions on every pus
 | Field | Value |
 |---|---|
 | Image Repository | `ghcr.io/jigle/katei` |
-| Image Tag | `latest` |
+| Image Tag | `latest`, or a version such as `1.2.0` to pin a release |
 | Env `POSTGRES_PASSWORD` | your strong password |
 | Env `NODE_ENV` | `production` |
 | Env `JWT_SECRET` *(optional, recommended)* | a long random string |

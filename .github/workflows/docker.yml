@@ -3,6 +3,9 @@ name: Build & Push to GHCR
 on:
   push:
     branches: [main]
+    # A version tag (v1.2.3) publishes a matching, immutable image and a GitHub
+    # Release. Path filters are not evaluated for tag pushes.
+    tags: ["v*.*.*"]
     paths:
       - "backend/**"
       - "frontend/**"
@@ -87,10 +90,9 @@ jobs:
 
   e2e:
     name: E2E smoke (Playwright)
-    # Pinned, not ubuntu-latest: once -latest moved to 26.04, Playwright 1.56
-    # refused to install its browser there ("does not support chromium on
-    # ubuntu26.04-x64"). Move this forward together with a Playwright bump.
-    runs-on: ubuntu-24.04
+    # Back on ubuntu-latest since Playwright 1.64, which supports Ubuntu 26.04.
+    # (1.56 refused to install chromium there, so this was pinned to 24.04.)
+    runs-on: ubuntu-latest
     # Deliberately not `needs: test` — they're independent signals, and
     # serialising them added ~90s to every run. `build` still gates on both.
 
@@ -256,8 +258,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/jigle/katei
+          # `latest` tracks main only, so pushing a version tag for an older
+          # commit can never roll the TrueNAS deployment back.
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
 
       # Booting the docker-container builder pulls moby/buildkit from Docker Hub,
@@ -269,18 +275,46 @@ jobs:
           # Pass the (newline-separated) tags as an env var so the shell doesn't
           # choke on the multiline value; expand each line to a --tag flag below.
           TAGS: ${{ steps.meta.outputs.tags }}
+          # OCI labels (source, revision, version, licenses) so the image links
+          # back to its commit on GHCR and in `docker inspect`.
+          LABELS: ${{ steps.meta.outputs.labels }}
         with:
           timeout_minutes: 25
           max_attempts: 3
           retry_wait_seconds: 20
+          shell: bash
           command: |
+            # Labels can contain spaces (the repo description), so pass them
+            # as an array rather than through word-splitting like the tags.
+            mapfile -t label_args < <(printf '%s\n' "$LABELS" | sed '/^$/d; s/^/--label=/')
             docker buildx inspect katei >/dev/null 2>&1 \
               || docker buildx create --name katei --driver docker-container --use --bootstrap
             docker buildx use katei
             docker buildx build \
               --push \
               $(printf '%s\n' "$TAGS" | sed 's/^/--tag /') \
+              "${label_args[@]}" \
               --cache-from type=gha \
               --cache-to type=gha,mode=max \
               --file Dockerfile \
               .
+
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    # Only for version tags, and only once the image for that tag is published.
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Katei $TAG" \
+            --generate-notes \
+            --notes "Image: \`ghcr.io/jigle/katei:${TAG#v}\`"

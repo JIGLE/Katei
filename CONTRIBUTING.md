@@ -95,10 +95,31 @@ and the UI, and cover new ones with a test.
 - Keep PRs small and focused. Several small PRs review faster than one large one.
 - A PR merges once CI is green and it has been reviewed.
 
+## Releasing
+
+Every merge to `main` publishes `ghcr.io/jigle/katei:latest` and a
+`sha-<commit>` tag. A versioned release adds stable, immutable tags on top:
+
+1. Move the **Unreleased** entries in [CHANGELOG.md](CHANGELOG.md) under a new
+   version heading (for example `## [1.2.0] - 2026-12-01`) and merge that PR.
+2. Tag the merge commit on `main` and push the tag:
+
+   ```bash
+   git tag -a v1.2.0 -m "Katei 1.2.0" && git push origin v1.2.0
+   ```
+
+3. CI runs the full test suite, publishes `ghcr.io/jigle/katei:1.2.0` and
+   `:1.2`, and creates a GitHub Release with generated notes.
+
+Versions follow [Semantic Versioning](https://semver.org/): a major bump for a
+change that needs action from people upgrading (for example a manual migration),
+a minor bump for features, and a patch bump for fixes.
+
 ## Dependencies
 
 Dependabot opens grouped update PRs every Monday. Playwright is pinned to an
-exact version because the E2E runner image depends on it; bump the two together.
+exact version so browser installs stay reproducible; if a bump fails to install
+its browser in CI, check that it supports the runner's Ubuntu release.
 
 ## License
 
