@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in Katei doesn't work the way it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected to see instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Lists
+        2. Tap …
+        3. See …
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Overview
+        - Timeline
+        - Money Flow
+        - Lists (shopping or gifts)
+        - Household
+        - Settings, backups or notifications
+        - Sign-in or accounts
+        - Installation or deployment
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The image tag or commit you are running.
+      placeholder: "sha-1a2b3c4 or latest"
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: "iPhone 15, Safari, installed as an app"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Container logs (`docker logs katei`) or screenshots. Remove anything private first.
+      render: text

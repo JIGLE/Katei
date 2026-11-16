@@ -1,6 +1,33 @@
+<div align="center">
+
 # Katei
 
-A premium, Japandi-inspired household obligation awareness system. Self-hosted via Docker Compose, targeted for TrueNAS SCALE.
+**A calm, self-hosted home for your household's plans, shopping and gift lists.**
+
+[![CI](https://github.com/JIGLE/Katei/actions/workflows/ci.yml/badge.svg)](https://github.com/JIGLE/Katei/actions/workflows/ci.yml)
+[![Build & Push to GHCR](https://github.com/JIGLE/Katei/actions/workflows/docker.yml/badge.svg)](https://github.com/JIGLE/Katei/actions/workflows/docker.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Image: ghcr.io/jigle/katei](https://img.shields.io/badge/image-ghcr.io%2Fjigle%2Fkatei-2b3137?logo=docker&logoColor=white)](https://github.com/JIGLE/Katei/pkgs/container/katei)
+
+</div>
+
+Katei (家庭, "household") is a mobile-first progressive web app that keeps a
+household aware of what is coming up: what to buy, where to go, what to pay and
+whose birthday is next. It runs as a single Docker container with its own
+database, and is built for home servers such as TrueNAS SCALE.
+
+- **Overview** that answers "what do we need to get, go to and pay soon?" at a glance
+- **Timeline** of appointments, deadlines and recurring obligations
+- **Money Flow** for recurring costs, utilities, subscriptions and savings goals
+- **Lists** for shopping (grouped by store) and gift wishlists, shareable by link
+- **Household** members, roles and assignments, with per-person privacy
+- Installable on phones, with push or [ntfy](https://ntfy.sh) reminders and daily backups
+- Available in English, German, French, Spanish, Italian and Dutch
+
+**Contents:** [Stack](#stack) · [Quick start](#quick-start) ·
+[Development](#development-without-docker) ·
+[Deploying](#deploying-to-truenas-scale-custom-app-gui) · [Domains](#domains) ·
+[Contributing](#contributing) · [License](#license)
 
 ## Stack
 
@@ -13,7 +40,7 @@ A premium, Japandi-inspired household obligation awareness system. Self-hosted v
 
 Everything runs in **one container**. PostgreSQL starts via `entrypoint.sh`, the schema is applied on first boot, then Fastify serves the SPA and API. One volume mount persists the database.
 
-## Quick Start
+## Quick start
 
 ```bash
 cp .env.example .env
@@ -58,43 +85,7 @@ cd frontend && npm install && npm run dev
 ```
 
 A local postgres instance is required for dev. The `DATABASE_URL` env var must be set.
-
-## AI Knowledge Architecture (token-efficient)
-
-This repository uses a two-layer approach:
-
-- **Graphify (development knowledge):** map code relationships first, then read only targeted files.
-- **Graphiti (runtime knowledge):** optional event/relationship memory for diagnostics and AI investigation.
-
-### Development flow (preferred)
-
-1. Graphify traversal
-2. Identify smallest relevant file set
-3. Targeted file reads
-4. Implementation and validation
-
-Avoid broad repository scans unless Graphify cannot answer the question.
-
-### Copilot setup workflow
-
-`/home/runner/work/Katei/Katei/.github/workflows/copilot-setup-steps.yml` preinstalls project dependencies and Graphify tooling, then builds `graphify-out/graph.json` so cloud-agent sessions start with deterministic setup.
-
-### Optional Graphiti runtime integration
-
-Graphiti is additive only. PostgreSQL remains the source of truth.
-
-Environment variables:
-
-| Env var | Effect |
-|---|---|
-| `GRAPHITI_URL` | Base URL for Graphiti API (enables integration when set) |
-| `GRAPHITI_API_KEY` | Optional bearer token for Graphiti API |
-| `GRAPHITI_TIMEOUT_MS` | Optional request timeout (default `2000`) |
-
-Admin endpoints:
-
-- `GET /api/settings/graphiti` — integration status
-- `POST /api/settings/graphiti/query` — bounded retrieval (`query`, optional `limit` up to 20)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup and the checks CI runs.
 
 ## Deploying to TrueNAS SCALE (Custom App GUI)
 
@@ -168,3 +159,56 @@ Future deploys: `git push` → Actions rebuilds `ghcr.io/jigle/katei:latest` →
 
 A gift list can be shared via a revocable link at `/gift/:token` — reachable
 with no session, for people who aren't Katei users at all.
+
+## AI-assisted development
+
+This repository uses a two-layer approach:
+
+- **Graphify (development knowledge):** map code relationships first, then read only targeted files.
+- **Graphiti (runtime knowledge):** optional event/relationship memory for diagnostics and AI investigation.
+
+### Development flow (preferred)
+
+1. Graphify traversal
+2. Identify smallest relevant file set
+3. Targeted file reads
+4. Implementation and validation
+
+Avoid broad repository scans unless Graphify cannot answer the question.
+
+### Copilot setup workflow
+
+[`.github/workflows/copilot-setup-steps.yml`](.github/workflows/copilot-setup-steps.yml) preinstalls project dependencies and Graphify tooling, then builds `graphify-out/graph.json` so cloud-agent sessions start with deterministic setup.
+
+### Optional Graphiti runtime integration
+
+Graphiti is additive only. PostgreSQL remains the source of truth.
+
+Environment variables:
+
+| Env var | Effect |
+|---|---|
+| `GRAPHITI_URL` | Base URL for Graphiti API (enables integration when set) |
+| `GRAPHITI_API_KEY` | Optional bearer token for Graphiti API |
+| `GRAPHITI_TIMEOUT_MS` | Optional request timeout (default `2000`) |
+
+Admin endpoints:
+
+- `GET /api/settings/graphiti` — integration status
+- `POST /api/settings/graphiti/query` — bounded retrieval (`query`, optional `limit` up to 20)
+
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the
+local setup, coding conventions and pull request checklist, and follow the
+[Code of Conduct](CODE_OF_CONDUCT.md). Notable changes are tracked in the
+[changelog](CHANGELOG.md).
+
+## Security
+
+Please report vulnerabilities privately as described in
+[SECURITY.md](SECURITY.md), not in a public issue.
+
+## License
+
+Katei is licensed under the [Apache License 2.0](LICENSE).
