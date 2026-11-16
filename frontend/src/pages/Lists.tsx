@@ -302,7 +302,7 @@ export default function Lists() {
           {/* Quick add — sits at the end of the list, docked above the bottom
               nav so it's always reachable no matter how long the list gets.
               bottom-0, not a fixed offset: <main> already reserves clearance
-              for the nav via pb-32, and sticky's offset resolves against that
+              for the nav via pb-main-end, and sticky's offset resolves against that
               padding edge — unlike the fixed-position FABs elsewhere that sit
               against the viewport, adding an offset on top of that padding
               here would double the gap and strand the bar mid-list instead of

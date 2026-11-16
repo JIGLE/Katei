@@ -54,8 +54,20 @@ export default {
       // unverifiable. nav-geometry.spec.ts sets --katei-safe-bottom to stand
       // one up. Nothing sets it in a real browser, where env() answers as
       // before.
+      //
+      // The top inset works the same way through --katei-safe-top: with
+      // viewport-fit=cover and a black-translucent status bar, an installed
+      // iPhone PWA draws the page under the clock and notch, so the header has
+      // to pad itself down. The composite keys below add an inset to the
+      // element's own resting offset, so floating controls and sheet footers
+      // keep their spacing above a home indicator instead of sitting on it.
       spacing: {
         safe: 'var(--katei-safe-bottom, env(safe-area-inset-bottom))',
+        'safe-top': 'var(--katei-safe-top, env(safe-area-inset-top))',
+        'header-top': 'calc(0.625rem + var(--katei-safe-top, env(safe-area-inset-top)))',
+        fab: 'calc(6rem + var(--katei-safe-bottom, env(safe-area-inset-bottom)))',
+        'main-end': 'calc(8rem + var(--katei-safe-bottom, env(safe-area-inset-bottom)))',
+        'sheet-end': 'calc(2rem + var(--katei-safe-bottom, env(safe-area-inset-bottom)))',
       },
     },
   },
