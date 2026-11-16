@@ -89,6 +89,15 @@ export default function Lists() {
   const [editStore, setEditStore] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const quickAddRef = useRef<HTMLInputElement>(null);
+  // Show a newly added row: it lands at the end of the open items, which on a
+  // long list is below the fold or behind the docked bar. Scrolled from an
+  // effect so the row is guaranteed to be in the DOM.
+  const [justAdded, setJustAdded] = useState<number | null>(null);
+  useEffect(() => {
+    if (justAdded == null) return;
+    document.querySelector(`[data-shopping-id="${justAdded}"]`)?.scrollIntoView({ block: 'nearest' });
+    setJustAdded(null);
+  }, [justAdded]);
   // The docked add bar rides on the on-screen keyboard while typing (iOS
   // lays fixed elements against the layout viewport, which the keyboard
   // covers), and on the bottom nav otherwise.
@@ -117,10 +126,7 @@ export default function Lists() {
     try {
       const created = await api.post<ShoppingItem>('/shopping', { name });
       setItems((prev) => [...prev.filter((i) => !i.is_done), created, ...prev.filter((i) => i.is_done)]);
-      // Show the new row: it lands at the end of the open items, which on a
-      // long list is below the fold or behind the docked bar.
-      requestAnimationFrame(() =>
-        document.querySelector(`[data-shopping-id="${created.id}"]`)?.scrollIntoView({ block: 'nearest' }));
+      setJustAdded(created.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'failed');
       setQuickAdd(name);
