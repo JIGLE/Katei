@@ -26,6 +26,13 @@ async function cleanup(page: Page, prefix: string) {
   for (const e of events.filter((x) => x.title.startsWith(prefix))) await page.request.delete(`/api/events/${e.id}`);
 }
 
+// Runs even when an assertion fails, so one failure can't cascade into the
+// smoke journey's shopping-row count.
+test.afterEach(async ({ page }) => {
+  await cleanup(page, 'Dock spec');
+  await cleanup(page, 'Fab spec');
+});
+
 const scrollMain = (page: Page, y: number) =>
   page.evaluate((py) => document.querySelector('main')!.scrollTo(0, py), y);
 
@@ -65,12 +72,11 @@ test('the shopping add field docks flush on the nav and never covers a row', asy
   await input.press('Enter');
   const newest = page.locator('[data-shopping-id]', { hasText: 'Dock spec newest' });
   await expect(newest).toBeVisible();
-  await page.waitForTimeout(300);
-  const newBox = (await newest.boundingBox())!;
-  expect(newBox.y + newBox.height, 'new row landed behind the add bar')
-    .toBeLessThanOrEqual((await bar.boundingBox())!.y + 1);
-
-  await cleanup(page, 'Dock spec');
+  const barTop = (await bar.boundingBox())!.y;
+  await expect
+    .poll(async () => { const b = (await newest.boundingBox())!; return b.y + b.height; },
+      { message: 'new row landed behind the add bar' })
+    .toBeLessThanOrEqual(barTop + 1);
 });
 
 test('the add button steps aside while scrolling down and returns on scroll up', async ({ page }) => {
@@ -92,6 +98,4 @@ test('the add button steps aside while scrolling down and returns on scroll up',
   await expect.poll(opacity).toBe('0');
   await page.mouse.wheel(0, -200);
   await expect.poll(opacity).toBe('1');
-
-  await cleanup(page, 'Fab spec');
 });
