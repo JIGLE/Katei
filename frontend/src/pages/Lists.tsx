@@ -17,7 +17,7 @@ import { GiftsPane } from '../components/GiftsPane';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 type Pane = 'shopping' | 'gifts';
 
@@ -305,7 +305,7 @@ export default function Lists() {
                 {storeGroups.map(([store, groupItems]) => (
                   <section key={store} className="space-y-2">
                     {storeGroups.length > 1 && (
-                      <p className="text-xs font-medium uppercase tracking-widest text-zinc-600">{store}</p>
+                      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{store}</p>
                     )}
                     <div className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
                       <SortableContext items={groupItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>

@@ -116,7 +116,7 @@ export function BottomNav() {
             end={tab.to === '/'}
             className={({ isActive }) =>
               [
-                'relative flex min-w-0 flex-1 basis-0 flex-col items-center gap-1 rounded-xl px-0 pb-1.5 pt-2 text-[0.65rem] transition-colors duration-150',
+                'relative flex min-w-0 flex-1 basis-0 flex-col items-center gap-1 rounded-xl px-0 pb-1.5 pt-2 text-[0.6875rem] transition-colors duration-150',
                 isActive
                   ? 'bg-zinc-700 font-medium text-zinc-100'
                   : // zinc-500 (113 113 122) is the one step the light theme

@@ -73,7 +73,7 @@ export function WeekStrip({ events, lang, timezone, onSelectDay }: WeekStripProp
               isToday ? 'ring-1 ring-inset ring-zinc-700' : 'hover:bg-zinc-800/50',
             ].join(' ')}
           >
-            <span aria-hidden className="text-[0.6rem] uppercase tracking-wide text-zinc-600">
+            <span aria-hidden className="text-[0.6875rem] uppercase tracking-wide text-zinc-500">
               {weekdayFmt.format(d)}
             </span>
             <span aria-hidden className={`text-sm tabular-nums ${isToday ? 'font-semibold text-emerald-400' : 'text-zinc-300'}`}>

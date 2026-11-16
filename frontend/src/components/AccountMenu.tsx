@@ -119,7 +119,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
           {unread > 0 && (
             <span
               aria-hidden
-              className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.6rem] font-semibold text-white ring-2 ring-zinc-950"
+              className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.6875rem] font-semibold text-zinc-950 ring-2 ring-zinc-950"
             >
               {unread > 9 ? '9+' : unread}
             </span>
@@ -160,7 +160,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
                   </svg>
                   <span className="flex-1 text-left">{t('notifications.title')}</span>
                   {unread > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.65rem] font-semibold text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.6875rem] font-semibold text-white">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
@@ -256,7 +256,7 @@ export function AccountMenu({ user, onOpenAccount, onOpenSettings }: AccountMenu
                   <p className="truncate text-sm text-zinc-100">{n.title}</p>
                   {n.body && <p className="mt-0.5 text-xs text-zinc-500">{n.body}</p>}
                 </div>
-                <time className="flex-shrink-0 text-xs tabular-nums text-zinc-600">
+                <time className="flex-shrink-0 text-xs tabular-nums text-zinc-500">
                   {formatRelativeTime(n.created_at, i18n.language)}
                 </time>
               </li>

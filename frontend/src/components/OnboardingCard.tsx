@@ -59,7 +59,7 @@ export function OnboardingCard({
           {t('onboarding.title')}
         </p>
         <div className="flex items-baseline gap-3">
-          <p className="text-xs text-zinc-600">{t('onboarding.left', { count: remaining })}</p>
+          <p className="text-xs text-zinc-500">{t('onboarding.left', { count: remaining })}</p>
           <button
             type="button"
             onClick={onDismiss}

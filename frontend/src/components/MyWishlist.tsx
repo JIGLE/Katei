@@ -32,7 +32,7 @@ export function MyWishlist({ list, refetch }: MyWishlistProps) {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('gifts.myWishlist')}</p>
-          <p className="mt-0.5 truncate text-xs text-zinc-600">{t('gifts.myWishlistHint')}</p>
+          <p className="mt-0.5 truncate text-xs text-zinc-500">{t('gifts.myWishlistHint')}</p>
         </div>
         <button
           type="button"

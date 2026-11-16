@@ -15,7 +15,9 @@
   --zinc-200: 228 228 231;
   --zinc-300: 212 212 216;
   --zinc-400: 161 161 170;
-  --zinc-500: 113 113 122;
+  /* Lifted from Tailwind's 113 113 122, which measured 3.7:1 on zinc-900
+     cards — under AA for the captions and eyebrows this step carries. */
+  --zinc-500: 132 132 141;
   --zinc-600: 82 82 91;
   --zinc-700: 63 63 70;
   --zinc-800: 39 39 42;
@@ -29,7 +31,9 @@
   --zinc-200: 39 39 42;
   --zinc-300: 63 63 70;
   --zinc-400: 82 82 91;
-  --zinc-500: 113 113 122;
+  /* A step darker than Tailwind's 113 113 122, which read 4.47:1 on this
+     warm page — just under AA for the eyebrows it carries. */
+  --zinc-500: 108 108 117;
   --zinc-600: 161 161 170;
   --zinc-700: 212 212 216;
   --zinc-800: 228 228 231;

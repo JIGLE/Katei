@@ -154,7 +154,7 @@ export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay
       <div role="grid" aria-label={monthLabel} onKeyDown={onGridKey} className="text-center">
         <div role="row" className="grid grid-cols-7 gap-1">
           {weekdays.map((w) => (
-            <div key={w} role="columnheader" className="pb-1 text-[0.65rem] uppercase tracking-wide text-zinc-600">{w}</div>
+            <div key={w} role="columnheader" className="pb-1 text-[0.6875rem] uppercase tracking-wide text-zinc-500">{w}</div>
           ))}
         </div>
         {weeks.map((week, wi) => (

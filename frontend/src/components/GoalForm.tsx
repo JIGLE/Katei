@@ -15,7 +15,7 @@ interface GoalFormProps {
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 const ICONS = ['🐷', '🏖', '🛋', '📺', '🚗', '🎁', '🏠', '💍', '🎓', '🚑', '🐾', '✈️'];
 
@@ -114,7 +114,7 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
 
       <div>
         <label htmlFor="pot-target" className={labelCls}>
-          {t('money.potTarget')} <span className="text-zinc-600">({currency})</span>
+          {t('money.potTarget')} <span className="text-zinc-500">({currency})</span>
         </label>
         <input
           id="pot-target"

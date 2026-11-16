@@ -71,7 +71,7 @@ export function ShareGiftList({ listId }: ShareGiftListProps) {
       {open && (
         <div className="mt-2 rounded-xl border border-zinc-800/60 bg-zinc-950 p-3">
           <p className="mb-3 text-xs leading-relaxed text-zinc-500">{t('gifts.shareIntro')}</p>
-          {busy && !loaded && <p className="text-xs text-zinc-600">{t('common.loading')}</p>}
+          {busy && !loaded && <p className="text-xs text-zinc-500">{t('common.loading')}</p>}
           {loaded && !token && (
             <button
               type="button"

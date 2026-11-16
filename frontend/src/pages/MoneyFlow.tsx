@@ -260,9 +260,9 @@ export default function MoneyFlow() {
                       <span aria-hidden>{pot.icon || '🐷'}</span>
                       <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
                       <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
-                      {pot.target ? <span className="text-xs tabular-nums text-zinc-600">/ {fmt(pot.target)}</span> : null}
+                      {pot.target ? <span className="text-xs tabular-nums text-zinc-500">/ {fmt(pot.target)}</span> : null}
                       {pct !== null && pct >= 100 && (
-                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-teal-300">
+                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-teal-300">
                         {t('money.goalReached')}
                       </span>
                     )}
@@ -391,7 +391,7 @@ export default function MoneyFlow() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-right text-xs text-zinc-600">{t('money.perMonth')}</p>
+          <p className="mt-3 text-right text-xs text-zinc-500">{t('money.perMonth')}</p>
         </section>
       )}
 
@@ -461,12 +461,12 @@ export default function MoneyFlow() {
                   <p className="flex items-center gap-2 text-sm text-zinc-100">
                     <span className="truncate">{s.name}</span>
                     {s.automated && (
-                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-zinc-400">
+                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
                         {t('money.auto')}
                       </span>
                     )}
                     {s.private && (
-                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-zinc-400">
+                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
                         {t('money.private')}
                       </span>
                     )}

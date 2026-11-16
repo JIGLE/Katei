@@ -29,7 +29,7 @@ const sectionCls = 'text-xs font-medium uppercase tracking-widest text-zinc-500'
 const gLabelCls = 'mb-1.5 block text-xs text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 export function SettingsForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -333,11 +333,11 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
                 placeholder="0.00"
                 className={`${fieldCls}`}
               />
-              <p className="mt-1 text-xs text-zinc-600">{t('settings.currentSavingsHint')}</p>
+              <p className="mt-1 text-xs text-zinc-500">{t('settings.currentSavingsHint')}</p>
             </div>
           )}
           {/* Savings targets now live on each pot (Money → tap a pot). */}
-          {moneyEnabled && <p className="text-xs text-zinc-600">{t('settings.potsHint')}</p>}
+          {moneyEnabled && <p className="text-xs text-zinc-500">{t('settings.potsHint')}</p>}
         </section>
         </>)}
 
@@ -378,7 +378,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
         ) : (
           // Members have no server-side prefs to save; theme applies live and is
           // remembered on this device.
-          <p className="text-xs text-zinc-600">{t('settings.themeDeviceHint')}</p>
+          <p className="text-xs text-zinc-500">{t('settings.themeDeviceHint')}</p>
         )}
       </div>
       )}
@@ -474,7 +474,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
           {t('settings.backupsIntro')}
         </p>
         {backups.length === 0 ? (
-          <p className="text-xs text-zinc-600">{t('settings.noBackups')}</p>
+          <p className="text-xs text-zinc-500">{t('settings.noBackups')}</p>
         ) : (
           <ul className="space-y-1.5">
             {backups.map((b) => (
@@ -483,7 +483,7 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
                 className="flex items-center gap-3 rounded-xl border border-zinc-800/60 px-3 py-2"
               >
                 <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">{b.name}</span>
-                <span className="flex-shrink-0 text-xs tabular-nums text-zinc-600">{formatSize(b.size)}</span>
+                <span className="flex-shrink-0 text-xs tabular-nums text-zinc-500">{formatSize(b.size)}</span>
                 <a
                   href={`/api/settings/backups/${b.name}`}
                   download

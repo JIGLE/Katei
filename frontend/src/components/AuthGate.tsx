@@ -10,7 +10,7 @@ import { Logo } from './Logo';
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
-  'placeholder:text-zinc-600 focus:border-zinc-600';
+  'placeholder:text-zinc-500 focus:border-zinc-600';
 
 export function AuthGate() {
   const { needsSetup, login, register } = useAuth();
@@ -199,7 +199,7 @@ export function AuthGate() {
                     placeholder="0.00"
                     className={fieldCls}
                   />
-                  <p className="mt-1 text-xs text-zinc-600">{t('auth.currentSavingsHint')}</p>
+                  <p className="mt-1 text-xs text-zinc-500">{t('auth.currentSavingsHint')}</p>
                 </div>
               </>
             )}
