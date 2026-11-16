@@ -41,9 +41,8 @@ function QuickTile({
   );
 }
 
-// A dated row in "Next payments" / "Upcoming appointments": what and when,
-// never how much. Overdue reads rose so dropping the old attention list
-// doesn't let a missed obligation disappear quietly.
+// A dated row in "Needs attention" / "Coming up": what and when, never how
+// much. Overdue reads rose wherever it appears.
 function UpcomingRow({
   evt, days, dot, members, lang, onSelect,
 }: {
@@ -182,13 +181,21 @@ export default function Overview() {
     .map((evt) => ({ evt, days: daysUntil(evt.target_date, timezone) }))
     .sort((a, b) => a.days - b.days);
 
-  // What's about to leave the account: payments and savings transfers, dated
-  // only. Income is excluded — money arriving doesn't answer "have I got
-  // enough in there". Amounts deliberately never appear here.
-  const payments = dated.filter(
-    ({ evt }) => evt.event_type === 'payment' || evt.event_type === 'savings',
-  );
-  const appointments = dated.filter(({ evt }) => evt.event_type === 'appointment');
+  // Which dated items Overview speaks about at all. Income is money arriving,
+  // never an obligation; with money off, payments and savings transfers drop
+  // out too. The status line, Needs attention and Coming up all read from
+  // this one list, so the count in the header always matches the rows below.
+  const actionable = dated.filter(({ evt }) =>
+    evt.event_type !== 'income' &&
+    (money_enabled || (evt.event_type !== 'payment' && evt.event_type !== 'savings')));
+
+  // Needs attention: anything overdue, plus deadlines inside the week — a hard
+  // date you can miss earns the top slot. Everything else is Coming up, one
+  // list in date order with type dots, instead of a card per type.
+  const isAttention = (d: { evt: HouseholdEvent; days: number }) =>
+    d.days < 0 || (d.evt.event_type === 'deadline' && d.days <= 7);
+  const attention = actionable.filter(isAttention);
+  const comingUp = actionable.filter((d) => !isAttention(d));
 
   // Open shopping items, and gift ideas on other people's lists that nobody
   // has claimed yet — the two "something is waiting for you" counts.
@@ -219,7 +226,6 @@ export default function Overview() {
   // worst bucket — "1 overdue · 2 due this week". It counts deadlines too,
   // which have no block of their own here, so the line taps through to the
   // Timeline — a number you can't drill into is a number you can't trust.
-  const actionable = dated.filter(({ evt }) => evt.event_type !== 'income');
   const statusParts = [
     ...(actionable.some((d) => d.days < 0)
       ? [t('overview.statusOverdue', { count: actionable.filter((d) => d.days < 0).length })]
@@ -242,25 +248,24 @@ export default function Overview() {
   const datedSection = (
     labelKey: string,
     rows: { evt: HouseholdEvent; days: number }[],
-    dot: string,
-    onSelect: (d: { evt: HouseholdEvent; days: number }) => void,
+    eyebrowClass: string,
   ) => {
     if (loading || error || rows.length === 0) return null;
     const shown = rows.slice(0, ROW_CAP);
     const extra = rows.length - shown.length;
     return (
       <section className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5" style={reveal()}>
-        <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">{t(labelKey)}</p>
+        <p className={`mb-4 text-xs font-medium uppercase tracking-widest ${eyebrowClass}`}>{t(labelKey)}</p>
         <ul className="space-y-3">
           {shown.map((d) => (
             <UpcomingRow
               key={d.evt.id}
               evt={d.evt}
               days={d.days}
-              dot={dot}
+              dot={DOT[d.evt.event_type]}
               members={membersByEvent.get(d.evt.id) ?? []}
               lang={lang}
-              onSelect={() => onSelect(d)}
+              onSelect={() => navigate(`/timeline?day=${d.evt.target_date.slice(0, 10)}`)}
             />
           ))}
         </ul>
@@ -294,6 +299,10 @@ export default function Overview() {
           <p className="mt-2 text-sm text-zinc-400">{summary}</p>
         ))}
       </header>
+
+      {/* The one thing the status line promises: what is overdue or about to
+          be missed. Directly under the greeting, gone when there is none. */}
+      {datedSection('overview.needsAttention', attention, 'text-rose-400')}
 
       {/* Week strip — a tap-through gateway to the calendar, in the calendar's
           own visual language (event dots by type, today ringed). */}
@@ -345,14 +354,9 @@ export default function Overview() {
         </div>
       )}
 
-      {/* What's leaving the account soon — dates, never amounts. Tapping a row
-          opens the Timeline, where it can be marked paid. Gone entirely when
-          money is off — there's no "leaving the account" to speak of. */}
-      {money_enabled && datedSection('overview.nextPayments', payments, DOT.payment, () => navigate('/timeline'))}
-
-      {/* Where the household has to be. Tapping opens that day in the calendar. */}
-      {datedSection('overview.upcomingAppointments', appointments, DOT.appointment, ({ evt }) =>
-        navigate(`/timeline?day=${evt.target_date.slice(0, 10)}`))}
+      {/* Everything else that is dated, soonest first, one list. Each row's
+          dot carries its type; tapping opens that day in the calendar. */}
+      {datedSection('overview.comingUp', comingUp, 'text-zinc-400')}
 
       {/* Upcoming birthdays — a warm nudge for the people (and pets) at home. */}
       {!loading && birthdays.length > 0 && (
@@ -365,7 +369,7 @@ export default function Overview() {
               <li key={member.id} className="flex items-center gap-3">
                 <span className="text-base leading-none" aria-hidden>🎂</span>
                 <span className="flex-1 truncate text-sm text-zinc-200">{member.name}</span>
-                <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400">
+                <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
                   {days === 0 ? t('household.birthdayToday') : formatRelativeDay(days, lang)}
                 </span>
               </li>
