@@ -35,7 +35,7 @@ function ShoppingRow({
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
-    <li ref={setNodeRef} style={style} data-shopping-id={item.id} className={`flex scroll-mb-40 items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}>
+    <li ref={setNodeRef} style={style} data-shopping-id={item.id} className={`flex items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}>
       <button
         type="button"
         {...attributes}
@@ -91,11 +91,20 @@ export default function Lists() {
   const quickAddRef = useRef<HTMLInputElement>(null);
   // Show a newly added row: it lands at the end of the open items, which on a
   // long list is below the fold or behind the docked bar. Scrolled from an
-  // effect so the row is guaranteed to be in the DOM.
+  // effect so the row is guaranteed to be in the DOM, and measured against
+  // the bar itself: scrollIntoView + scroll-margin honoured the margin in one
+  // Chromium build and not another.
+  const quickAddBarRef = useRef<HTMLFormElement>(null);
   const [justAdded, setJustAdded] = useState<number | null>(null);
   useEffect(() => {
     if (justAdded == null) return;
-    document.querySelector(`[data-shopping-id="${justAdded}"]`)?.scrollIntoView({ block: 'nearest' });
+    const row = document.querySelector(`[data-shopping-id="${justAdded}"]`);
+    const bar = quickAddBarRef.current;
+    const main = document.querySelector('main');
+    if (row && bar && main) {
+      const overlap = row.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 12;
+      if (overlap > 0) main.scrollBy({ top: overlap });
+    }
     setJustAdded(null);
   }, [justAdded]);
   // The docked add bar rides on the on-screen keyboard while typing (iOS
@@ -325,6 +334,7 @@ export default function Lists() {
           block. Sheets (z-60) cover it while they're open. */}
       {pane === 'shopping' && (
         <form
+          ref={quickAddBarRef}
           onSubmit={addQuick}
           style={{ bottom: keyboardInset > 0 ? keyboardInset : 'var(--katei-nav-h, 4rem)' }}
           className="fixed inset-x-0 z-40 border-t border-zinc-800/60 bg-zinc-950/95 backdrop-blur-sm"
