@@ -26,7 +26,7 @@ Avoid repository-wide scans and repeated full-file reads when the required conte
 
 ## Brand and UI system
 
-- Follow `/home/runner/work/Katei/Katei/BRAND.md` for all UI decisions.
+- Follow [`BRAND.md`](BRAND.md) for all UI decisions.
 - Keep motion restrained and purposeful.
 - Keep microcopy concise and action-oriented.
 
