@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import type { AssignmentDetail, MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
 import { Modal } from '../components/Modal';
+import { useFabVisible, fabVisibilityCls } from '../components/Fab';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { GoalForm } from '../components/GoalForm';
@@ -81,6 +82,9 @@ export default function MoneyFlow() {
   const [showForm, setShowForm] = useState(false);
   const [newType, setNewType] = useState<StreamType>('expense');
   const [addMenuOpen, setAddMenuOpen] = useState(false);
+  // An open chooser pins the button in place; otherwise it steps aside while
+  // scrolling down, like every other page's add button.
+  const fabVisible = useFabVisible(addMenuOpen);
   const [showSavingsForm, setShowSavingsForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<SavingsEntry | null>(null);
   const [editingPot, setEditingPot] = useState<SavingsPot | null>(null);
@@ -489,7 +493,7 @@ export default function MoneyFlow() {
           className="fixed inset-0 z-40 bg-black/40"
         />
       )}
-      <div className="fixed bottom-fab right-4 z-50 flex flex-col items-end gap-2">
+      <div className={`fixed bottom-fab right-4 z-50 flex flex-col items-end gap-2 ${fabVisibilityCls(fabVisible)}`}>
         {addMenuOpen && (
           <div className="flex flex-col items-end gap-2">
             {([

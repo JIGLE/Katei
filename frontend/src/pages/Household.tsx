@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import type { User, AssignmentDetail, HouseholdEvent, MoneyStream, Invite } from '../lib/types';
 import { Modal } from '../components/Modal';
+import { Fab } from '../components/Fab';
 import { MemberForm } from '../components/MemberForm';
 import { AssignmentForm } from '../components/AssignmentForm';
 import { daysToBirthday } from '../lib/format';
@@ -321,15 +322,7 @@ export default function Household() {
 
       {/* Floating add-member button — admins manage household membership. */}
       {isAdmin && (
-        <button
-          onClick={() => setShowMemberForm(true)}
-          aria-label={t('household.addMemberAria')}
-          className="fixed bottom-fab right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
-        >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
+        <Fab label={t('household.addMemberAria')} onClick={() => setShowMemberForm(true)} />
       )}
 
       <Modal open={showMemberForm} title={t('household.newMember')} onClose={() => setShowMemberForm(false)}>

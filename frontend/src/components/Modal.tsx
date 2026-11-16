@@ -27,7 +27,7 @@ const FOCUSABLE =
 // right but leaves its bottom under the keyboard. Where visualViewport isn't
 // supported, both stay at their no-op defaults and the static max-h-[90dvh]
 // class below is the entire fallback — pure progressive enhancement.
-function useKeyboardInset(active: boolean) {
+export function useKeyboardInset(active: boolean) {
   const [state, setState] = useState<{ inset: number; maxHeight: number | undefined }>({
     inset: 0,
     maxHeight: undefined,
