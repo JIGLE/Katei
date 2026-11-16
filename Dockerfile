@@ -3,7 +3,7 @@
 # On first boot, entrypoint.sh initialises the DB and loads schema.sql.
 
 # --- Stage 1: build frontend ---
-FROM node:22-alpine AS frontend
+FROM node:26-alpine AS frontend
 WORKDIR /frontend
 COPY frontend/package*.json ./
 RUN npm ci
@@ -15,7 +15,7 @@ RUN npm run build
 # devDependencies), compile, then prune the dev tree away in place. Stage 3
 # copies the result rather than installing a second time — that second install
 # was the single slowest step in the image build (~7 min for 176 packages).
-FROM node:22-alpine AS backend
+FROM node:26-alpine AS backend
 WORKDIR /backend
 COPY backend/package*.json ./
 RUN npm ci
@@ -25,7 +25,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # --- Stage 3: runtime ---
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 
 # Install PostgreSQL (server + client tools for pg_isready / psql).
