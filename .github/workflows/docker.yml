@@ -87,7 +87,10 @@ jobs:
 
   e2e:
     name: E2E smoke (Playwright)
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: once -latest moved to 26.04, Playwright 1.56
+    # refused to install its browser there ("does not support chromium on
+    # ubuntu26.04-x64"). Move this forward together with a Playwright bump.
+    runs-on: ubuntu-24.04
     # Deliberately not `needs: test` — they're independent signals, and
     # serialising them added ~90s to every run. `build` still gates on both.
 
