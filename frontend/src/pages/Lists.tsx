@@ -10,7 +10,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { api } from '../lib/api';
 import type { ShoppingItem } from '../lib/types';
-import { Modal } from '../components/Modal';
+import { Modal, useKeyboardInset } from '../components/Modal';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
 import { GiftsPane } from '../components/GiftsPane';
@@ -35,7 +35,7 @@ function ShoppingRow({
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
-    <li ref={setNodeRef} style={style} className={`flex items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}>
+    <li ref={setNodeRef} style={style} data-shopping-id={item.id} className={`flex scroll-mb-40 items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}>
       <button
         type="button"
         {...attributes}
@@ -89,6 +89,10 @@ export default function Lists() {
   const [editStore, setEditStore] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const quickAddRef = useRef<HTMLInputElement>(null);
+  // The docked add bar rides on the on-screen keyboard while typing (iOS
+  // lays fixed elements against the layout viewport, which the keyboard
+  // covers), and on the bottom nav otherwise.
+  const { inset: keyboardInset } = useKeyboardInset(pane === 'shopping');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -113,6 +117,10 @@ export default function Lists() {
     try {
       const created = await api.post<ShoppingItem>('/shopping', { name });
       setItems((prev) => [...prev.filter((i) => !i.is_done), created, ...prev.filter((i) => i.is_done)]);
+      // Show the new row: it lands at the end of the open items, which on a
+      // long list is below the fold or behind the docked bar.
+      requestAnimationFrame(() =>
+        document.querySelector(`[data-shopping-id="${created.id}"]`)?.scrollIntoView({ block: 'nearest' }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'failed');
       setQuickAdd(name);
@@ -299,19 +307,23 @@ export default function Lists() {
             </DndContext>
           )}
 
-          {/* Quick add — sits at the end of the list, docked above the bottom
-              nav so it's always reachable no matter how long the list gets.
-              bottom-0, not a fixed offset: <main> already reserves clearance
-              for the nav via pb-main-end, and sticky's offset resolves against that
-              padding edge — unlike the fixed-position FABs elsewhere that sit
-              against the viewport, adding an offset on top of that padding
-              here would double the gap and strand the bar mid-list instead of
-              flush above the nav. Both numbers track the nav's height, so they
-              move together if the bar is ever resized. */}
-          <form
-            onSubmit={addQuick}
-            className="sticky bottom-0 flex gap-2 border-t border-zinc-800/60 bg-zinc-950/95 py-3 backdrop-blur-sm"
-          >
+          {/* Room for the docked add bar, so the last row scrolls clear of it. */}
+          <div aria-hidden className="h-6" />
+        </div>
+      )}
+
+      {/* Quick add, docked: fixed directly on top of the bottom nav (its live
+          height arrives as --katei-nav-h), so it's in thumb reach on any list
+          length. It lives outside the pane's animated wrapper — that wrapper's
+          entrance transform would otherwise become this bar's containing
+          block. Sheets (z-60) cover it while they're open. */}
+      {pane === 'shopping' && (
+        <form
+          onSubmit={addQuick}
+          style={{ bottom: keyboardInset > 0 ? keyboardInset : 'var(--katei-nav-h, 4rem)' }}
+          className="fixed inset-x-0 z-40 border-t border-zinc-800/60 bg-zinc-950/95 backdrop-blur-sm"
+        >
+          <div className="mx-auto flex max-w-lg gap-2 px-4 py-3">
             <input
               ref={quickAddRef}
               type="text"
@@ -329,8 +341,8 @@ export default function Lists() {
             >
               {t('shopping.add')}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       )}
 
       {pane === 'gifts' && <GiftsPane />}

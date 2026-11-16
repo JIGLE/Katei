@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
@@ -72,6 +73,23 @@ export function BottomNav() {
   const { money_enabled } = usePreferences();
   const { user } = useAuth();
   const visibleTabs = money_enabled ? tabs : tabs.filter((tab) => tab.to !== '/money');
+  // Publish the bar's live height (safe-area padding included) as
+  // --katei-nav-h, so anything docked above it — the shopping list's add
+  // field — sits flush on the bar instead of guessing its height.
+  const navRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const root = document.documentElement;
+    const publish = () => root.style.setProperty('--katei-nav-h', `${nav.getBoundingClientRect().height}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(nav);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty('--katei-nav-h');
+    };
+  }, [user]);
   if (!user) return null; // BottomNav only ever renders once a session exists
   return (
     // Edge-to-edge rather than a floating pill: as a pill this measured 381.9px
@@ -89,7 +107,7 @@ export function BottomNav() {
     // do not fit: the widest label is ~70px (`Huishouden` semibold), five of
     // those is 350px of a 360px screen, leaving nothing for a 44px avatar. It
     // keeps its merged notification badge there — only its position moved.
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-800/60 bg-zinc-900/95 backdrop-blur-sm pb-safe">
+    <nav ref={navRef} className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-800/60 bg-zinc-900/95 backdrop-blur-sm pb-safe">
       <div className="flex items-stretch px-1">
         {visibleTabs.map((tab) => (
           <NavLink
