@@ -148,7 +148,10 @@
     height: max(100%, 44px);
     transform: translate(-50%, -50%);
   }
-  :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='hidden'], [type='color']), select) {
+  :where(
+    input:not([type='checkbox'], [type='radio'], [type='range'], [type='hidden'], [type='color']),
+    select
+  ) {
     min-height: 2.75rem;
   }
 

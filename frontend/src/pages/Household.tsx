@@ -212,9 +212,7 @@ export default function Household() {
                 {a.money_stream_id != null && money_enabled && (
                   <span>{streamName(a.money_stream_id)}</span>
                 )}
-                <span className="ml-auto font-medium capitalize text-zinc-500">
-                  {a.role}
-                </span>
+                <span className="ml-auto font-medium capitalize text-zinc-500">{a.role}</span>
                 <button
                   type="button"
                   onClick={() =>
