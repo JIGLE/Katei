@@ -128,6 +128,30 @@
     outline-offset: 2px;
   }
 
+  /*
+   * Touch targets — every control answers a 44×44 tap (BRAND.md §7), however
+   * small it looks. Buttons and links get an invisible hit area centred on
+   * them that never shrinks below 44px; it costs no layout and no pixels.
+   * Text fields can't host a pseudo-element, so they get a real minimum height.
+   * :where() keeps this at zero specificity, so a utility such as `absolute`
+   * or `fixed` on a control still wins over `position: relative`.
+   */
+  :where(button, a[href], summary, [role='button'], [role='tab']) {
+    position: relative;
+  }
+  :where(button, a[href], summary, [role='button'], [role='tab'])::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+  :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='hidden'], [type='color']), select) {
+    min-height: 2.75rem;
+  }
+
   /* Scrollbar — dark, minimal */
   ::-webkit-scrollbar {
     width: 4px;

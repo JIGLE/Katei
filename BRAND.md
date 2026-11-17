@@ -155,8 +155,9 @@ reinvent.
 - **Stat card** — small card: caption (`text-xs text-zinc-500`) over a
   `text-xl font-light` figure in a semantic accent.
 - **Bottom-sheet modal** (`Modal.tsx`) — all create/edit/settings flows slide up
-  from the bottom with a drag-handle visual, backdrop dismiss, and Escape to
-  close. Forms never navigate to a new page.
+  from the bottom. Three ways out: pull the handle or header down (past 96px,
+  or a quick flick, closes; less springs back), tap the backdrop, or press
+  Escape. Forms never navigate to a new page.
 - **Segmented control** — for small mutually-exclusive choices (event type,
   frequency). Selected segment fills with the relevant accent.
 - **FAB** — a single floating action button (bottom-right, above the nav) for the
@@ -208,6 +209,13 @@ reinvent.
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`
   - Destructive: rose text, **two-tap confirm** (tap once to arm, again to commit).
+- **Touch targets** — every button and link answers a tap of at least 44×44,
+  however small it looks. `index.css` gives each one an invisible hit area
+  centred on it that never shrinks below 44px, so a 20px check circle or a
+  `text-xs` link keeps its look; text fields get a real 44px minimum height.
+  Don't add `overflow-hidden` to a control, since it clips that hit area.
+  `e2e/tests/touch-targets.spec.ts` measures every control on every tab and
+  in an open sheet.
 - **Avatar** — circle with initials on a `zinc-800` ground (`rounded-full`),
   used for household members. Falls back to initials when no `avatar_url`.
 
