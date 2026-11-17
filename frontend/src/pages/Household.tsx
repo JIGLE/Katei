@@ -21,16 +21,6 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-const roleColors: Record<string, string> = {
-  admin: 'text-amber-500',
-  owner: 'text-emerald-500',
-  member: 'text-zinc-400',
-};
-
-function roleColor(role: string): string {
-  return roleColors[role.toLowerCase()] ?? 'text-zinc-400';
-}
-
 export default function Household() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -202,7 +192,7 @@ export default function Household() {
             {/* Pets don't do chores — their caption is the birthday nudge or
                 nothing, never "0 assignments". */}
             {(nearBirthday || u.kind !== 'pet') && (
-              <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-teal-300' : 'text-zinc-500'}`}>
+              <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-zinc-300' : 'text-zinc-500'}`}>
                 {nearBirthday
                   ? days === 0
                     ? `🎂 ${t('household.birthdayToday')}`
@@ -222,7 +212,7 @@ export default function Household() {
                 {a.money_stream_id != null && money_enabled && (
                   <span>{streamName(a.money_stream_id)}</span>
                 )}
-                <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>
+                <span className="ml-auto font-medium capitalize text-zinc-500">
                   {a.role}
                 </span>
                 <button
@@ -309,7 +299,7 @@ export default function Household() {
       {/* Pets — the rest of the household */}
       {!loading && !error && visiblePets.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('household.pets')}
           </p>
           {visiblePets.map((u, i) => renderMember(u, i))}

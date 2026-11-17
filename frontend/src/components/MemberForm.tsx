@@ -79,7 +79,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
               className={[
                 'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
                 kind === k
-                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                  ? 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
                   : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >

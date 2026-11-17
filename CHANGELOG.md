@@ -29,5 +29,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 
 - Every button and link now answers a tap of at least 44×44 px, without
   changing how it looks.
+- Gift status, assignment roles, the Pets heading, the Person/Pet picker and
+  the Lists tab are now neutral, so amber still only means time and teal only
+  savings.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
