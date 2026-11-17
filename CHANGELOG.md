@@ -18,6 +18,7 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - Dependabot updates for npm packages, GitHub Actions and the Docker base image.
 - A CI workflow that type-checks the backend and frontend and builds the Docker
   image on every pull request.
+- Bottom sheets close when you pull them down by the handle or header.
 
 - Versioned releases: a `vX.Y.Z` tag publishes matching image tags and a GitHub
   Release. Images now carry OCI labels linking them to their source commit.
@@ -26,5 +27,7 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 
 ### Changed
 
+- Every button and link now answers a tap of at least 44×44 px, without
+  changing how it looks.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
