@@ -47,7 +47,10 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       await refresh();
       setMessage({ kind: 'ok', text: t('account.profileSaved') });
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('account.saveFailed') });
+      setMessage({
+        kind: 'err',
+        text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('account.saveFailed'),
+      });
     } finally {
       setSavingProfile(false);
     }
@@ -66,7 +69,10 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       setNewPw('');
       setMessage({ kind: 'ok', text: t('account.passwordChanged') });
     } catch (err) {
-      setMessage({ kind: 'err', text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('account.saveFailed') });
+      setMessage({
+        kind: 'err',
+        text: err instanceof Error ? err.message.replace(/^\d+\s+/, '') : t('account.saveFailed'),
+      });
     } finally {
       setSavingPw(false);
     }
@@ -88,11 +94,21 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       {/* Profile */}
       <div className="space-y-3">
         <div>
-          <label htmlFor="acct_name" className={labelCls}>{t('auth.name')}</label>
-          <input id="acct_name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={fieldCls} />
+          <label htmlFor="acct_name" className={labelCls}>
+            {t('auth.name')}
+          </label>
+          <input
+            id="acct_name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={fieldCls}
+          />
         </div>
         <div>
-          <label htmlFor="acct_email" className={labelCls}>{t('account.email')}</label>
+          <label htmlFor="acct_email" className={labelCls}>
+            {t('account.email')}
+          </label>
           <input
             id="acct_email"
             type="email"
@@ -106,7 +122,12 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
         </div>
         <div>
           <span className={labelCls}>{t('form.photo')}</span>
-          <AvatarPicker name={name || user.name} url={user.avatar_url} file={avatarFile} onPick={setAvatarFile} />
+          <AvatarPicker
+            name={name || user.name}
+            url={user.avatar_url}
+            file={avatarFile}
+            onPick={setAvatarFile}
+          />
         </div>
         <button
           type="button"
@@ -122,12 +143,31 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       <div className="space-y-3 border-t border-zinc-800/60 pt-4">
         <label className={`${labelCls} mb-0`}>{t('account.changePassword')}</label>
         <div>
-          <label htmlFor="acct_cur" className="mb-1.5 block text-xs text-zinc-500">{t('account.currentPassword')}</label>
-          <input id="acct_cur" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} autoComplete="current-password" className={fieldCls} />
+          <label htmlFor="acct_cur" className="mb-1.5 block text-xs text-zinc-500">
+            {t('account.currentPassword')}
+          </label>
+          <input
+            id="acct_cur"
+            type="password"
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+            autoComplete="current-password"
+            className={fieldCls}
+          />
         </div>
         <div>
-          <label htmlFor="acct_new" className="mb-1.5 block text-xs text-zinc-500">{t('account.newPassword')}</label>
-          <input id="acct_new" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder={t('auth.passwordSetupPlaceholder')} autoComplete="new-password" className={fieldCls} />
+          <label htmlFor="acct_new" className="mb-1.5 block text-xs text-zinc-500">
+            {t('account.newPassword')}
+          </label>
+          <input
+            id="acct_new"
+            type="password"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            placeholder={t('auth.passwordSetupPlaceholder')}
+            autoComplete="new-password"
+            className={fieldCls}
+          />
         </div>
         <button
           type="button"
@@ -140,7 +180,9 @@ export function AccountForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {message && (
-        <p className={`text-sm ${message.kind === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>{message.text}</p>
+        <p className={`text-sm ${message.kind === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {message.text}
+        </p>
       )}
 
       <button

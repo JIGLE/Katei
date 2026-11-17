@@ -49,7 +49,13 @@ export function buildVariance(
   fromDate: Date = new Date(),
 ): MonthVariance[] {
   const m = new Map(
-    rows.map((r) => [r.month, { expected: Number(r.expected) || 0, actual: Number(r.actual) || 0 }]),
+    rows.map((r) => [
+      r.month,
+      { expected: Number(r.expected) || 0, actual: Number(r.actual) || 0 },
+    ]),
   );
-  return monthKeys(months, fromDate).map((month) => ({ month, ...(m.get(month) ?? { expected: 0, actual: 0 }) }));
+  return monthKeys(months, fromDate).map((month) => ({
+    month,
+    ...(m.get(month) ?? { expected: 0, actual: 0 }),
+  }));
 }

@@ -36,12 +36,14 @@ export function OnboardingCard({
       to: '/household',
     },
     ...(moneyEnabled
-      ? [{
-          label: t('onboarding.addMoney'),
-          hint: t('onboarding.addMoneyHint'),
-          done: streamsCount > 0,
-          to: '/money',
-        }]
+      ? [
+          {
+            label: t('onboarding.addMoney'),
+            hint: t('onboarding.addMoneyHint'),
+            done: streamsCount > 0,
+            to: '/money',
+          },
+        ]
       : []),
     {
       label: t('onboarding.addEvent'),
@@ -69,9 +71,7 @@ export function OnboardingCard({
           </button>
         </div>
       </div>
-      <p className="mb-4 text-sm leading-relaxed text-zinc-400">
-        {t('onboarding.intro')}
-      </p>
+      <p className="mb-4 text-sm leading-relaxed text-zinc-400">{t('onboarding.intro')}</p>
       <ul className="space-y-2">
         {steps.map((s) => (
           <li key={s.to}>
@@ -100,14 +100,26 @@ export function OnboardingCard({
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className={`block text-sm ${s.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>
+                <span
+                  className={`block text-sm ${s.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}
+                >
                   {s.label}
                 </span>
                 {!s.done && <span className="block text-xs text-zinc-500">{s.hint}</span>}
               </span>
               {!s.done && (
-                <svg className="h-4 w-4 flex-shrink-0 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                <svg
+                  className="h-4 w-4 flex-shrink-0 text-zinc-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                  />
                 </svg>
               )}
             </button>

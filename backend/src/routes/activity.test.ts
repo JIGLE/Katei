@@ -18,16 +18,25 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
 test('adding a money stream logs stream_added activity', opts, async () => {
   await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
+    method: 'POST',
+    url: '/api/money-streams',
+    headers: { cookie },
     payload: { name: 'Rent', amount: 1200, stream_type: 'expense' },
   });
-  const feed = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
+  const feed = (
+    await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })
+  ).json();
   assert.equal(feed.length, 1);
   assert.equal(feed[0].action, 'stream_added');
   assert.equal(feed[0].summary, 'Rent');
@@ -36,72 +45,144 @@ test('adding a money stream logs stream_added activity', opts, async () => {
 
 test('adding a member logs member_added activity', opts, async () => {
   await app.inject({
-    method: 'POST', url: '/api/users', headers: { cookie },
+    method: 'POST',
+    url: '/api/users',
+    headers: { cookie },
     payload: { name: 'Mochi', kind: 'pet' },
   });
-  const feed = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
-  assert.equal(feed.some((a: { action: string; summary: string }) => a.action === 'member_added' && a.summary === 'Mochi'), true);
+  const feed = (
+    await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })
+  ).json();
+  assert.equal(
+    feed.some(
+      (a: { action: string; summary: string }) =>
+        a.action === 'member_added' && a.summary === 'Mochi',
+    ),
+    true,
+  );
 });
 
 test('completing a payment logs payment_paid, other events log event_done', opts, async () => {
-  const payment = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Water', event_type: 'payment', target_date: '2999-01-01' },
-  })).json();
-  const chore = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Dentist', event_type: 'appointment', target_date: '2999-01-01' },
-  })).json();
+  const payment = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { cookie },
+      payload: { title: 'Water', event_type: 'payment', target_date: '2999-01-01' },
+    })
+  ).json();
+  const chore = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { cookie },
+      payload: { title: 'Dentist', event_type: 'appointment', target_date: '2999-01-01' },
+    })
+  ).json();
 
-  await app.inject({ method: 'PATCH', url: `/api/events/${payment.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
-  await app.inject({ method: 'PATCH', url: `/api/events/${chore.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
+  await app.inject({
+    method: 'PATCH',
+    url: `/api/events/${payment.id}/complete`,
+    headers: { cookie },
+    payload: { is_completed: true },
+  });
+  await app.inject({
+    method: 'PATCH',
+    url: `/api/events/${chore.id}/complete`,
+    headers: { cookie },
+    payload: { is_completed: true },
+  });
 
-  const feed = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
+  const feed = (
+    await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })
+  ).json();
   const actions = feed.map((a: { action: string }) => a.action);
   assert.equal(actions.includes('payment_paid'), true);
   assert.equal(actions.includes('event_done'), true);
 });
 
 test('un-completing an event does not log activity', opts, async () => {
-  const chore = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Dishes', event_type: 'appointment', target_date: '2999-01-01' },
-  })).json();
+  const chore = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { cookie },
+      payload: { title: 'Dishes', event_type: 'appointment', target_date: '2999-01-01' },
+    })
+  ).json();
   // Complete then un-complete; only the completion should be recorded.
-  await app.inject({ method: 'PATCH', url: `/api/events/${chore.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
-  await app.inject({ method: 'PATCH', url: `/api/events/${chore.id}/complete`, headers: { cookie }, payload: { is_completed: false } });
+  await app.inject({
+    method: 'PATCH',
+    url: `/api/events/${chore.id}/complete`,
+    headers: { cookie },
+    payload: { is_completed: true },
+  });
+  await app.inject({
+    method: 'PATCH',
+    url: `/api/events/${chore.id}/complete`,
+    headers: { cookie },
+    payload: { is_completed: false },
+  });
 
-  const feed = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
+  const feed = (
+    await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })
+  ).json();
   const done = feed.filter((a: { action: string }) => a.action === 'event_done');
   assert.equal(done.length, 1);
 });
 
 test('feed is newest-first and respects the limit param', opts, async () => {
   for (const n of ['A', 'B', 'C']) {
-    await app.inject({ method: 'POST', url: '/api/money-streams', headers: { cookie }, payload: { name: n, amount: 1 } });
+    await app.inject({
+      method: 'POST',
+      url: '/api/money-streams',
+      headers: { cookie },
+      payload: { name: n, amount: 1 },
+    });
   }
-  const limited = (await app.inject({ method: 'GET', url: '/api/activity?limit=2', headers: { cookie } })).json();
+  const limited = (
+    await app.inject({ method: 'GET', url: '/api/activity?limit=2', headers: { cookie } })
+  ).json();
   assert.equal(limited.length, 2);
   // Most recent stream ('C') comes first.
   assert.equal(limited[0].summary, 'C');
 });
 
-test('a private stream\'s activity entry is invisible to a non-owner, visible to the owner', opts, async () => {
-  await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
-    payload: { name: 'Therapy', amount: 80, private: true },
-  });
+test(
+  "a private stream's activity entry is invisible to a non-owner, visible to the owner",
+  opts,
+  async () => {
+    await app.inject({
+      method: 'POST',
+      url: '/api/money-streams',
+      headers: { cookie },
+      payload: { name: 'Therapy', amount: 80, private: true },
+    });
 
-  const invite = (await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })).json();
-  const joinRes = await app.inject({
-    method: 'POST', url: '/api/auth/register',
-    payload: { name: 'Robin', password: 'password123', invite_code: invite.code },
-  });
-  const robinCookie = h.sessionCookie(joinRes);
+    const invite = (
+      await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })
+    ).json();
+    const joinRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { name: 'Robin', password: 'password123', invite_code: invite.code },
+    });
+    const robinCookie = h.sessionCookie(joinRes);
 
-  const forRobin = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie: robinCookie } })).json();
-  assert.equal(forRobin.some((a: { summary: string }) => a.summary === 'Therapy'), false);
+    const forRobin = (
+      await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie: robinCookie } })
+    ).json();
+    assert.equal(
+      forRobin.some((a: { summary: string }) => a.summary === 'Therapy'),
+      false,
+    );
 
-  const forSam = (await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })).json();
-  assert.equal(forSam.some((a: { summary: string }) => a.summary === 'Therapy'), true);
-});
+    const forSam = (
+      await app.inject({ method: 'GET', url: '/api/activity', headers: { cookie } })
+    ).json();
+    assert.equal(
+      forSam.some((a: { summary: string }) => a.summary === 'Therapy'),
+      true,
+    );
+  },
+);

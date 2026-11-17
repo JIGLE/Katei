@@ -140,10 +140,15 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
 
   let sent = 0;
   for (const ev of rows) {
-    const date = new Date(ev.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const date = new Date(ev.target_date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
     await fanOutForEvent(ev, 'reminder', `Due ${date}`, log);
     // Stamp once per event so it isn't raised again next sweep.
-    await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
+    await query(`UPDATE household_events SET notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [
+      ev.id,
+    ]);
     sent += 1;
   }
 
@@ -158,9 +163,15 @@ export async function checkAndNotify(log?: FastifyBaseLogger): Promise<number> {
       ORDER BY target_date ASC`,
   );
   for (const ev of late) {
-    const date = new Date(ev.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const date = new Date(ev.target_date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
     await fanOutForEvent(ev, 'overdue', `Overdue since ${date}`, log);
-    await query(`UPDATE household_events SET overdue_notified_at = CURRENT_TIMESTAMP WHERE id = $1`, [ev.id]);
+    await query(
+      `UPDATE household_events SET overdue_notified_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [ev.id],
+    );
     sent += 1;
   }
 
@@ -275,8 +286,14 @@ export async function generateRecurringEvents(
   q: typeof query = query,
 ): Promise<number> {
   const { rows: streams } = await q<{
-    id: number; name: string; frequency: string; stream_type: string; due_day: number; due_shift: string;
-    private: boolean; owner_user_id: number | null;
+    id: number;
+    name: string;
+    frequency: string;
+    stream_type: string;
+    due_day: number;
+    due_shift: string;
+    private: boolean;
+    owner_user_id: number | null;
   }>(
     `SELECT id, name, frequency, stream_type, due_day, due_shift, private, owner_user_id
        FROM money_streams
@@ -287,9 +304,9 @@ export async function generateRecurringEvents(
         -- generates new events — nobody could see or be notified about them.
         AND (private = FALSE OR owner_user_id IS NOT NULL)`,
   );
-  const country = (await q<{ value: string }>(
-    `SELECT value FROM app_settings WHERE key = 'country'`,
-  )).rows[0]?.value;
+  const country = (
+    await q<{ value: string }>(`SELECT value FROM app_settings WHERE key = 'country'`)
+  ).rows[0]?.value;
 
   let created = 0;
   for (const s of streams) {

@@ -10,7 +10,8 @@ import { query, getSetting } from '../db.js';
 import { logActivity } from '../lib/activity.js';
 
 const ENTRY_COLS = 'id, amount, note, occurred_on, money_stream_id, goal_id, created_at';
-const GOAL_COLS = 'id, name, target_amount, icon, is_default, url, link_title, link_site, created_at';
+const GOAL_COLS =
+  'id, name, target_amount, icon, is_default, url, link_title, link_site, created_at';
 
 /** The default pot's id, created on demand so the system self-heals (and tests
  *  that truncate the table still work). */
@@ -27,8 +28,23 @@ async function getOrCreateDefaultGoalId(): Promise<number> {
   return ins[0].id;
 }
 
-interface EntryRow { id: number; amount: string; goal_id: number | null; [k: string]: unknown }
-interface GoalRow { id: number; name: string; target_amount: string | null; icon: string | null; is_default: boolean; url: string | null; link_title: string | null; link_site: string | null; created_at: string }
+interface EntryRow {
+  id: number;
+  amount: string;
+  goal_id: number | null;
+  [k: string]: unknown;
+}
+interface GoalRow {
+  id: number;
+  name: string;
+  target_amount: string | null;
+  icon: string | null;
+  is_default: boolean;
+  url: string | null;
+  link_title: string | null;
+  link_site: string | null;
+  created_at: string;
+}
 
 async function summary() {
   const opening = Number((await getSetting('savings_opening')) ?? 0);
@@ -68,7 +84,9 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
   app.get('/', async () => summary());
 
   // POST /api/savings/entries — record a contribution (optionally to a pot).
-  app.post<{ Body: { amount: number; note?: string; occurred_on?: string; goal_id?: number | null } }>(
+  app.post<{
+    Body: { amount: number; note?: string; occurred_on?: string; goal_id?: number | null };
+  }>(
     '/entries',
     {
       schema: {
@@ -98,7 +116,10 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // PATCH /api/savings/entries/:id — correct a mistaken contribution.
-  app.patch<{ Params: { id: string }; Body: { amount?: number; note?: string; occurred_on?: string; goal_id?: number | null } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { amount?: number; note?: string; occurred_on?: string; goal_id?: number | null };
+  }>(
     '/entries/:id',
     {
       schema: {
@@ -145,7 +166,16 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
   // --- Pots (goals) ---------------------------------------------------------
 
   // POST /api/savings/goals — add a pot (holiday, furniture, …).
-  app.post<{ Body: { name: string; target_amount?: number | null; icon?: string | null; url?: string | null; link_title?: string | null; link_site?: string | null } }>(
+  app.post<{
+    Body: {
+      name: string;
+      target_amount?: number | null;
+      icon?: string | null;
+      url?: string | null;
+      link_title?: string | null;
+      link_site?: string | null;
+    };
+  }>(
     '/goals',
     {
       schema: {
@@ -164,7 +194,14 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const { name, target_amount = null, icon = null, url = null, link_title = null, link_site = null } = req.body;
+      const {
+        name,
+        target_amount = null,
+        icon = null,
+        url = null,
+        link_title = null,
+        link_site = null,
+      } = req.body;
       await query(
         `INSERT INTO savings_goals (name, target_amount, icon, is_default, url, link_title, link_site)
          VALUES ($1, $2, $3, FALSE, $4, $5, $6)`,
@@ -175,7 +212,17 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // PATCH /api/savings/goals/:id — rename / retarget / re-icon a pot.
-  app.patch<{ Params: { id: string }; Body: { name?: string; target_amount?: number | null; icon?: string | null; url?: string | null; link_title?: string | null; link_site?: string | null } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: {
+      name?: string;
+      target_amount?: number | null;
+      icon?: string | null;
+      url?: string | null;
+      link_title?: string | null;
+      link_site?: string | null;
+    };
+  }>(
     '/goals/:id',
     {
       schema: {
@@ -205,7 +252,10 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
       }
       if (!fields.length) return reply.code(400).send({ error: 'Nothing to update' });
       values.push(req.params.id);
-      const { rowCount } = await query(`UPDATE savings_goals SET ${fields.join(', ')} WHERE id = $${i}`, values);
+      const { rowCount } = await query(
+        `UPDATE savings_goals SET ${fields.join(', ')} WHERE id = $${i}`,
+        values,
+      );
       if (!rowCount) return reply.code(404).send({ error: 'Savings goal not found' });
       return summary();
     },
@@ -219,7 +269,8 @@ export const savingsRoutes: FastifyPluginAsync = async (app) => {
       [req.params.id],
     );
     if (!rows.length) return reply.code(404).send({ error: 'Savings goal not found' });
-    if (rows[0].is_default) return reply.code(400).send({ error: 'The default pot cannot be deleted.' });
+    if (rows[0].is_default)
+      return reply.code(400).send({ error: 'The default pot cannot be deleted.' });
     await query('DELETE FROM savings_goals WHERE id = $1', [req.params.id]);
     return summary();
   });

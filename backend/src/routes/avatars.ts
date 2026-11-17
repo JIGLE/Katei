@@ -12,7 +12,9 @@ export const avatarsRoutes: FastifyPluginAsync = async (app) => {
     if (!full) return reply.code(400).send({ error: 'Invalid avatar name' });
     if (!existsSync(full)) return reply.code(404).send({ error: 'Avatar not found' });
     const type = req.params.file.endsWith('.png') ? 'image/png' : 'image/jpeg';
-    reply.header('Content-Type', type).header('Cache-Control', 'private, max-age=31536000, immutable');
+    reply
+      .header('Content-Type', type)
+      .header('Cache-Control', 'private, max-age=31536000, immutable');
     return reply.send(createReadStream(full));
   });
 };

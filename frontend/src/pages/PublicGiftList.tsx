@@ -29,12 +29,17 @@ export default function PublicGiftList() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [visitorName, setVisitorName] = useState(() => {
-    try { return localStorage.getItem(NAME_KEY) ?? ''; } catch { return ''; }
+    try {
+      return localStorage.getItem(NAME_KEY) ?? '';
+    } catch {
+      return '';
+    }
   });
 
   useEffect(() => {
     if (!token) return;
-    api.get<PublicGiftListResponse>(`/gift-share/${token}`)
+    api
+      .get<PublicGiftListResponse>(`/gift-share/${token}`)
       .then(setData)
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -42,17 +47,27 @@ export default function PublicGiftList() {
 
   const saveName = (name: string) => {
     setVisitorName(name);
-    try { localStorage.setItem(NAME_KEY, name); } catch { /* private mode */ }
+    try {
+      localStorage.setItem(NAME_KEY, name);
+    } catch {
+      /* private mode */
+    }
   };
 
   const mark = async (item: GiftItem, status: GiftStatus) => {
     if (!token) return;
     try {
       const updated = await api.patch<GiftItem>(`/gift-share/${token}/items/${item.id}`, {
-        status, bought_by_note: visitorName.trim() || null,
+        status,
+        bought_by_note: visitorName.trim() || null,
       });
-      setData((prev) => prev && { ...prev, items: prev.items.map((i) => (i.id === updated.id ? updated : i)) });
-    } catch { /* leave state as-is; the button remains tappable */ }
+      setData(
+        (prev) =>
+          prev && { ...prev, items: prev.items.map((i) => (i.id === updated.id ? updated : i)) },
+      );
+    } catch {
+      /* leave state as-is; the button remains tappable */
+    }
   };
 
   return (
@@ -71,7 +86,10 @@ export default function PublicGiftList() {
         {!loading && !notFound && data && (
           <>
             <div>
-              <label htmlFor="visitor_name" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+              <label
+                htmlFor="visitor_name"
+                className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+              >
                 {t('gifts.yourNameOptional')}
               </label>
               <input
@@ -92,7 +110,11 @@ export default function PublicGiftList() {
                   <div key={g.id} className="space-y-2 p-4">
                     <div className="flex items-center gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className={`text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}>{g.title}</p>
+                        <p
+                          className={`text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}
+                        >
+                          {g.title}
+                        </p>
                         {g.price != null && (
                           <p className="mt-0.5 text-xs tabular-nums text-zinc-500">
                             {formatMoney(g.price, g.currency ?? 'EUR', data.locale)}
@@ -104,7 +126,9 @@ export default function PublicGiftList() {
 
                     {g.status !== 'idea' && (
                       <p className="text-xs text-teal-400">
-                        {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', { name: g.bought_by_name ?? t('gifts.someone') })}
+                        {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
+                          name: g.bought_by_name ?? t('gifts.someone'),
+                        })}
                       </p>
                     )}
 

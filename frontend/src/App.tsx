@@ -70,7 +70,11 @@ export default function App() {
           merged into it either way. */}
       <header className="flex items-center justify-between border-b border-zinc-800/60 px-4 pb-2.5 pt-header-top">
         <Logo size="sm" withWordmark className="text-zinc-300" />
-        <AccountMenu user={user} onOpenAccount={() => setShowAccount(true)} onOpenSettings={() => setShowSettings(true)} />
+        <AccountMenu
+          user={user}
+          onOpenAccount={() => setShowAccount(true)}
+          onOpenSettings={() => setShowSettings(true)}
+        />
       </header>
 
       {/* Scrollable content area — padded above the fixed bottom nav plus
@@ -84,7 +88,10 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/timeline" element={<Timeline />} />
-            <Route path="/money" element={money_enabled ? <MoneyFlow /> : <Navigate to="/" replace />} />
+            <Route
+              path="/money"
+              element={money_enabled ? <MoneyFlow /> : <Navigate to="/" replace />}
+            />
             <Route path="/lists" element={<Lists />} />
             <Route path="/household" element={<Household />} />
           </Routes>
@@ -97,7 +104,11 @@ export default function App() {
         <AccountForm onClose={() => setShowAccount(false)} />
       </Modal>
 
-      <Modal open={showSettings} title={t('common.settings')} onClose={() => setShowSettings(false)}>
+      <Modal
+        open={showSettings}
+        title={t('common.settings')}
+        onClose={() => setShowSettings(false)}
+      >
         <SettingsForm onClose={() => setShowSettings(false)} />
       </Modal>
     </div>

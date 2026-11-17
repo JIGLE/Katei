@@ -14,12 +14,15 @@ export function GiftsPane() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchLists = () => {
-    api.get<GiftListsResponse>('/gift-lists')
+    api
+      .get<GiftListsResponse>('/gift-lists')
       .then(setData)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
-  useEffect(() => { fetchLists(); }, []);
+  useEffect(() => {
+    fetchLists();
+  }, []);
 
   if (loading) return <p className="text-sm text-zinc-500">{t('common.loading')}</p>;
   if (error) return <p className="text-sm text-rose-400">{error}</p>;

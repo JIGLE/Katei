@@ -76,14 +76,20 @@ export function WeekStrip({ events, lang, timezone, onSelectDay }: WeekStripProp
             <span aria-hidden className="text-[0.6875rem] uppercase tracking-wide text-zinc-500">
               {weekdayFmt.format(d)}
             </span>
-            <span aria-hidden className={`text-sm tabular-nums ${isToday ? 'font-semibold text-emerald-400' : 'text-zinc-300'}`}>
+            <span
+              aria-hidden
+              className={`text-sm tabular-nums ${isToday ? 'font-semibold text-emerald-400' : 'text-zinc-300'}`}
+            >
               {d.getDate()}
             </span>
             {/* A fixed-height dot rail keeps every cell the same height whether
                 or not it has events, so the numbers stay on one baseline. */}
             <span aria-hidden className="flex h-1 items-center gap-0.5">
               {dayEvents.slice(0, 3).map((e) => (
-                <span key={e.id} className={`h-1 w-1 rounded-full ${e.is_completed ? 'bg-zinc-600' : DOT[e.event_type]}`} />
+                <span
+                  key={e.id}
+                  className={`h-1 w-1 rounded-full ${e.is_completed ? 'bg-zinc-600' : DOT[e.event_type]}`}
+                />
               ))}
             </span>
           </button>

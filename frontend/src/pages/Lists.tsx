@@ -2,10 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
-  DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter, type DragEndEvent,
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
-  SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates,
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { api } from '../lib/api';
@@ -24,18 +34,27 @@ type Pane = 'shopping' | 'gifts';
 // One shopping row, draggable by its leading handle — dragging anywhere else
 // on the row would fight the existing checkbox-tap and edit-tap interactions.
 function ShoppingRow({
-  item, onToggle, onEdit,
+  item,
+  onToggle,
+  onEdit,
 }: {
   item: ShoppingItem;
   onToggle: (item: ShoppingItem) => void;
   onEdit: (item: ShoppingItem) => void;
 }) {
   const { t } = useTranslation();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
-    <li ref={setNodeRef} style={style} data-shopping-id={item.id} className={`flex items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}>
+    <li
+      ref={setNodeRef}
+      style={style}
+      data-shopping-id={item.id}
+      className={`flex items-center gap-3 p-4 ${isDragging ? 'opacity-50' : ''}`}
+    >
       <button
         type="button"
         {...attributes}
@@ -44,8 +63,12 @@ function ShoppingRow({
         className="flex h-8 w-5 flex-shrink-0 touch-none cursor-grab items-center justify-center text-zinc-600 active:cursor-grabbing"
       >
         <svg aria-hidden className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9" cy="6" r="1.25" /><circle cx="9" cy="12" r="1.25" /><circle cx="9" cy="18" r="1.25" />
-          <circle cx="15" cy="6" r="1.25" /><circle cx="15" cy="12" r="1.25" /><circle cx="15" cy="18" r="1.25" />
+          <circle cx="9" cy="6" r="1.25" />
+          <circle cx="9" cy="12" r="1.25" />
+          <circle cx="9" cy="18" r="1.25" />
+          <circle cx="15" cy="6" r="1.25" />
+          <circle cx="15" cy="12" r="1.25" />
+          <circle cx="15" cy="18" r="1.25" />
         </svg>
       </button>
       <button
@@ -54,17 +77,29 @@ function ShoppingRow({
         aria-label={item.is_done ? t('shopping.uncheckAria') : t('shopping.checkAria')}
         className={[
           'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-          item.is_done ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-600 hover:border-zinc-400',
+          item.is_done
+            ? 'border-emerald-500 bg-emerald-500'
+            : 'border-zinc-600 hover:border-zinc-400',
         ].join(' ')}
       >
         {item.is_done && (
           <svg className="h-3 w-3 text-zinc-900" viewBox="0 0 12 12" fill="none">
-            <path className="check-draw" pathLength={1} d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              className="check-draw"
+              pathLength={1}
+              d="M10 3L5 8.5 2 5.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         )}
       </button>
       <button type="button" onClick={() => onEdit(item)} className="min-w-0 flex-1 text-left">
-        <p className={`text-sm ${item.is_done ? 'text-zinc-500 line-through' : 'text-zinc-100'}`}>{item.name}</p>
+        <p className={`text-sm ${item.is_done ? 'text-zinc-500 line-through' : 'text-zinc-100'}`}>
+          {item.name}
+        </p>
         {item.note && <p className="mt-0.5 truncate text-xs text-zinc-500">{item.note}</p>}
       </button>
     </li>
@@ -75,7 +110,9 @@ export default function Lists() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   // A quick-access tile can deep-link straight into the gifts pane.
-  const [pane, setPane] = useState<Pane>(searchParams.get('pane') === 'gifts' ? 'gifts' : 'shopping');
+  const [pane, setPane] = useState<Pane>(
+    searchParams.get('pane') === 'gifts' ? 'gifts' : 'shopping',
+  );
 
   // --- Shopping state ------------------------------------------------------
   const [items, setItems] = useState<ShoppingItem[]>([]);
@@ -118,12 +155,15 @@ export default function Lists() {
   );
 
   const fetchItems = () => {
-    api.get<ShoppingItem[]>('/shopping')
+    api
+      .get<ShoppingItem[]>('/shopping')
       .then(setItems)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   // Quick-add keeps focus so a shopping trip's worth of items flows in one
   // typing session — a modal per grocery item would be ceremony.
@@ -134,7 +174,11 @@ export default function Lists() {
     setQuickAdd('');
     try {
       const created = await api.post<ShoppingItem>('/shopping', { name });
-      setItems((prev) => [...prev.filter((i) => !i.is_done), created, ...prev.filter((i) => i.is_done)]);
+      setItems((prev) => [
+        ...prev.filter((i) => !i.is_done),
+        created,
+        ...prev.filter((i) => i.is_done),
+      ]);
       setJustAdded(created.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'failed');
@@ -145,7 +189,9 @@ export default function Lists() {
 
   const toggle = async (item: ShoppingItem) => {
     try {
-      const updated = await api.patch<ShoppingItem>(`/shopping/${item.id}`, { is_done: !item.is_done });
+      const updated = await api.patch<ShoppingItem>(`/shopping/${item.id}`, {
+        is_done: !item.is_done,
+      });
       setItems((prev) => {
         const rest = prev.filter((i) => i.id !== item.id);
         // Keep the invariant the server orders by: open first, fresh-done at
@@ -156,14 +202,18 @@ export default function Lists() {
               (a, b) => Number(a.is_done) - Number(b.is_done),
             );
       });
-    } catch { /* row stays; next fetch reconciles */ }
+    } catch {
+      /* row stays; next fetch reconciles */
+    }
   };
 
   const clearDone = async () => {
     try {
       await api.post('/shopping/clear-done', {});
       setItems((prev) => prev.filter((i) => !i.is_done));
-    } catch { /* keep list */ }
+    } catch {
+      /* keep list */
+    }
   };
 
   const openEdit = (item: ShoppingItem) => {
@@ -195,7 +245,9 @@ export default function Lists() {
       await api.delete(`/shopping/${editing.id}`);
       setItems((prev) => prev.filter((i) => i.id !== editing.id));
       setEditing(null);
-    } catch { /* keep */ }
+    } catch {
+      /* keep */
+    }
   };
 
   const visible = items.filter((i) => matchesQuery(query, i.name, i.note));
@@ -234,13 +286,18 @@ export default function Lists() {
     if (!activeItem || !overItem || groupKey(activeItem) !== groupKey(overItem)) return; // no cross-group drag
 
     const group = groupKey(activeItem);
-    const idxs = items.reduce<number[]>((acc, it, idx) => (groupKey(it) === group ? [...acc, idx] : acc), []);
+    const idxs = items.reduce<number[]>(
+      (acc, it, idx) => (groupKey(it) === group ? [...acc, idx] : acc),
+      [],
+    );
     const groupItems = idxs.map((i) => items[i]);
     const oldPos = groupItems.findIndex((i) => i.id === active.id);
     const newPos = groupItems.findIndex((i) => i.id === over.id);
     const reordered = arrayMove(groupItems, oldPos, newPos);
     const next = [...items];
-    idxs.forEach((flatIdx, i) => { next[flatIdx] = reordered[i]; });
+    idxs.forEach((flatIdx, i) => {
+      next[flatIdx] = reordered[i];
+    });
     setItems(next);
     api.post('/shopping/reorder', { ids: reordered.map((i) => i.id) }).catch(() => fetchItems());
   };
@@ -273,7 +330,9 @@ export default function Lists() {
 
       {pane === 'shopping' && (
         <div className="animate-fade-slide-in space-y-4">
-          {showSearch && <SearchInput value={query} onChange={setQuery} label={t('search.shopping')} />}
+          {showSearch && (
+            <SearchInput value={query} onChange={setQuery} label={t('search.shopping')} />
+          )}
 
           {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
           {error && <p className="text-sm text-rose-400">{error}</p>}
@@ -286,7 +345,11 @@ export default function Lists() {
           )}
 
           {storeGroups.length > 0 && (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
               <div className="space-y-4">
                 {done.length > 0 && (
                   <div className="flex justify-end">
@@ -305,13 +368,23 @@ export default function Lists() {
                 {storeGroups.map(([store, groupItems]) => (
                   <section key={store} className="space-y-2">
                     {storeGroups.length > 1 && (
-                      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{store}</p>
+                      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                        {store}
+                      </p>
                     )}
                     <div className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-                      <SortableContext items={groupItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                      <SortableContext
+                        items={groupItems.map((i) => i.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
                         <ul className="divide-y divide-zinc-800/60">
                           {groupItems.map((item) => (
-                            <ShoppingRow key={item.id} item={item} onToggle={toggle} onEdit={openEdit} />
+                            <ShoppingRow
+                              key={item.id}
+                              item={item}
+                              onToggle={toggle}
+                              onEdit={openEdit}
+                            />
                           ))}
                         </ul>
                       </SortableContext>
@@ -366,19 +439,43 @@ export default function Lists() {
       <Modal open={!!editing} title={t('shopping.editItem')} onClose={() => setEditing(null)}>
         <div className="space-y-4">
           <div>
-            <label htmlFor="shop_name" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+            <label
+              htmlFor="shop_name"
+              className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+            >
               {t('form.name')}
             </label>
-            <input id="shop_name" type="text" value={editName} maxLength={120} onChange={(e) => setEditName(e.target.value)} className={fieldCls} />
+            <input
+              id="shop_name"
+              type="text"
+              value={editName}
+              maxLength={120}
+              onChange={(e) => setEditName(e.target.value)}
+              className={fieldCls}
+            />
           </div>
           <div>
-            <label htmlFor="shop_note" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+            <label
+              htmlFor="shop_note"
+              className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+            >
               {t('form.notes')}
             </label>
-            <input id="shop_note" type="text" value={editNote} maxLength={500} onChange={(e) => setEditNote(e.target.value)} placeholder={t('shopping.notePlaceholder')} className={fieldCls} />
+            <input
+              id="shop_note"
+              type="text"
+              value={editNote}
+              maxLength={500}
+              onChange={(e) => setEditNote(e.target.value)}
+              placeholder={t('shopping.notePlaceholder')}
+              className={fieldCls}
+            />
           </div>
           <div>
-            <label htmlFor="shop_store" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+            <label
+              htmlFor="shop_store"
+              className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+            >
               {t('shopping.store')}
             </label>
             <input
@@ -392,7 +489,9 @@ export default function Lists() {
               className={fieldCls}
             />
             <datalist id="existing-stores">
-              {existingStores.map((s) => <option key={s} value={s} />)}
+              {existingStores.map((s) => (
+                <option key={s} value={s} />
+              ))}
             </datalist>
           </div>
           <div className="flex gap-3 pt-1">
@@ -401,7 +500,9 @@ export default function Lists() {
               onClick={() => (confirmDelete ? deleteItem() : setConfirmDelete(true))}
               className={[
                 'rounded-xl border px-3 py-2.5 text-sm transition-colors',
-                confirmDelete ? 'border-rose-500/40 text-rose-400' : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                confirmDelete
+                  ? 'border-rose-500/40 text-rose-400'
+                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
               {confirmDelete ? t('common.confirm') : t('form.deleteItem')}

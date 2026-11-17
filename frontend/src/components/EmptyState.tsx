@@ -13,9 +13,13 @@ interface EmptyStateProps {
 export function EmptyState({ icon = '·', title, hint, actionLabel, onAction }: EmptyStateProps) {
   return (
     <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 px-6 py-10 text-center">
-      <div className="mx-auto mb-3 text-3xl leading-none" aria-hidden>{icon}</div>
+      <div className="mx-auto mb-3 text-3xl leading-none" aria-hidden>
+        {icon}
+      </div>
       <p className="text-sm text-zinc-300">{title}</p>
-      {hint && <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-zinc-500">{hint}</p>}
+      {hint && (
+        <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-zinc-500">{hint}</p>
+      )}
       {actionLabel && onAction && (
         <button
           onClick={onAction}

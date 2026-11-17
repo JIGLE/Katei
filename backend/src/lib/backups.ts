@@ -84,9 +84,12 @@ export async function runBackup(log?: FastifyBaseLogger): Promise<string | null>
     // existing database drops and recreates objects, so `psql -f dump.sql`
     // fully replaces current data with the snapshot.
     await execFileAsync('pg_dump', [
-      '--dbname', config.databaseUrl,
-      '--clean', '--if-exists',
-      '-f', outFile,
+      '--dbname',
+      config.databaseUrl,
+      '--clean',
+      '--if-exists',
+      '-f',
+      outFile,
     ]);
     log?.info(`Database backup written to ${outFile}`);
     await pruneBackups(log);

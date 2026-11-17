@@ -20,7 +20,9 @@ let cookie: string;
 let REAL_JPEG: Buffer;
 
 before(async () => {
-  REAL_JPEG = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#3a6' } }).jpeg().toBuffer();
+  REAL_JPEG = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#3a6' } })
+    .jpeg()
+    .toBuffer();
   if (!dbAvailable) return;
   h = await import('../test-helpers.js');
   // Dynamic, like test-helpers.js above: lib/avatars.js reads AVATAR_DIR at
@@ -35,14 +37,27 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
 test('the avatar serve route rejects unsafe names and 404s unknown files', opts, async () => {
-  const bad = await app.inject({ method: 'GET', url: '/api/avatars/..%2f..%2fetc%2fpasswd', headers: { cookie } });
+  const bad = await app.inject({
+    method: 'GET',
+    url: '/api/avatars/..%2f..%2fetc%2fpasswd',
+    headers: { cookie },
+  });
   assert.equal(bad.statusCode, 400);
-  const missing = await app.inject({ method: 'GET', url: '/api/avatars/9_1_deadbeef.png', headers: { cookie } });
+  const missing = await app.inject({
+    method: 'GET',
+    url: '/api/avatars/9_1_deadbeef.png',
+    headers: { cookie },
+  });
   assert.equal(missing.statusCode, 404);
 });
 
@@ -55,7 +70,10 @@ const PNG_1PX = Buffer.from(
 // Real JPEG magic bytes, but not an actually decodable image — passes the
 // cheap byte-sniff, fails real decoding. Used to test the "corrupt image"
 // rejection path now that uploads are actually processed, not just sniffed.
-const CORRUPT_JPEG_STUB = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from('fakejpegbody')]);
+const CORRUPT_JPEG_STUB = Buffer.concat([
+  Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+  Buffer.from('fakejpegbody'),
+]);
 
 function multipart(data: Buffer, filename: string, mimetype: string) {
   const boundary = '----kateitestboundary';
@@ -74,8 +92,10 @@ function multipart(data: Buffer, filename: string, mimetype: string) {
 const upload = (data: Buffer, filename: string, mimetype: string) => {
   const { headers, payload } = multipart(data, filename, mimetype);
   return app.inject({
-    method: 'POST', url: '/api/users/1/avatar',
-    headers: { cookie, ...headers }, payload,
+    method: 'POST',
+    url: '/api/users/1/avatar',
+    headers: { cookie, ...headers },
+    payload,
   });
 };
 
@@ -91,7 +111,11 @@ test('a real PNG uploads, even when the client mimetype lies', opts, async () =>
   assert.equal(res.statusCode, 200);
   assert.match(res.json().avatar_url, /\.png$/);
   // And the file it points to is served back.
-  const served = await app.inject({ method: 'GET', url: res.json().avatar_url, headers: { cookie } });
+  const served = await app.inject({
+    method: 'GET',
+    url: res.json().avatar_url,
+    headers: { cookie },
+  });
   assert.equal(served.statusCode, 200);
   assert.equal(served.headers['content-type'], 'image/png');
 });
@@ -104,22 +128,38 @@ test('JPEG magic bytes store as .jpg', opts, async () => {
 
 // --- Downscaling: any reasonable original is accepted; huge/corrupt still isn't ---
 
-test('a large, non-square photo is downscaled to fit within the stored size limit', opts, async () => {
-  const original = await sharp({
-    create: { width: 2400, height: 1600, channels: 3, background: '#5577aa' },
-  }).jpeg().toBuffer();
-  const res = await upload(original, 'big.jpg', 'image/jpeg');
-  assert.equal(res.statusCode, 200);
+test(
+  'a large, non-square photo is downscaled to fit within the stored size limit',
+  opts,
+  async () => {
+    const original = await sharp({
+      create: { width: 2400, height: 1600, channels: 3, background: '#5577aa' },
+    })
+      .jpeg()
+      .toBuffer();
+    const res = await upload(original, 'big.jpg', 'image/jpeg');
+    assert.equal(res.statusCode, 200);
 
-  const served = await app.inject({ method: 'GET', url: res.json().avatar_url, headers: { cookie } });
-  assert.equal(served.statusCode, 200);
-  const meta = await sharp(served.rawPayload).metadata();
-  assert.ok(meta.width! <= 512 && meta.height! <= 512, `expected <=512px, got ${meta.width}x${meta.height}`);
-  // Aspect ratio preserved — no server-side cropping.
-  const originalRatio = 2400 / 1600;
-  const storedRatio = meta.width! / meta.height!;
-  assert.ok(Math.abs(originalRatio - storedRatio) < 0.01, `aspect ratio drifted: ${storedRatio} vs ${originalRatio}`);
-});
+    const served = await app.inject({
+      method: 'GET',
+      url: res.json().avatar_url,
+      headers: { cookie },
+    });
+    assert.equal(served.statusCode, 200);
+    const meta = await sharp(served.rawPayload).metadata();
+    assert.ok(
+      meta.width! <= 512 && meta.height! <= 512,
+      `expected <=512px, got ${meta.width}x${meta.height}`,
+    );
+    // Aspect ratio preserved — no server-side cropping.
+    const originalRatio = 2400 / 1600;
+    const storedRatio = meta.width! / meta.height!;
+    assert.ok(
+      Math.abs(originalRatio - storedRatio) < 0.01,
+      `aspect ratio drifted: ${storedRatio} vs ${originalRatio}`,
+    );
+  },
+);
 
 test('a file larger than the new ceiling is rejected', opts, async () => {
   const tooBig = Buffer.alloc(21 * 1024 * 1024, 0xff);

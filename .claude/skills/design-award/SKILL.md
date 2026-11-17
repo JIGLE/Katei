@@ -28,6 +28,7 @@ its own scorecard row, and its own written record below.
 Run the stages in order. One finding = one commit = one verified fix.
 
 ### 1. Stage
+
 A realistic household, never an empty or synthetic-looking one:
 
 ```bash
@@ -41,38 +42,44 @@ node .claude/skills/design-award/scripts/seed.mjs
 ```
 
 ### 2. Capture
+
 ```bash
 node .claude/skills/design-award/scripts/capture.mjs   # → .design-award/shots/
 ```
+
 Every page, both themes, 390×844. Read every image — the harness also fails
 loudly on page errors. Screenshots are the evidence; findings without a
 screenshot or a code reference don't count.
 
 ### 3. Grade — the scorecard
+
 Score each row 0–2 per screen (0 = fails, 1 = correct, 2 = award-level).
 Target: ≥ 90% overall, no row at 0. Grade with tools where computable; for
 color work load the **dataviz** skill and run its `validate_palette.js`
 (don't hard-code its versioned path).
 
-| Row | The bar at 2 |
-|---|---|
-| Craft & precision | Alignment intentional everywhere; `tabular-nums` on every number; spacing rhythm unbroken; no wrap/overflow at 390px in any of the six languages |
-| Signature moment | Exactly one per screen, serving the screen's job (Overview greeting, Money's Net) — everything else recedes |
-| Hierarchy honesty | Structure encodes meaning: cards mean grouping, numbering means sequence, eyebrows label truthfully |
-| Microcopy | Active voice, user-named objects, consistent action names across a flow, no dead ends — every empty state invites the next action |
-| Accessibility | Text ≥ 4.5:1 in BOTH themes (large ≥ 3:1); keyboard-complete; AT hears what sighted users see; reduced-motion honored |
-| Motion restraint | Purposeful only; calm easing; no forwards-filling opacity/transform (stacking-context trap); nothing loops |
-| i18n completeness | Every string in all six catalogs; grammar-safe forms (self-voice uses `_self` keys, never pronoun swaps) |
-| Truthfulness | No number silently wrong: currency labels match the math, counts match the list below them, data isn't stale on PWA resume |
-| **Taste & restraint** | Passes every taste test below; taste calls recorded |
+| Row                   | The bar at 2                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Craft & precision     | Alignment intentional everywhere; `tabular-nums` on every number; spacing rhythm unbroken; no wrap/overflow at 390px in any of the six languages |
+| Signature moment      | Exactly one per screen, serving the screen's job (Overview greeting, Money's Net) — everything else recedes                                      |
+| Hierarchy honesty     | Structure encodes meaning: cards mean grouping, numbering means sequence, eyebrows label truthfully                                              |
+| Microcopy             | Active voice, user-named objects, consistent action names across a flow, no dead ends — every empty state invites the next action                |
+| Accessibility         | Text ≥ 4.5:1 in BOTH themes (large ≥ 3:1); keyboard-complete; AT hears what sighted users see; reduced-motion honored                            |
+| Motion restraint      | Purposeful only; calm easing; no forwards-filling opacity/transform (stacking-context trap); nothing loops                                       |
+| i18n completeness     | Every string in all six catalogs; grammar-safe forms (self-voice uses `_self` keys, never pronoun swaps)                                         |
+| Truthfulness          | No number silently wrong: currency labels match the math, counts match the list below them, data isn't stale on PWA resume                       |
+| **Taste & restraint** | Passes every taste test below; taste calls recorded                                                                                              |
 
 ### 4. Elevate
+
 Follow CLAUDE.md's two-pass process: brainstorm the token plan → critique it
 ("would I produce this for any similar screen?") → build. Severity order:
 truth bugs → accessibility → usefulness → craft → delight.
 
 ### 5. Verify
+
 Re-drive the changed flow in the running app (both themes), then:
+
 ```bash
 (cd backend && DATABASE_URL=postgres://katei:katei@127.0.0.1:5432/katei_test npm test)
 # fresh katei_e2e + schema, boot, then:
@@ -80,6 +87,7 @@ Re-drive the changed flow in the running app (both themes), then:
 ```
 
 ### 6. Ship
+
 One commit per finding, pushed to `main` (CI gates the GHCR image on tests +
 smoke). Re-run Capture after the batch and compare against the "before" set.
 
@@ -111,7 +119,7 @@ soften it toward the palette rather than replacing it.
 
 **Taste calls get named.** When judgment overrides a defensible alternative
 (dropping a legend, hiding a filter until it earns its place, refusing a
-feature's default treatment), one line of *why* goes in the commit body.
+feature's default treatment), one line of _why_ goes in the commit body.
 Taste that can't explain itself is fashion.
 
 ## Katei anti-patterns — if a screen matches an entry, it's wrong

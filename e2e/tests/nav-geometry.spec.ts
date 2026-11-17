@@ -65,7 +65,14 @@ async function signIn(page: Page) {
 // has to be sent explicitly or it resets to the default.
 async function setPreferences(page: Page, language: string, theme: 'dark' | 'light') {
   const res = await page.request.put('/api/settings/preferences', {
-    data: { country: 'GB', currency: 'GBP', locale: 'en-GB', timezone: 'Europe/London', language, theme },
+    data: {
+      country: 'GB',
+      currency: 'GBP',
+      locale: 'en-GB',
+      timezone: 'Europe/London',
+      language,
+      theme,
+    },
   });
   expect(res.ok(), `failed to switch to ${language}/${theme}`).toBeTruthy();
   await page.reload();
@@ -91,7 +98,9 @@ async function measureNav(page: Page): Promise<NavGeometry> {
       // The label is the only span in a tab carrying text — the accent dot is
       // an empty positioned span. Finding it by content survives a reorder
       // that :first-of-type would not.
-      const label = Array.from(a.querySelectorAll('span')).find((s) => (s.textContent ?? '').trim());
+      const label = Array.from(a.querySelectorAll('span')).find((s) =>
+        (s.textContent ?? '').trim(),
+      );
       return {
         href: a.getAttribute('href') ?? '',
         ...box(a),
@@ -154,10 +163,14 @@ test('the nav fits every supported language at every phone width', async ({ page
       // ...and nothing in it sits outside the screen. This is the assertion
       // that the shipped-and-clipping pill would have failed.
       for (const item of [...g.tabs, { href: 'account', ...g.account }]) {
-        expect(item.x, `${at}: ${item.href} starts ${(-item.x).toFixed(1)}px off the left edge`)
-          .toBeGreaterThanOrEqual(-EPSILON);
-        expect(item.right, `${at}: ${item.href} ends ${(item.right - g.vw).toFixed(1)}px past the right edge`)
-          .toBeLessThanOrEqual(g.vw + EPSILON);
+        expect(
+          item.x,
+          `${at}: ${item.href} starts ${(-item.x).toFixed(1)}px off the left edge`,
+        ).toBeGreaterThanOrEqual(-EPSILON);
+        expect(
+          item.right,
+          `${at}: ${item.href} ends ${(item.right - g.vw).toFixed(1)}px past the right edge`,
+        ).toBeLessThanOrEqual(g.vw + EPSILON);
       }
 
       for (const tab of g.tabs) {
@@ -175,7 +188,10 @@ test('the nav fits every supported language at every phone width', async ({ page
         } else {
           // Below the breakpoint every locale would ellipsise, so the design
           // drops to icons rather than showing five clipped words.
-          expect(label.shown, `${at}: "${label.text}" should be hidden below ${LABEL_BREAKPOINT}px`).toBe(false);
+          expect(
+            label.shown,
+            `${at}: "${label.text}" should be hidden below ${LABEL_BREAKPOINT}px`,
+          ).toBe(false);
         }
       }
     }
@@ -198,11 +214,17 @@ test('every nav target stays comfortable to hit', async ({ page }) => {
   for (const item of targets) {
     // Height is the dimension that carries a thumb: the bar is ~59px, well
     // clear of the 44px comfort figure and of WCAG 2.2's 24px floor.
-    expect(item.height, `${item.href} is only ${item.height.toFixed(1)}px tall`).toBeGreaterThanOrEqual(44);
+    expect(
+      item.height,
+      `${item.href} is only ${item.height.toFixed(1)}px tall`,
+    ).toBeGreaterThanOrEqual(44);
     // Every tab is an equal slot now — 70.4px at 360px — so width is no longer
     // label-dependent. 40px is kept as the floor a slot can never fall under
     // without the layout having changed shape.
-    expect(item.width, `${item.href} is only ${item.width.toFixed(1)}px wide`).toBeGreaterThanOrEqual(40);
+    expect(
+      item.width,
+      `${item.href} is only ${item.width.toFixed(1)}px wide`,
+    ).toBeGreaterThanOrEqual(40);
   }
 });
 
@@ -224,8 +246,9 @@ test('nothing in the bar runs into the screen edge, whichever tab is active', as
 
       const edges = await page.evaluate(() => {
         const nav = document.querySelector('nav')!;
-        const labels = Array.from(nav.querySelectorAll('a[href] span'))
-          .filter((s) => (s.textContent ?? '').trim() && getComputedStyle(s).display !== 'none');
+        const labels = Array.from(nav.querySelectorAll('a[href] span')).filter(
+          (s) => (s.textContent ?? '').trim() && getComputedStyle(s).display !== 'none',
+        );
         const first = labels[0].getBoundingClientRect();
         const last = labels[labels.length - 1].getBoundingClientRect();
         const chip = nav.querySelector('a[aria-current="page"]')!.getBoundingClientRect();
@@ -235,12 +258,16 @@ test('nothing in the bar runs into the screen edge, whichever tab is active', as
         };
       });
 
-      expect(edges.label, `${language} ${route}: label is ${edges.label.toFixed(1)}px from the screen edge`)
-        .toBeGreaterThanOrEqual(4);
+      expect(
+        edges.label,
+        `${language} ${route}: label is ${edges.label.toFixed(1)}px from the screen edge`,
+      ).toBeGreaterThanOrEqual(4);
       // The chip is a filled surface with rounded corners — flush to the edge
       // and the corners get sliced off.
-      expect(edges.chip, `${language} ${route}: active chip is ${edges.chip.toFixed(1)}px from the screen edge`)
-        .toBeGreaterThanOrEqual(2);
+      expect(
+        edges.chip,
+        `${language} ${route}: active chip is ${edges.chip.toFixed(1)}px from the screen edge`,
+      ).toBeGreaterThanOrEqual(2);
     }
   }
 
@@ -358,17 +385,24 @@ test('a gesture-bar inset grows the bar without swallowing content', async ({ pa
 
   const after = await measureNav(page);
   expect(after.nav.paddingBottom, 'pb-safe did not pick the inset up').toBeCloseTo(INSET, 0);
-  expect(after.nav.height - before.nav.height, 'the bar did not grow by the inset').toBeCloseTo(INSET, 0);
+  expect(after.nav.height - before.nav.height, 'the bar did not grow by the inset').toBeCloseTo(
+    INSET,
+    0,
+  );
   expect(after.nav.bottom, 'the bar lifted off the bottom edge').toBeCloseTo(after.vh, 0);
 
-  const mainPadding = await page.evaluate(
-    () => parseFloat(getComputedStyle(document.querySelector('main')!).paddingBottom),
+  const mainPadding = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.querySelector('main')!).paddingBottom),
   );
-  expect(mainPadding, `content padding ${mainPadding}px does not clear a ${after.nav.height}px bar`)
-    .toBeGreaterThan(after.nav.height);
+  expect(
+    mainPadding,
+    `content padding ${mainPadding}px does not clear a ${after.nav.height}px bar`,
+  ).toBeGreaterThan(after.nav.height);
 
   const fabBox = (await fab.boundingBox())!;
   const fabClearance = after.vh - fabBox.y - fabBox.height;
-  expect(fabClearance, `the add button overlaps the bar by ${(after.nav.height - fabClearance).toFixed(1)}px`)
-    .toBeGreaterThan(after.nav.height);
+  expect(
+    fabClearance,
+    `the add button overlaps the bar by ${(after.nav.height - fabClearance).toFixed(1)}px`,
+  ).toBeGreaterThan(after.nav.height);
 });

@@ -8,7 +8,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { query, getSetting } from '../db.js';
 import { hit } from '../lib/ratelimit.js';
-import { ITEM_SELECT, ITEM_FROM, ITEM_ORDER, shapeGiftItem, type RawGiftItemRow } from '../lib/giftlists.js';
+import {
+  ITEM_SELECT,
+  ITEM_FROM,
+  ITEM_ORDER,
+  shapeGiftItem,
+  type RawGiftItemRow,
+} from '../lib/giftlists.js';
 
 interface SharedListRow {
   id: number;
@@ -16,7 +22,10 @@ interface SharedListRow {
   external_name: string | null;
 }
 
-async function resolveToken(token: string, ip: string): Promise<{ list: SharedListRow | null; limited: boolean; retryAfterSec: number }> {
+async function resolveToken(
+  token: string,
+  ip: string,
+): Promise<{ list: SharedListRow | null; limited: boolean; retryAfterSec: number }> {
   const { rows } = await query<SharedListRow>(
     `SELECT gl.id, u.name AS owner_name, gl.external_name
        FROM gift_lists gl

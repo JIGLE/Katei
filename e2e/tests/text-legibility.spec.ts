@@ -30,10 +30,16 @@ const iso = (offset: number) => {
 };
 
 async function cleanup(page: Page) {
-  const items: { id: number; name: string }[] = await page.request.get('/api/shopping').then((r) => r.json());
-  for (const i of items.filter((x) => x.name.startsWith(PREFIX))) await page.request.delete(`/api/shopping/${i.id}`);
-  const events: { id: number; title: string }[] = await page.request.get('/api/events').then((r) => r.json());
-  for (const e of events.filter((x) => x.title.startsWith(PREFIX))) await page.request.delete(`/api/events/${e.id}`);
+  const items: { id: number; name: string }[] = await page.request
+    .get('/api/shopping')
+    .then((r) => r.json());
+  for (const i of items.filter((x) => x.name.startsWith(PREFIX)))
+    await page.request.delete(`/api/shopping/${i.id}`);
+  const events: { id: number; title: string }[] = await page.request
+    .get('/api/events')
+    .then((r) => r.json());
+  for (const e of events.filter((x) => x.title.startsWith(PREFIX)))
+    await page.request.delete(`/api/events/${e.id}`);
 }
 
 test.afterEach(async ({ page }) => cleanup(page));
@@ -45,7 +51,8 @@ function audit(): string[] {
     const s = v / 255;
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   };
-  const lum = (c: number[]) => 0.2126 * channel(c[0]) + 0.7152 * channel(c[1]) + 0.0722 * channel(c[2]);
+  const lum = (c: number[]) =>
+    0.2126 * channel(c[0]) + 0.7152 * channel(c[1]) + 0.0722 * channel(c[2]);
   const over = (top: number[], bottom: number[]) => {
     const a = top[3] ?? 1;
     return [0, 1, 2].map((i) => top[i] * a + bottom[i] * (1 - a));
@@ -78,7 +85,10 @@ function audit(): string[] {
     if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue;
     let hidden = false;
     for (let e: Element | null = el; e; e = e.parentElement) {
-      if (Number(getComputedStyle(e).opacity) === 0) { hidden = true; break; }
+      if (Number(getComputedStyle(e).opacity) === 0) {
+        hidden = true;
+        break;
+      }
     }
     if (hidden) continue;
     const size = parseFloat(cs.fontSize);
@@ -94,22 +104,32 @@ function audit(): string[] {
   return [...new Set(failures)];
 }
 
-test('every visible text holds AA contrast and an 11px floor on every tab, in both themes', async ({ page }) => {
+test('every visible text holds AA contrast and an 11px floor on every tab, in both themes', async ({
+  page,
+}) => {
   test.setTimeout(180_000);
   await signIn(page);
   const prefs = await page.request.get('/api/settings/preferences').then((r) => r.json());
 
   // Enough data for each tab to render its rows, pills and captions.
-  await page.request.post('/api/events', { data: { title: `${PREFIX} overdue`, event_type: 'deadline', target_date: iso(-2) } });
-  await page.request.post('/api/events', { data: { title: `${PREFIX} soon`, event_type: 'appointment', target_date: iso(3) } });
-  const done = await page.request.post('/api/shopping', { data: { name: `${PREFIX} bought` } }).then((r) => r.json());
+  await page.request.post('/api/events', {
+    data: { title: `${PREFIX} overdue`, event_type: 'deadline', target_date: iso(-2) },
+  });
+  await page.request.post('/api/events', {
+    data: { title: `${PREFIX} soon`, event_type: 'appointment', target_date: iso(3) },
+  });
+  const done = await page.request
+    .post('/api/shopping', { data: { name: `${PREFIX} bought` } })
+    .then((r) => r.json());
   await page.request.patch(`/api/shopping/${done.id}`, { data: { is_done: true } });
   await page.request.post('/api/shopping', { data: { name: `${PREFIX} open` } });
 
   const failures: Record<string, string[]> = {};
   try {
     for (const theme of ['dark', 'light'] as const) {
-      await page.request.put('/api/settings/preferences', { data: { ...prefs, language: 'en', theme } });
+      await page.request.put('/api/settings/preferences', {
+        data: { ...prefs, language: 'en', theme },
+      });
       for (const href of ['/', '/timeline', '/money', '/lists', '/household']) {
         await page.goto(href);
         await expect(page.locator('nav a[href="/timeline"]')).toBeVisible();

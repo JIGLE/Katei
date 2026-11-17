@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 interface AvatarPickerProps {
   name: string;
-  url: string | null;      // the currently-saved avatar
-  file: File | null;       // a newly-chosen file (staged, not yet uploaded)
+  url: string | null; // the currently-saved avatar
+  file: File | null; // a newly-chosen file (staged, not yet uploaded)
   onPick: (file: File | null) => void;
 }
 
@@ -16,14 +16,23 @@ export function AvatarPicker({ name, url, file, onPick }: AvatarPickerProps) {
   const [preview, setPreview] = useState<string | null>(url);
 
   useEffect(() => {
-    if (!file) { setPreview(url); return; }
+    if (!file) {
+      setPreview(url);
+      return;
+    }
     const obj = URL.createObjectURL(file);
     setPreview(obj);
     return () => URL.revokeObjectURL(obj);
   }, [file, url]);
 
   const initials =
-    name.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '·';
+    name
+      .trim()
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || '·';
 
   return (
     <div className="flex items-center gap-4">

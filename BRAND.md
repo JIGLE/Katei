@@ -8,7 +8,7 @@
 
 ## 1. Name & meaning
 
-**Katei** (家庭) is Japanese for *household / home / family* — not the building, but
+**Katei** (家庭) is Japanese for _household / home / family_ — not the building, but
 the unit of people and the life they run together. The app is a **household
 obligation awareness system**: it makes the shared, easily-forgotten duties of a
 home (bills, deadlines, renewals, who-owns-what) calmly visible.
@@ -58,15 +58,15 @@ Principles, in priority order:
 ## 4. Surfaces & elevation
 
 A dark, layered neutral palette built on Tailwind `zinc`. Elevation is conveyed
-by getting *lighter*, plus a hairline border — never by drop shadows.
+by getting _lighter_, plus a hairline border — never by drop shadows.
 
-| Layer | Token | Use |
-|---|---|---|
-| App background | `bg-zinc-950` | The page / root canvas |
-| Card / panel | `bg-zinc-900` | Raised content blocks, list containers |
-| Hairline border | `border-zinc-800/60` | Card edges, dividers, header rules |
-| Input well | `bg-zinc-950` inside a `border-zinc-800` field | Form inputs sit *below* cards |
-| Hover lift | `hover:border-zinc-700` | Interactive border brighten on hover |
+| Layer           | Token                                          | Use                                    |
+| --------------- | ---------------------------------------------- | -------------------------------------- |
+| App background  | `bg-zinc-950`                                  | The page / root canvas                 |
+| Card / panel    | `bg-zinc-900`                                  | Raised content blocks, list containers |
+| Hairline border | `border-zinc-800/60`                           | Card edges, dividers, header rules     |
+| Input well      | `bg-zinc-950` inside a `border-zinc-800` field | Form inputs sit _below_ cards          |
+| Hover lift      | `hover:border-zinc-700`                        | Interactive border brighten on hover   |
 
 Corner radius: cards/sheets `rounded-2xl`, controls/inputs `rounded-xl`, pills
 and avatars `rounded-full`. Never square corners on a surface.
@@ -78,12 +78,12 @@ and avatars `rounded-full`. Never square corners on a surface.
 Accents are **semantic**. A color may only appear when it carries its meaning;
 decorative color is forbidden.
 
-| Accent | Token | Meaning | Where |
-|---|---|---|---|
-| 🟡 Amber | `amber-500` | **Time** — appointments, upcoming, "this week" | Appointment events, time stats |
-| 🟢 Emerald | `emerald-500` | **Money** — flows, costs, outflow | Money Flow, payment events, amounts |
-| 🔴 Rose | `rose-500` | **Critical** — deadlines, overdue, destructive | Deadlines, overdue items, delete actions, errors |
-| ⚪ Zinc | `zinc-100 → zinc-600` | **Neutral** — text, structure, "later" | Everything non-semantic |
+| Accent     | Token                 | Meaning                                        | Where                                            |
+| ---------- | --------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| 🟡 Amber   | `amber-500`           | **Time** — appointments, upcoming, "this week" | Appointment events, time stats                   |
+| 🟢 Emerald | `emerald-500`         | **Money** — flows, costs, outflow              | Money Flow, payment events, amounts              |
+| 🔴 Rose    | `rose-500`            | **Critical** — deadlines, overdue, destructive | Deadlines, overdue items, delete actions, errors |
+| ⚪ Zinc    | `zinc-100 → zinc-600` | **Neutral** — text, structure, "later"         | Everything non-semantic                          |
 
 Money sub-types (budgeting) stay within the money family so green still reads as
 "money": **income** = `emerald`, **savings** = `teal`, **expense** = neutral
@@ -98,6 +98,7 @@ appointment → amber     (a time to be somewhere)
 ```
 
 Accent usage patterns:
+
 - **Dot** (status): `bg-{accent}-500`, `h-2 w-2 rounded-full`
 - **Pill** (label): `bg-{accent}-500/10 text-{accent}-500 rounded-full px-2 py-0.5 text-xs`
 - **Emphasis pill** (overdue): bump fill to `/15` and text to `-400` (`/20`
@@ -125,14 +126,14 @@ on every tab, in both themes.
 Typeface: **Inter** (loaded from Google Fonts), with a system-ui fallback stack.
 Weights used: **300 / 400 / 500 / 600** only.
 
-| Role | Classes |
-|---|---|
-| Page title | `text-2xl font-light text-zinc-100` |
-| Section eyebrow | `text-xs uppercase tracking-widest text-zinc-500` |
-| Card heading | `text-xs font-medium uppercase tracking-widest text-zinc-500` |
-| Body | `text-sm text-zinc-200` |
-| Stat figure | `text-xl font-light` (in its semantic accent) |
-| Caption / meta | `text-xs text-zinc-500` |
+| Role            | Classes                                                       |
+| --------------- | ------------------------------------------------------------- |
+| Page title      | `text-2xl font-light text-zinc-100`                           |
+| Section eyebrow | `text-xs uppercase tracking-widest text-zinc-500`             |
+| Card heading    | `text-xs font-medium uppercase tracking-widest text-zinc-500` |
+| Body            | `text-sm text-zinc-200`                                       |
+| Stat figure     | `text-xl font-light` (in its semantic accent)                 |
+| Caption / meta  | `text-xs text-zinc-500`                                       |
 
 Size floor: no text below **11px** (`text-[0.6875rem]`), including avatar
 initials, badges, weekday letters and nav labels. Anything a reader must read
@@ -169,7 +170,7 @@ reinvent.
   its own label put every destination's centre wherever that label's length
   happened to fall: centre-to-centre spacing varied by 20.3px in English and
   33.3px in Italian. `justify-evenly` does not fix this — it equalises the gaps
-  *between* boxes, and unequal boxes with equal gaps still land on an uneven
+  _between_ boxes, and unequal boxes with equal gaps still land on an uneven
   pitch. Equal slots put all five on one pitch, identically in every language.
   Icons are 24px with a 4px gap to a `text-[0.65rem]` label; below 360px the
   labels drop out entirely rather than ellipsise, and `truncate` above that is

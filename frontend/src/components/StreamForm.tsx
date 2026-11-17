@@ -23,9 +23,21 @@ const freqOptions: { value: Frequency; labelKey: string }[] = [
 
 // Type sub-palette (BRAND §5 extension): income emerald, savings teal, expense neutral.
 const typeOptions: { value: StreamType; labelKey: string; active: string }[] = [
-  { value: 'income', labelKey: 'money.income', active: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400' },
-  { value: 'expense', labelKey: 'money.expense', active: 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100' },
-  { value: 'savings', labelKey: 'money.savings', active: 'border-teal-500/40 bg-teal-500/15 text-teal-300' },
+  {
+    value: 'income',
+    labelKey: 'money.income',
+    active: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400',
+  },
+  {
+    value: 'expense',
+    labelKey: 'money.expense',
+    active: 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100',
+  },
+  {
+    value: 'savings',
+    labelKey: 'money.savings',
+    active: 'border-teal-500/40 bg-teal-500/15 text-teal-300',
+  },
 ];
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -33,14 +45,22 @@ const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
   'placeholder:text-zinc-500 focus:border-zinc-600';
 
-export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted }: StreamFormProps) {
+export function StreamForm({
+  initial,
+  initialType,
+  onSaved,
+  onCancel,
+  onDeleted,
+}: StreamFormProps) {
   const { currency: defaultCurrency } = usePreferences();
   const { t } = useTranslation();
   const isEdit = Boolean(initial);
   const [name, setName] = useState(initial?.name ?? '');
   const [amount, setAmount] = useState(initial?.amount ?? '');
   const [currency, setCurrency] = useState(initial?.currency ?? defaultCurrency);
-  const [streamType, setStreamType] = useState<StreamType>(initial?.stream_type ?? initialType ?? 'expense');
+  const [streamType, setStreamType] = useState<StreamType>(
+    initial?.stream_type ?? initialType ?? 'expense',
+  );
   const [frequency, setFrequency] = useState<Frequency>(initial?.frequency ?? 'monthly');
   const [dueDay, setDueDay] = useState<number>(initial?.due_day ?? 1);
   const [dueShift, setDueShift] = useState<DueShift>(initial?.due_shift ?? 'next');
@@ -55,7 +75,8 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   // Existing categories back the datalist under the category field.
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   useEffect(() => {
-    api.get<MoneyStream[]>('/money-streams')
+    api
+      .get<MoneyStream[]>('/money-streams')
       .then((rows) => {
         const seen = new Set<string>();
         for (const s of rows) {
@@ -120,7 +141,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="name" className={labelCls}>{t('form.name')}</label>
+        <label htmlFor="name" className={labelCls}>
+          {t('form.name')}
+        </label>
         <input
           id="name"
           type="text"
@@ -134,7 +157,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
 
       <div className="flex gap-3">
         <div className="flex-1">
-          <label htmlFor="amount" className={labelCls}>{t('form.amount')}</label>
+          <label htmlFor="amount" className={labelCls}>
+            {t('form.amount')}
+          </label>
           <input
             id="amount"
             type="number"
@@ -148,7 +173,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
           />
         </div>
         <div className="w-28">
-          <label htmlFor="currency" className={labelCls}>{t('form.currency')}</label>
+          <label htmlFor="currency" className={labelCls}>
+            {t('form.currency')}
+          </label>
           <select
             id="currency"
             value={currency}
@@ -156,7 +183,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
             className={`${fieldCls}`}
           >
             {CURRENCIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
         </div>
@@ -172,7 +201,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
               onClick={() => setStreamType(opt.value)}
               className={[
                 'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
-                streamType === opt.value ? opt.active : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                streamType === opt.value
+                  ? opt.active
+                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
               {t(opt.labelKey)}
@@ -205,7 +236,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
       {frequency !== 'one-off' && (
         <div className="flex gap-3">
           <div className="w-32">
-            <label htmlFor="due_day" className={labelCls}>{t('form.dueDay')}</label>
+            <label htmlFor="due_day" className={labelCls}>
+              {t('form.dueDay')}
+            </label>
             <select
               id="due_day"
               value={dueDay}
@@ -213,13 +246,17 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
               className={`${fieldCls}`}
             >
               {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
               <option value={31}>{t('form.lastDay')}</option>
             </select>
           </div>
           <div className="flex-1 min-w-0">
-            <label htmlFor="due_shift" className={labelCls}>{t('form.dueShift')}</label>
+            <label htmlFor="due_shift" className={labelCls}>
+              {t('form.dueShift')}
+            </label>
             <select
               id="due_shift"
               value={dueShift}
@@ -276,7 +313,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
       </button>
 
       <div>
-        <label htmlFor="category" className={labelCls}>{t('form.category')}</label>
+        <label htmlFor="category" className={labelCls}>
+          {t('form.category')}
+        </label>
         <input
           id="category"
           type="text"
@@ -289,7 +328,9 @@ export function StreamForm({ initial, initialType, onSaved, onCancel, onDeleted 
         {/* Offer the household's existing categories while typing, so
             "Housing" and "housing" don't split the breakdown in two. */}
         <datalist id="existing-categories">
-          {existingCategories.map((c) => <option key={c} value={c} />)}
+          {existingCategories.map((c) => (
+            <option key={c} value={c} />
+          ))}
         </datalist>
       </div>
 

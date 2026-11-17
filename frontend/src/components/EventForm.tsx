@@ -16,10 +16,26 @@ interface EventFormProps {
 type EventType = HouseholdEvent['event_type'];
 
 const typeOptions: { value: EventType; labelKey: string; active: string }[] = [
-  { value: 'deadline', labelKey: 'eventType.deadline', active: 'bg-rose-500/15 text-rose-400 border-rose-500/40' },
-  { value: 'payment', labelKey: 'eventType.payment', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
-  { value: 'appointment', labelKey: 'eventType.appointment', active: 'bg-amber-500/15 text-amber-400 border-amber-500/40' },
-  { value: 'income', labelKey: 'eventType.income', active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' },
+  {
+    value: 'deadline',
+    labelKey: 'eventType.deadline',
+    active: 'bg-rose-500/15 text-rose-400 border-rose-500/40',
+  },
+  {
+    value: 'payment',
+    labelKey: 'eventType.payment',
+    active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40',
+  },
+  {
+    value: 'appointment',
+    labelKey: 'eventType.appointment',
+    active: 'bg-amber-500/15 text-amber-400 border-amber-500/40',
+  },
+  {
+    value: 'income',
+    labelKey: 'eventType.income',
+    active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40',
+  },
 ];
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
@@ -33,7 +49,9 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
   const isEdit = Boolean(initial);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [eventType, setEventType] = useState<EventType>(initial?.event_type ?? 'deadline');
-  const [targetDate, setTargetDate] = useState(initial?.target_date?.slice(0, 10) ?? initialDate ?? '');
+  const [targetDate, setTargetDate] = useState(
+    initial?.target_date?.slice(0, 10) ?? initialDate ?? '',
+  );
   // Manually created events are deadlines, payments, or appointments —
   // income is a stream-generated concept, offered only when editing one.
   const visibleTypes = typeOptions.filter((o) => o.value !== 'income' || isEdit);
@@ -52,7 +70,10 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
   // there's nothing to link and no reason to make the request.
   useEffect(() => {
     if (!money_enabled) return;
-    api.get<MoneyStream[]>('/money-streams').then(setStreams).catch(() => setStreams([]));
+    api
+      .get<MoneyStream[]>('/money-streams')
+      .then(setStreams)
+      .catch(() => setStreams([]));
   }, [money_enabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +117,9 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="title" className={labelCls}>{t('form.title')}</label>
+        <label htmlFor="title" className={labelCls}>
+          {t('form.title')}
+        </label>
         <input
           id="title"
           type="text"
@@ -130,7 +153,9 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
       </div>
 
       <div>
-        <label htmlFor="target_date" className={labelCls}>{t('form.date')}</label>
+        <label htmlFor="target_date" className={labelCls}>
+          {t('form.date')}
+        </label>
         <input
           id="target_date"
           type="date"
@@ -142,7 +167,9 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
 
       {money_enabled && streams.length > 0 && (
         <div>
-          <label htmlFor="money_stream" className={labelCls}>{t('form.linkedCost')}</label>
+          <label htmlFor="money_stream" className={labelCls}>
+            {t('form.linkedCost')}
+          </label>
           <select
             id="money_stream"
             value={moneyStreamId}
@@ -151,14 +178,18 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
           >
             <option value="">{t('common.none')}</option>
             {streams.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
             ))}
           </select>
         </div>
       )}
 
       <div>
-        <label htmlFor="description" className={labelCls}>{t('form.notes')}</label>
+        <label htmlFor="description" className={labelCls}>
+          {t('form.notes')}
+        </label>
         <textarea
           id="description"
           value={description}

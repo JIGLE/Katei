@@ -46,12 +46,18 @@ cd frontend && npm ci && npm run dev
 CI runs all of these on every pull request. Running them locally first saves a
 round trip.
 
-| What | Command |
-|---|---|
-| Backend type check | `cd backend && npx tsc --noEmit` |
-| Frontend type check and build | `cd frontend && npm run build` |
-| Backend tests | `cd backend && npm test` (integration tests need `DATABASE_URL`; without it they skip) |
-| End-to-end smoke suite | `cd e2e && npm ci && npx playwright test` against a running app (`E2E_BASE_URL`, default `http://localhost:3000`) |
+| What                          | Command                                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Lint                          | `npm run lint` in `backend/` or `frontend/`                                                                       |
+| Formatting                    | `npm run format` in a package, or `backend/node_modules/.bin/prettier --write .` from the root                    |
+| Backend type check            | `cd backend && npx tsc --noEmit`                                                                                  |
+| Frontend type check and build | `cd frontend && npm run build`                                                                                    |
+| Backend tests                 | `cd backend && npm test` (integration tests need `DATABASE_URL`; without it they skip)                            |
+| End-to-end smoke suite        | `cd e2e && npm ci && npx playwright test` against a running app (`E2E_BASE_URL`, default `http://localhost:3000`) |
+
+Formatting is [Prettier](https://prettier.io) (config in `.prettierrc.json`) and
+linting is ESLint (`eslint.config.js` in each package). Most editors pick both up
+automatically; enable format-on-save to never think about it.
 
 The E2E suite runs at a 360 px wide viewport on purpose: it is the narrowest
 mainstream phone width, and Katei is mobile first.

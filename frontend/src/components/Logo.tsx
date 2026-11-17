@@ -54,7 +54,12 @@ export function LogoMark({ className = '' }: { className?: string }) {
   );
 }
 
-export function Logo({ size = 'md', withWordmark = false, markClassName = '', className = '' }: LogoProps) {
+export function Logo({
+  size = 'md',
+  withWordmark = false,
+  markClassName = '',
+  className = '',
+}: LogoProps) {
   if (!withWordmark) {
     return <LogoMark className={`${markSize[size]} ${markClassName} ${className}`} />;
   }

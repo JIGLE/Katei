@@ -114,7 +114,8 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
       req.log.error({ err: error, pgCode }, 'Database error');
       return reply.code(status).send({ error: message });
     }
-    const status = typeof error.statusCode === 'number' && error.statusCode >= 400 ? error.statusCode : 500;
+    const status =
+      typeof error.statusCode === 'number' && error.statusCode >= 400 ? error.statusCode : 500;
     if (status >= 500) req.log.error({ err: error }, 'Unhandled error');
     return reply
       .code(status)

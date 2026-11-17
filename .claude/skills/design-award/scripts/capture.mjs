@@ -16,10 +16,14 @@ const problems = [];
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 
 const settle = (ms = 700) => page.waitForTimeout(ms);
-const shot = async (name) => { await settle(); await page.screenshot({ path: `${out}/${name}.png` }); };
+const shot = async (name) => {
+  await settle();
+  await page.screenshot({ path: `${out}/${name}.png` });
+};
 const scrollMain = (y) => page.evaluate((py) => document.querySelector('main')?.scrollTo(0, py), y);
 
-const prefs = async () => page.request.get(`${BASE}/api/settings/preferences`).then((r) => r.json());
+const prefs = async () =>
+  page.request.get(`${BASE}/api/settings/preferences`).then((r) => r.json());
 const setTheme = async (theme) =>
   page.request.put(`${BASE}/api/settings/preferences`, { data: { ...(await prefs()), theme } });
 
@@ -52,7 +56,9 @@ const captureTheme = async (suffix) => {
 
   await page.locator('nav a[href="/lists"]').click();
   await shot(`lists-shopping-${suffix}`);
-  await page.getByRole('button', { name: /Gifts|Geschenke|Cadeaux|Regalos|Regali|Cadeaus/ }).click();
+  await page
+    .getByRole('button', { name: /Gifts|Geschenke|Cadeaux|Regalos|Regali|Cadeaus/ })
+    .click();
   await shot(`lists-gifts-${suffix}`);
 
   await page.locator('nav a[href="/household"]').click();

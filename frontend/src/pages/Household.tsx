@@ -61,19 +61,31 @@ export default function Household() {
       api.get<HouseholdEvent[]>('/events'),
       api.get<MoneyStream[]>('/money-streams'),
     ])
-      .then(([u, a, e, s]) => { setUsers(u); setAssignments(a); setEvents(e); setStreams(s); })
+      .then(([u, a, e, s]) => {
+        setUsers(u);
+        setAssignments(a);
+        setEvents(e);
+        setStreams(s);
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
   // Invites are admin-only (the endpoint 403s otherwise).
   const fetchInvites = () => {
     if (!isAdmin) return;
-    api.get<Invite[]>('/invites').then(setInvites).catch(() => {});
+    api
+      .get<Invite[]>('/invites')
+      .then(setInvites)
+      .catch(() => {});
   };
-  useEffect(() => { fetchInvites(); }, [isAdmin]);
+  useEffect(() => {
+    fetchInvites();
+  }, [isAdmin]);
 
   const createInvite = async () => {
     setCreatingInvite(true);
@@ -82,7 +94,12 @@ export default function Household() {
       const inv = await api.post<Invite>('/invites', {});
       const url = `${window.location.origin}/?invite=${inv.code}`;
       setInviteLink(url);
-      try { await navigator.clipboard.writeText(url); setCopied(true); } catch { /* clipboard blocked */ }
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+      } catch {
+        /* clipboard blocked */
+      }
       fetchInvites();
     } catch (err) {
       console.error(err);
@@ -107,8 +124,7 @@ export default function Household() {
     fetchAll();
   };
 
-  const assignmentsByUser = (userId: number) =>
-    assignments.filter((a) => a.user_id === userId);
+  const assignmentsByUser = (userId: number) => assignments.filter((a) => a.user_id === userId);
 
   const eventTitle = (id: number) => events.find((e) => e.id === id)?.title ?? `Event #${id}`;
   const streamName = (id: number) => streams.find((s) => s.id === id)?.name ?? `Stream #${id}`;
@@ -140,7 +156,9 @@ export default function Household() {
     ? [
         t('household.summaryPeople', { count: people.length }),
         ...(pets.length ? [t('household.summaryPets', { count: pets.length })] : []),
-        ...(upcomingBirthdays ? [t('household.summaryBirthdays', { count: upcomingBirthdays })] : []),
+        ...(upcomingBirthdays
+          ? [t('household.summaryBirthdays', { count: upcomingBirthdays })]
+          : []),
       ]
     : [];
 
@@ -151,14 +169,22 @@ export default function Household() {
     const days = daysToBirthday(u.birthday);
     const nearBirthday = days !== null && days <= 30;
     return (
-      <div key={u.id} style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }} className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
+      <div
+        key={u.id}
+        style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+        className="animate-fade-slide-in rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4"
+      >
         <button
           type="button"
           onClick={() => setEditingMember(u)}
           className="flex w-full items-center gap-4 text-left"
         >
           {u.avatar_url ? (
-            <img src={u.avatar_url} alt={u.name} className="h-11 w-11 flex-shrink-0 rounded-full object-cover" />
+            <img
+              src={u.avatar_url}
+              alt={u.name}
+              className="h-11 w-11 flex-shrink-0 rounded-full object-cover"
+            />
           ) : (
             <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-sm font-medium text-zinc-300">
               {initials(u.name)}
@@ -193,11 +219,17 @@ export default function Household() {
               <li key={a.id} className="flex items-center gap-2 text-xs text-zinc-400">
                 <span className="h-1 w-1 rounded-full bg-zinc-700" />
                 {a.event_id != null && <span>{eventTitle(a.event_id)}</span>}
-                {a.money_stream_id != null && money_enabled && <span>{streamName(a.money_stream_id)}</span>}
-                <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>{a.role}</span>
+                {a.money_stream_id != null && money_enabled && (
+                  <span>{streamName(a.money_stream_id)}</span>
+                )}
+                <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>
+                  {a.role}
+                </span>
                 <button
                   type="button"
-                  onClick={() => (confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id))}
+                  onClick={() =>
+                    confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id)
+                  }
                   className={[
                     'rounded-md px-1.5 transition-colors',
                     confirmRemove === a.id ? 'text-rose-400' : 'text-zinc-500 hover:text-zinc-400',
@@ -218,8 +250,12 @@ export default function Household() {
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-widest text-zinc-500">{t('household.eyebrow')}</p>
-          <h1 className="mt-1 truncate text-2xl font-light text-zinc-100">{household_name || t('household.title')}</h1>
+          <p className="text-xs uppercase tracking-widest text-zinc-500">
+            {t('household.eyebrow')}
+          </p>
+          <h1 className="mt-1 truncate text-2xl font-light text-zinc-100">
+            {household_name || t('household.title')}
+          </h1>
           {summaryParts.length > 0 && (
             <p className="mt-2 text-sm text-zinc-400">{summaryParts.join(' · ')}</p>
           )}
@@ -252,14 +288,20 @@ export default function Household() {
         <SearchInput value={query} onChange={setQuery} label={t('search.members')} />
       )}
 
-      {!loading && !error && users.length > 0 && visiblePeople.length === 0 && visiblePets.length === 0 && (
-        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
-      )}
+      {!loading &&
+        !error &&
+        users.length > 0 &&
+        visiblePeople.length === 0 &&
+        visiblePets.length === 0 && (
+          <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+        )}
 
       {/* People */}
       {!loading && !error && visiblePeople.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.people')}</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('household.people')}
+          </p>
           {visiblePeople.map((u, i) => renderMember(u, i))}
         </section>
       )}
@@ -267,7 +309,9 @@ export default function Household() {
       {/* Pets — the rest of the household */}
       {!loading && !error && visiblePets.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">{t('household.pets')}</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">
+            {t('household.pets')}
+          </p>
           {visiblePets.map((u, i) => renderMember(u, i))}
         </section>
       )}
@@ -276,7 +320,9 @@ export default function Household() {
       {!loading && !error && isAdmin && (
         <section className="space-y-3 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('household.invites')}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('household.invites')}
+            </p>
             <button
               type="button"
               onClick={createInvite}
@@ -289,29 +335,33 @@ export default function Household() {
 
           {inviteLink && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-              <p className="mb-1 text-xs text-zinc-500">{copied ? t('household.inviteCopied') : t('household.inviteLink')}</p>
+              <p className="mb-1 text-xs text-zinc-500">
+                {copied ? t('household.inviteCopied') : t('household.inviteLink')}
+              </p>
               <p className="break-all text-xs text-zinc-300">{inviteLink}</p>
             </div>
           )}
 
           {invites.filter((i) => i.active).length > 0 ? (
             <ul className="space-y-1.5">
-              {invites.filter((i) => i.active).map((i) => (
-                <li key={i.id} className="flex items-center gap-2 text-xs">
-                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                  <span className="flex-1 truncate capitalize text-zinc-400">
-                    {i.role} · {t('household.inviteActive')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => revokeInvite(i.id)}
-                    className="rounded-md px-1.5 text-zinc-500 transition-colors hover:text-rose-400"
-                    aria-label={t('household.revokeInvite')}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
+              {invites
+                .filter((i) => i.active)
+                .map((i) => (
+                  <li key={i.id} className="flex items-center gap-2 text-xs">
+                    <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                    <span className="flex-1 truncate capitalize text-zinc-400">
+                      {i.role} · {t('household.inviteActive')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => revokeInvite(i.id)}
+                      className="rounded-md px-1.5 text-zinc-500 transition-colors hover:text-rose-400"
+                      aria-label={t('household.revokeInvite')}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
             </ul>
           ) : (
             <p className="text-xs text-zinc-500">{t('household.noInvites')}</p>
@@ -325,11 +375,19 @@ export default function Household() {
         <Fab label={t('household.addMemberAria')} onClick={() => setShowMemberForm(true)} />
       )}
 
-      <Modal open={showMemberForm} title={t('household.newMember')} onClose={() => setShowMemberForm(false)}>
+      <Modal
+        open={showMemberForm}
+        title={t('household.newMember')}
+        onClose={() => setShowMemberForm(false)}
+      >
         <MemberForm onSaved={handleSaved} onCancel={() => setShowMemberForm(false)} />
       </Modal>
 
-      <Modal open={!!editingMember} title={t('household.editMember')} onClose={() => setEditingMember(null)}>
+      <Modal
+        open={!!editingMember}
+        title={t('household.editMember')}
+        onClose={() => setEditingMember(null)}
+      >
         {editingMember && (
           <MemberForm
             initial={editingMember}
@@ -340,7 +398,11 @@ export default function Household() {
         )}
       </Modal>
 
-      <Modal open={showAssignForm} title={t('household.newAssignment')} onClose={() => setShowAssignForm(false)}>
+      <Modal
+        open={showAssignForm}
+        title={t('household.newAssignment')}
+        onClose={() => setShowAssignForm(false)}
+      >
         <AssignmentForm
           users={users}
           events={events}

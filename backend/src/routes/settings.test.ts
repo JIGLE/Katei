@@ -18,12 +18,21 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
 test('preferences return EU-leaning defaults', opts, async () => {
-  const res = await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } });
+  const res = await app.inject({
+    method: 'GET',
+    url: '/api/settings/preferences',
+    headers: { cookie },
+  });
   assert.equal(res.statusCode, 200);
   const p = res.json();
   assert.equal(p.country, 'DE');
@@ -36,12 +45,25 @@ test('preferences return EU-leaning defaults', opts, async () => {
 
 test('PUT persists preferences including theme and savings goal', opts, async () => {
   const put = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
-    payload: { country: 'DK', currency: 'DKK', locale: 'da-DK', timezone: 'Europe/Copenhagen', language: 'en', savings_goal: 500, theme: 'light', household_name: 'The Nguyens' },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
+    payload: {
+      country: 'DK',
+      currency: 'DKK',
+      locale: 'da-DK',
+      timezone: 'Europe/Copenhagen',
+      language: 'en',
+      savings_goal: 500,
+      theme: 'light',
+      household_name: 'The Nguyens',
+    },
   });
   assert.equal(put.statusCode, 200);
 
-  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const got = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(got.locale, 'da-DK');
   assert.equal(got.timezone, 'Europe/Copenhagen');
   assert.equal(got.language, 'en');
@@ -51,62 +73,96 @@ test('PUT persists preferences including theme and savings goal', opts, async ()
 });
 
 test("theme 'system' round-trips; unknown values fall back to dark", opts, async () => {
-  const base = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin', language: 'de' };
+  const base = {
+    country: 'DE',
+    currency: 'EUR',
+    locale: 'de-DE',
+    timezone: 'Europe/Berlin',
+    language: 'de',
+  };
   const put = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
     payload: { ...base, theme: 'system' },
   });
   assert.equal(put.statusCode, 200);
   assert.equal(put.json().theme, 'system');
-  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const got = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(got.theme, 'system');
 
   // Values outside the enum are rejected by schema validation.
   const bad = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
     payload: { ...base, theme: 'sepia' },
   });
   assert.equal(bad.statusCode, 400);
 });
 
 test('household_name defaults to empty string', opts, async () => {
-  const p = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const p = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(p.household_name, '');
 });
 
 test('language defaults to the locale language when omitted', opts, async () => {
   await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
     payload: { country: 'FR', currency: 'EUR', locale: 'fr-FR', timezone: 'Europe/Paris' },
   });
-  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const got = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(got.language, 'fr');
 });
 
 test('rejects an invalid currency code', opts, async () => {
   const res = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
     payload: { country: 'DE', currency: 'EUROS', locale: 'de-DE', timezone: 'Europe/Berlin' },
   });
   assert.equal(res.statusCode, 400);
 });
 
 test('money_enabled defaults to true and round-trips false', opts, async () => {
-  const p = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const p = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(p.money_enabled, true);
 
   const put = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
-    payload: { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin', money_enabled: false },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
+    payload: {
+      country: 'DE',
+      currency: 'EUR',
+      locale: 'de-DE',
+      timezone: 'Europe/Berlin',
+      money_enabled: false,
+    },
   });
   assert.equal(put.json().money_enabled, false);
-  const got = (await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })).json();
+  const got = (
+    await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie } })
+  ).json();
   assert.equal(got.money_enabled, false);
 });
 
 test('money_enabled defaults true when omitted from PUT', opts, async () => {
   const put = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie },
     payload: { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' },
   });
   assert.equal(put.json().money_enabled, true);
@@ -116,9 +172,12 @@ test('money_enabled defaults true when omitted from PUT', opts, async () => {
 
 /** Invite a member, redeem it, and return their (non-admin) session cookie. */
 async function memberCookie(): Promise<string> {
-  const invite = (await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })).json();
+  const invite = (
+    await app.inject({ method: 'POST', url: '/api/invites', headers: { cookie }, payload: {} })
+  ).json();
   const join = await app.inject({
-    method: 'POST', url: '/api/auth/register',
+    method: 'POST',
+    url: '/api/auth/register',
     payload: { name: 'Robin', password: 'password123', invite_code: invite.code },
   });
   assert.equal(join.json().role, 'member');
@@ -127,32 +186,80 @@ async function memberCookie(): Promise<string> {
 
 test('a member cannot download backups (they contain password hashes)', opts, async () => {
   const member = await memberCookie();
-  const res = await app.inject({ method: 'GET', url: '/api/settings/backups/anything.sql', headers: { cookie: member } });
+  const res = await app.inject({
+    method: 'GET',
+    url: '/api/settings/backups/anything.sql',
+    headers: { cookie: member },
+  });
   assert.equal(res.statusCode, 403);
 });
 
 test('a member cannot list backups or take one', opts, async () => {
   const member = await memberCookie();
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/backups', headers: { cookie: member } })).statusCode, 403);
-  assert.equal((await app.inject({ method: 'POST', url: '/api/settings/backups/run', headers: { cookie: member }, payload: {} })).statusCode, 403);
+  assert.equal(
+    (await app.inject({ method: 'GET', url: '/api/settings/backups', headers: { cookie: member } }))
+      .statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/backups/run',
+        headers: { cookie: member },
+        payload: {},
+      })
+    ).statusCode,
+    403,
+  );
 });
 
 test('a member cannot read or rotate the calendar token', opts, async () => {
   const member = await memberCookie();
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie: member } })).statusCode, 403);
-  assert.equal((await app.inject({ method: 'POST', url: '/api/settings/calendar/rotate', headers: { cookie: member }, payload: {} })).statusCode, 403);
+  assert.equal(
+    (
+      await app.inject({
+        method: 'GET',
+        url: '/api/settings/calendar',
+        headers: { cookie: member },
+      })
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/calendar/rotate',
+        headers: { cookie: member },
+        payload: {},
+      })
+    ).statusCode,
+    403,
+  );
 });
 
 test('a member cannot access Graphiti settings routes', opts, async () => {
   const member = await memberCookie();
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/graphiti', headers: { cookie: member } })).statusCode, 403);
   assert.equal(
-    (await app.inject({
-      method: 'POST',
-      url: '/api/settings/graphiti/query',
-      headers: { cookie: member },
-      payload: { query: 'overdue payments' },
-    })).statusCode,
+    (
+      await app.inject({
+        method: 'GET',
+        url: '/api/settings/graphiti',
+        headers: { cookie: member },
+      })
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/graphiti/query',
+        headers: { cookie: member },
+        payload: { query: 'overdue payments' },
+      })
+    ).statusCode,
     403,
   );
 });
@@ -160,12 +267,17 @@ test('a member cannot access Graphiti settings routes', opts, async () => {
 test('a member cannot change household preferences or the reminder window', opts, async () => {
   const member = await memberCookie();
   const putPrefs = await app.inject({
-    method: 'PUT', url: '/api/settings/preferences', headers: { cookie: member },
+    method: 'PUT',
+    url: '/api/settings/preferences',
+    headers: { cookie: member },
     payload: { country: 'FR', currency: 'EUR', locale: 'fr-FR', timezone: 'Europe/Paris' },
   });
   assert.equal(putPrefs.statusCode, 403);
   const putNotif = await app.inject({
-    method: 'PUT', url: '/api/settings/notifications', headers: { cookie: member }, payload: { lead_days: 5 },
+    method: 'PUT',
+    url: '/api/settings/notifications',
+    headers: { cookie: member },
+    payload: { lead_days: 5 },
   });
   assert.equal(putNotif.statusCode, 403);
 });
@@ -173,24 +285,56 @@ test('a member cannot change household preferences or the reminder window', opts
 test('a member keeps the reads the app needs to render', opts, async () => {
   const member = await memberCookie();
   // Preferences (theme/currency/locale) and the reminder window render for everyone.
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/preferences', headers: { cookie: member } })).statusCode, 200);
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/notifications', headers: { cookie: member } })).statusCode, 200);
+  assert.equal(
+    (
+      await app.inject({
+        method: 'GET',
+        url: '/api/settings/preferences',
+        headers: { cookie: member },
+      })
+    ).statusCode,
+    200,
+  );
+  assert.equal(
+    (
+      await app.inject({
+        method: 'GET',
+        url: '/api/settings/notifications',
+        headers: { cookie: member },
+      })
+    ).statusCode,
+    200,
+  );
 });
 
 test('an admin is allowed through the guarded routes', opts, async () => {
   // The admin (registered in beforeEach) is not 403'd on the sensitive routes.
-  assert.equal((await app.inject({ method: 'GET', url: '/api/settings/backups', headers: { cookie } })).statusCode, 200);
-  assert.notEqual((await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })).statusCode, 403);
-  const graphiti = await app.inject({ method: 'GET', url: '/api/settings/graphiti', headers: { cookie } });
+  assert.equal(
+    (await app.inject({ method: 'GET', url: '/api/settings/backups', headers: { cookie } }))
+      .statusCode,
+    200,
+  );
+  assert.notEqual(
+    (await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } }))
+      .statusCode,
+    403,
+  );
+  const graphiti = await app.inject({
+    method: 'GET',
+    url: '/api/settings/graphiti',
+    headers: { cookie },
+  });
   assert.equal(graphiti.statusCode, 200);
   assert.equal(graphiti.json().enabled, false);
   assert.equal(
-    (await app.inject({
-      method: 'POST',
-      url: '/api/settings/graphiti/query',
-      headers: { cookie },
-      payload: { query: 'anything' },
-    })).statusCode,
+    (
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/graphiti/query',
+        headers: { cookie },
+        payload: { query: 'anything' },
+      })
+    ).statusCode,
     503,
   );
 });

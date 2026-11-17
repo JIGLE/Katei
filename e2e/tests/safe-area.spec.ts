@@ -24,20 +24,26 @@ test('header, add button and sheet footer clear a notch and a home indicator', a
   await page.request.put('/api/settings/preferences', { data: { ...prefs, language: 'en' } });
   await page.reload();
 
-  await page.addStyleTag({ content: `:root { --katei-safe-top: ${TOP}px; --katei-safe-bottom: ${BOTTOM}px; }` });
+  await page.addStyleTag({
+    content: `:root { --katei-safe-top: ${TOP}px; --katei-safe-bottom: ${BOTTOM}px; }`,
+  });
   await page.locator('nav a[href="/timeline"]').click();
 
   // Nothing tappable or readable in the header sits under the status bar.
   const header = page.locator('header').first();
   const headerKids = await header.evaluate((h) =>
-    [...h.children].map((c) => c.getBoundingClientRect().top));
-  for (const top of headerKids) expect(top, 'header content sits under the status bar').toBeGreaterThanOrEqual(TOP);
+    [...h.children].map((c) => c.getBoundingClientRect().top),
+  );
+  for (const top of headerKids)
+    expect(top, 'header content sits under the status bar').toBeGreaterThanOrEqual(TOP);
 
   // The add button keeps its resting gap above the nav, which is taller now.
   const fab = page.getByRole('button', { name: 'Add event' });
   const fabBox = (await fab.boundingBox())!;
   const navBox = (await page.locator('nav').last().boundingBox())!;
-  expect(navBox.y - (fabBox.y + fabBox.height), 'add button crowds the nav').toBeGreaterThanOrEqual(16);
+  expect(navBox.y - (fabBox.y + fabBox.height), 'add button crowds the nav').toBeGreaterThanOrEqual(
+    16,
+  );
 
   // A sheet's last control ends above the home indicator.
   await fab.click();
@@ -47,6 +53,8 @@ test('header, add button and sheet footer clear a notch and a home indicator', a
   const submit = dialog.locator('button[type=submit]');
   await submit.scrollIntoViewIfNeeded();
   const submitBox = (await submit.boundingBox())!;
-  expect(submitBox.y + submitBox.height, 'sheet button sits on the home indicator')
-    .toBeLessThanOrEqual(844 - BOTTOM);
+  expect(
+    submitBox.y + submitBox.height,
+    'sheet button sits on the home indicator',
+  ).toBeLessThanOrEqual(844 - BOTTOM);
 });

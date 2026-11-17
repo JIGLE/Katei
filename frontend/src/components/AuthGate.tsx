@@ -22,16 +22,24 @@ export function AuthGate() {
   const [error, setError] = useState<string | null>(null);
 
   // An invite link (?invite=CODE) puts the gate into "join" mode.
-  const inviteCode = useMemo(() => new URLSearchParams(window.location.search).get('invite') ?? '', []);
+  const inviteCode = useMemo(
+    () => new URLSearchParams(window.location.search).get('invite') ?? '',
+    [],
+  );
   const [inviteValid, setInviteValid] = useState<boolean | null>(inviteCode ? null : false);
   useEffect(() => {
     if (!inviteCode) return;
-    api.get<{ valid: boolean }>(`/auth/invite/${inviteCode}`)
+    api
+      .get<{ valid: boolean }>(`/auth/invite/${inviteCode}`)
       .then((r) => setInviteValid(!!r.valid))
       .catch(() => setInviteValid(false));
   }, [inviteCode]);
 
-  const mode: 'invite' | 'setup' | 'signin' = inviteCode ? 'invite' : needsSetup ? 'setup' : 'signin';
+  const mode: 'invite' | 'setup' | 'signin' = inviteCode
+    ? 'invite'
+    : needsSetup
+      ? 'setup'
+      : 'signin';
 
   // Setup-only: country drives currency / locale / timezone, each overridable.
   const [country, setCountry] = useState(DEFAULT_COUNTRY.code);
@@ -42,7 +50,10 @@ export function AuthGate() {
   const onCountryChange = (code: string) => {
     setCountry(code);
     const c = countryByCode(code);
-    if (c) { setCurrency(c.currency); setTimezone(c.timezone); }
+    if (c) {
+      setCurrency(c.currency);
+      setTimezone(c.timezone);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,10 +78,16 @@ export function AuthGate() {
         // otherwise English (e.g. Denmark → English UI, Danish formatting).
         const lang = locale.split('-')[0].toLowerCase();
         const language = (SUPPORTED_LANGUAGES as readonly string[]).includes(lang) ? lang : 'en';
-        await api.put('/settings/preferences', {
-          country, currency, locale, timezone, language,
-          savings_opening: Number(savingsOpening) || 0,
-        }).catch(() => {});
+        await api
+          .put('/settings/preferences', {
+            country,
+            currency,
+            locale,
+            timezone,
+            language,
+            savings_opening: Number(savingsOpening) || 0,
+          })
+          .catch(() => {});
         await prefs.reload();
       } else if (mode === 'invite') {
         await register(name.trim(), password, inviteCode);
@@ -103,10 +120,18 @@ export function AuthGate() {
 
         <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-6">
           <h2 className="mb-1 text-lg font-light text-zinc-100">
-            {mode === 'invite' ? t('auth.joinTitle') : mode === 'setup' ? t('auth.createTitle') : t('auth.signInTitle')}
+            {mode === 'invite'
+              ? t('auth.joinTitle')
+              : mode === 'setup'
+                ? t('auth.createTitle')
+                : t('auth.signInTitle')}
           </h2>
           <p className="mb-5 text-xs text-zinc-500">
-            {mode === 'invite' ? t('auth.joinSubtitle') : mode === 'setup' ? t('auth.createSubtitle') : t('auth.signInSubtitle')}
+            {mode === 'invite'
+              ? t('auth.joinSubtitle')
+              : mode === 'setup'
+                ? t('auth.createSubtitle')
+                : t('auth.signInSubtitle')}
           </p>
 
           {mode === 'invite' && inviteValid === false ? (
@@ -114,112 +139,136 @@ export function AuthGate() {
               <p className="text-sm text-rose-400">{t('auth.inviteInvalid')}</p>
               <button
                 type="button"
-                onClick={() => { window.location.href = '/'; }}
+                onClick={() => {
+                  window.location.href = '/';
+                }}
                 className="w-full rounded-xl border border-zinc-800 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-700"
               >
                 {t('auth.signInBtn')}
               </button>
             </div>
           ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className={labelCls}>{t('auth.name')}</label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('auth.namePlaceholder')}
-                autoComplete="username"
-                className={fieldCls}
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="name" className={labelCls}>
+                  {t('auth.name')}
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('auth.namePlaceholder')}
+                  autoComplete="username"
+                  className={fieldCls}
+                />
+              </div>
 
-            <div>
-              <label htmlFor="password" className={labelCls}>{t('auth.password')}</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode !== 'signin' ? t('auth.passwordSetupPlaceholder') : '••••••••'}
-                autoComplete={mode !== 'signin' ? 'new-password' : 'current-password'}
-                className={fieldCls}
-              />
-            </div>
+              <div>
+                <label htmlFor="password" className={labelCls}>
+                  {t('auth.password')}
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={mode !== 'signin' ? t('auth.passwordSetupPlaceholder') : '••••••••'}
+                  autoComplete={mode !== 'signin' ? 'new-password' : 'current-password'}
+                  className={fieldCls}
+                />
+              </div>
 
-            {mode === 'setup' && (
-              <>
-                <div>
-                  <label htmlFor="country" className={labelCls}>{t('auth.country')}</label>
-                  <select
-                    id="country"
-                    value={country}
-                    onChange={(e) => onCountryChange(e.target.value)}
-                    className={`${fieldCls}`}
-                  >
-                    {COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label htmlFor="currency" className={labelCls}>{t('auth.currency')}</label>
+              {mode === 'setup' && (
+                <>
+                  <div>
+                    <label htmlFor="country" className={labelCls}>
+                      {t('auth.country')}
+                    </label>
                     <select
-                      id="currency"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
+                      id="country"
+                      value={country}
+                      onChange={(e) => onCountryChange(e.target.value)}
                       className={`${fieldCls}`}
                     >
-                      {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="timezone" className={labelCls}>{t('auth.timezone')}</label>
-                    <select
-                      id="timezone"
-                      value={timezone}
-                      onChange={(e) => setTimezone(e.target.value)}
-                      className={`${fieldCls}`}
-                    >
-                      {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
-                    </select>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label htmlFor="currency" className={labelCls}>
+                        {t('auth.currency')}
+                      </label>
+                      <select
+                        id="currency"
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className={`${fieldCls}`}
+                      >
+                        {CURRENCIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label htmlFor="timezone" className={labelCls}>
+                        {t('auth.timezone')}
+                      </label>
+                      <select
+                        id="timezone"
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        className={`${fieldCls}`}
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz} value={tz}>
+                            {tz}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label htmlFor="savings_opening" className={labelCls}>{t('auth.currentSavings')}</label>
-                  <input
-                    id="savings_opening"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={savingsOpening}
-                    onChange={(e) => setSavingsOpening(e.target.value)}
-                    placeholder="0.00"
-                    className={fieldCls}
-                  />
-                  <p className="mt-1 text-xs text-zinc-500">{t('auth.currentSavingsHint')}</p>
-                </div>
-              </>
-            )}
+                  <div>
+                    <label htmlFor="savings_opening" className={labelCls}>
+                      {t('auth.currentSavings')}
+                    </label>
+                    <input
+                      id="savings_opening"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={savingsOpening}
+                      onChange={(e) => setSavingsOpening(e.target.value)}
+                      placeholder="0.00"
+                      className={fieldCls}
+                    />
+                    <p className="mt-1 text-xs text-zinc-500">{t('auth.currentSavingsHint')}</p>
+                  </div>
+                </>
+              )}
 
-            {error && <p className="text-sm text-rose-400">{error}</p>}
+              {error && <p className="text-sm text-rose-400">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              {submitting
-                ? t('common.pleaseWait')
-                : mode === 'invite'
-                  ? t('auth.joinBtn')
-                  : mode === 'setup'
-                    ? t('auth.createBtn')
-                    : t('auth.signInBtn')}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {submitting
+                  ? t('common.pleaseWait')
+                  : mode === 'invite'
+                    ? t('auth.joinBtn')
+                    : mode === 'setup'
+                      ? t('auth.createBtn')
+                      : t('auth.signInBtn')}
+              </button>
+            </form>
           )}
         </div>
       </div>

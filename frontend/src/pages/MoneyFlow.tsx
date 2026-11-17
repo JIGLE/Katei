@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import type { AssignmentDetail, MoneyStream, StreamType, MonthlySpend, MonthVariance, SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
+import type {
+  AssignmentDetail,
+  MoneyStream,
+  StreamType,
+  MonthlySpend,
+  MonthVariance,
+  SavingsSummary,
+  SavingsEntry,
+  SavingsPot,
+} from '../lib/types';
 import { Modal } from '../components/Modal';
 import { useFabVisible, fabVisibilityCls } from '../components/Fab';
 import { StreamForm } from '../components/StreamForm';
@@ -56,7 +65,13 @@ function byCategory(streams: MoneyStream[]): CategorySlice[] {
 
 // Category bar shades stay within the money family.
 const SEGMENT_BG = [
-  'bg-emerald-500', 'bg-emerald-400', 'bg-emerald-600', 'bg-teal-400', 'bg-emerald-300', 'bg-teal-600', 'bg-zinc-600',
+  'bg-emerald-500',
+  'bg-emerald-400',
+  'bg-emerald-600',
+  'bg-teal-400',
+  'bg-emerald-300',
+  'bg-teal-600',
+  'bg-zinc-600',
 ];
 
 // Per-type accent for stream amounts & section labels.
@@ -107,21 +122,40 @@ export default function MoneyFlow() {
   };
 
   const fetchSavings = () => {
-    api.get<SavingsSummary>('/savings').then(setSavingsData).catch(() => {});
+    api
+      .get<SavingsSummary>('/savings')
+      .then(setSavingsData)
+      .catch(() => {});
   };
 
   useEffect(() => {
     fetchStreams();
     fetchSavings();
     // Spend history is independent of the stream list — a soft, non-blocking load.
-    api.get<MonthlySpend[]>('/analytics/monthly-spend?months=6').then(setTrends).catch(() => {});
-    api.get<MonthVariance[]>('/analytics/variance?months=6').then(setVariance).catch(() => {});
+    api
+      .get<MonthlySpend[]>('/analytics/monthly-spend?months=6')
+      .then(setTrends)
+      .catch(() => {});
+    api
+      .get<MonthVariance[]>('/analytics/variance?months=6')
+      .then(setVariance)
+      .catch(() => {});
     // Assignments back the "Assigned to me" filter on the stream list.
-    api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
+    api
+      .get<AssignmentDetail[]>('/assignments')
+      .then(setAssignments)
+      .catch(() => {});
   }, []);
 
-  const handleSaved = () => { setShowForm(false); setEditing(null); fetchStreams(); };
-  const handleDeleted = () => { setEditing(null); fetchStreams(); };
+  const handleSaved = () => {
+    setShowForm(false);
+    setEditing(null);
+    fetchStreams();
+  };
+  const handleDeleted = () => {
+    setEditing(null);
+    fetchStreams();
+  };
   const handleSavingsSaved = (s: SavingsSummary) => {
     setSavingsData(s);
     setShowSavingsForm(false);
@@ -130,7 +164,11 @@ export default function MoneyFlow() {
     setShowNewPot(false);
   };
 
-  const openAdd = (type: StreamType) => { setNewType(type); setAddMenuOpen(false); setShowForm(true); };
+  const openAdd = (type: StreamType) => {
+    setNewType(type);
+    setAddMenuOpen(false);
+    setShowForm(true);
+  };
 
   // Sums are only meaningful in one currency — the household's. Streams kept
   // in another currency stay in the list with their own symbol but are left
@@ -186,12 +224,15 @@ export default function MoneyFlow() {
       <div>
         <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.net')}</p>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <p className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+          <p
+            className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
+          >
             {loading ? '—' : fmt(animatedNet)}
           </p>
           {!loading && income > 0 && (
             <p className="text-xs text-zinc-500">
-              {t('money.savingsRate')} <span className="tabular-nums text-zinc-400">{savingsRate.toFixed(0)}%</span>
+              {t('money.savingsRate')}{' '}
+              <span className="tabular-nums text-zinc-400">{savingsRate.toFixed(0)}%</span>
             </p>
           )}
         </div>
@@ -203,20 +244,28 @@ export default function MoneyFlow() {
       <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
         <div className="p-4">
           <p className="text-xs text-zinc-500">{t('money.income')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">{loading ? '—' : fmtWrap(income)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">
+            {loading ? '—' : fmtWrap(income)}
+          </p>
         </div>
         <div className="p-4">
           <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">{loading ? '—' : fmtWrap(expenses)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">
+            {loading ? '—' : fmtWrap(expenses)}
+          </p>
         </div>
         <div className="p-4">
           <p className="text-xs text-zinc-500">{t('money.savings')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">{loading ? '—' : fmtWrap(plannedMonthly)}</p>
+          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
+            {loading ? '—' : fmtWrap(plannedMonthly)}
+          </p>
         </div>
       </div>
 
       {!loading && foreignCount > 0 && (
-        <p className="-mt-4 text-xs text-zinc-500">{t('money.foreignExcluded', { count: foreignCount })}</p>
+        <p className="-mt-4 text-xs text-zinc-500">
+          {t('money.foreignExcluded', { count: foreignCount })}
+        </p>
       )}
 
       {/* Savings — the accumulated balance, split across pots (goals). The total
@@ -225,7 +274,9 @@ export default function MoneyFlow() {
       {!loading && savingsData && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.savingsBalance')}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('money.savingsBalance')}
+            </p>
             <button
               type="button"
               onClick={() => setShowSavingsForm(true)}
@@ -238,19 +289,26 @@ export default function MoneyFlow() {
           <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(animatedBalance)}</p>
           {plannedMonthly > 0 && (
             <p className="mt-1 text-xs tabular-nums text-zinc-500">
-              {t('money.plannedMonthly')} <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
+              {t('money.plannedMonthly')}{' '}
+              <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
             </p>
           )}
 
           {/* Pots — tap one to rename / retarget / delete it. */}
           <ul className="mt-4 space-y-3 border-t border-zinc-800/60 pt-4">
             {pots.map((pot) => {
-              const pct = pot.target && pot.target > 0 ? Math.min(100, (pot.balance / pot.target) * 100) : null;
+              const pct =
+                pot.target && pot.target > 0
+                  ? Math.min(100, (pot.balance / pot.target) * 100)
+                  : null;
               // The chip is a link, so it lives on its own line under the
               // row's edit button — nested interactives are invalid, and
               // inline it would squeeze the pot's name and bar.
               return (
-                <li key={pot.id} className="-mx-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-800/40">
+                <li
+                  key={pot.id}
+                  className="-mx-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-800/40"
+                >
                   <button
                     type="button"
                     onClick={() => setEditingPot(pot)}
@@ -258,18 +316,27 @@ export default function MoneyFlow() {
                   >
                     <div className="flex items-center gap-2 text-sm">
                       <span aria-hidden>{pot.icon || '🐷'}</span>
-                      <span className="flex-1 truncate text-zinc-200">{pot.is_default ? t('money.generalPot') : pot.name}</span>
-                      <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
-                      {pot.target ? <span className="text-xs tabular-nums text-zinc-500">/ {fmt(pot.target)}</span> : null}
-                      {pct !== null && pct >= 100 && (
-                      <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-teal-300">
-                        {t('money.goalReached')}
+                      <span className="flex-1 truncate text-zinc-200">
+                        {pot.is_default ? t('money.generalPot') : pot.name}
                       </span>
-                    )}
+                      <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
+                      {pot.target ? (
+                        <span className="text-xs tabular-nums text-zinc-500">
+                          / {fmt(pot.target)}
+                        </span>
+                      ) : null}
+                      {pct !== null && pct >= 100 && (
+                        <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-teal-300">
+                          {t('money.goalReached')}
+                        </span>
+                      )}
                     </div>
                     {pct !== null && (
                       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                        <div className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none" style={{ width: `${pct}%` }} />
+                        <div
+                          className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
+                          style={{ width: `${pct}%` }}
+                        />
                       </div>
                     )}
                   </button>
@@ -302,7 +369,9 @@ export default function MoneyFlow() {
                     onClick={() => setEditingEntry(e)}
                     className="-mx-2 flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-zinc-800/40"
                   >
-                    <span className="flex-1 truncate text-zinc-300">{e.note?.trim() || t('money.contribution')}</span>
+                    <span className="flex-1 truncate text-zinc-300">
+                      {e.note?.trim() || t('money.contribution')}
+                    </span>
                     <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
                   </button>
                 </li>
@@ -316,21 +385,30 @@ export default function MoneyFlow() {
       {!loading && !error && latestVar && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <div className="mb-3 flex items-baseline justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.expectedActual')}</p>
-            <p className="text-xs tabular-nums text-zinc-500">{formatMonthShort(latestVar.month, locale)}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('money.expectedActual')}
+            </p>
+            <p className="text-xs tabular-nums text-zinc-500">
+              {formatMonthShort(latestVar.month, locale)}
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs text-zinc-500">{t('money.expected')}</p>
-              <p className="mt-1 text-sm font-light tabular-nums text-zinc-200">{fmt(latestVar.expected)}</p>
+              <p className="mt-1 text-sm font-light tabular-nums text-zinc-200">
+                {fmt(latestVar.expected)}
+              </p>
             </div>
             <div>
               <p className="text-xs text-zinc-500">{t('money.actual')}</p>
-              <p className={`mt-1 text-sm font-light tabular-nums ${latestVar.actual > latestVar.expected ? 'text-rose-500' : 'text-emerald-500'}`}>
+              <p
+                className={`mt-1 text-sm font-light tabular-nums ${latestVar.actual > latestVar.expected ? 'text-rose-500' : 'text-emerald-500'}`}
+              >
                 {fmt(latestVar.actual)}
                 {latestVar.actual !== latestVar.expected && (
                   <span className="ml-1 text-xs">
-                    ({latestVar.actual > latestVar.expected ? '+' : '−'}{fmt(Math.abs(latestVar.actual - latestVar.expected))})
+                    ({latestVar.actual > latestVar.expected ? '+' : '−'}
+                    {fmt(Math.abs(latestVar.actual - latestVar.expected))})
                   </span>
                 )}
               </p>
@@ -343,8 +421,14 @@ export default function MoneyFlow() {
       {!loading && !error && trends.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
           <div className="mb-4 flex items-baseline justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.trends')}</p>
-            {maxSpend > 0 && <p className="text-xs tabular-nums text-zinc-500">{t('money.trendsHigh')} {fmt(maxSpend)}</p>}
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {t('money.trends')}
+            </p>
+            {maxSpend > 0 && (
+              <p className="text-xs tabular-nums text-zinc-500">
+                {t('money.trendsHigh')} {fmt(maxSpend)}
+              </p>
+            )}
           </div>
           {maxSpend === 0 ? (
             <p className="py-4 text-center text-sm text-zinc-500">{t('money.trendsEmpty')}</p>
@@ -354,13 +438,18 @@ export default function MoneyFlow() {
                 const h = maxSpend > 0 ? (d.total / maxSpend) * 100 : 0;
                 return (
                   <div key={d.month} className="flex flex-1 flex-col items-center gap-1.5">
-                    <div className="flex w-full flex-1 items-end" title={`${formatMonthShort(d.month, locale)} — ${fmt(d.total)}`}>
+                    <div
+                      className="flex w-full flex-1 items-end"
+                      title={`${formatMonthShort(d.month, locale)} — ${fmt(d.total)}`}
+                    >
                       <div
                         className="w-full rounded-t bg-emerald-500/80"
                         style={{ height: `${d.total > 0 ? Math.max(h, 3) : 0}%` }}
                       />
                     </div>
-                    <span className="text-[10px] tabular-nums text-zinc-500">{formatMonthShort(d.month, locale)}</span>
+                    <span className="text-[10px] tabular-nums text-zinc-500">
+                      {formatMonthShort(d.month, locale)}
+                    </span>
                   </div>
                 );
               })}
@@ -372,22 +461,33 @@ export default function MoneyFlow() {
       {/* Expense breakdown */}
       {!loading && !error && slices.length > 0 && (
         <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">{t('money.whereItGoes')}</p>
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
+            {t('money.whereItGoes')}
+          </p>
           {/* Adjacent segments are steps of one green — rank, not identity —
               so a 2px gap separates them and the sorted list below is the
               real legend (same order as the bar, largest first). Colour dots
               on the rows would promise a mapping the shades can't deliver. */}
           <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-zinc-800">
             {slices.map((s, i) => (
-              <div key={s.category} className={`${SEGMENT_BG[i % SEGMENT_BG.length]} first:rounded-l-full last:rounded-r-full`} style={{ width: `${s.pct}%` }} title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`} />
+              <div
+                key={s.category}
+                className={`${SEGMENT_BG[i % SEGMENT_BG.length]} first:rounded-l-full last:rounded-r-full`}
+                style={{ width: `${s.pct}%` }}
+                title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`}
+              />
             ))}
           </div>
           <ul className="mt-4 space-y-2.5">
             {slices.map((s) => (
               <li key={s.category} className="flex items-center gap-3">
-                <span className="flex-1 truncate text-sm text-zinc-300">{catLabel(s.category)}</span>
+                <span className="flex-1 truncate text-sm text-zinc-300">
+                  {catLabel(s.category)}
+                </span>
                 <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
-                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">{fmt(s.monthly)}</span>
+                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
+                  {fmt(s.monthly)}
+                </span>
               </li>
             ))}
           </ul>
@@ -433,57 +533,71 @@ export default function MoneyFlow() {
         </div>
       )}
       {!loading && !error && streams.length > 0 && mineOnly && mineStreams.length === 0 && (
-        <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
+        <EmptyState
+          icon="🧹"
+          title={t('timeline.noneAssigned')}
+          hint={t('timeline.noneAssignedHint')}
+        />
       )}
-      {!loading && !error && streams.length > 0 && mineStreams.length > 0 && listStreams.length === 0 && (
-        <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
-      )}
-      {!loading && !error && TYPE_ORDER.map((type) => {
-        // Heaviest first — the list's order should match the money's weight,
-        // not the order someone happened to type things in.
-        const weight = (s: MoneyStream) => monthlyEquiv(s) || parseFloat(s.amount);
-        const group = listStreams
-          .filter((s) => s.stream_type === type)
-          .sort((a, b) => weight(b) - weight(a));
-        if (group.length === 0) return null;
-        return (
-          <section key={type} className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t(TYPE_HEADER_KEY[type])}</p>
-            {group.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setEditing(s)}
-                style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
-                className="animate-fade-slide-in flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="flex items-center gap-2 text-sm text-zinc-100">
-                    <span className="truncate">{s.name}</span>
-                    {s.automated && (
-                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
-                        {t('money.auto')}
-                      </span>
-                    )}
-                    {s.private && (
-                      <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
-                        {t('money.private')}
-                      </span>
-                    )}
+      {!loading &&
+        !error &&
+        streams.length > 0 &&
+        mineStreams.length > 0 &&
+        listStreams.length === 0 && (
+          <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
+        )}
+      {!loading &&
+        !error &&
+        TYPE_ORDER.map((type) => {
+          // Heaviest first — the list's order should match the money's weight,
+          // not the order someone happened to type things in.
+          const weight = (s: MoneyStream) => monthlyEquiv(s) || parseFloat(s.amount);
+          const group = listStreams
+            .filter((s) => s.stream_type === type)
+            .sort((a, b) => weight(b) - weight(a));
+          if (group.length === 0) return null;
+          return (
+            <section key={type} className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                {t(TYPE_HEADER_KEY[type])}
+              </p>
+              {group.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setEditing(s)}
+                  style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+                  className="animate-fade-slide-in flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="flex items-center gap-2 text-sm text-zinc-100">
+                      <span className="truncate">{s.name}</span>
+                      {s.automated && (
+                        <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
+                          {t('money.auto')}
+                        </span>
+                      )}
+                      {s.private && (
+                        <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
+                          {t('money.private')}
+                        </span>
+                      )}
+                    </p>
+                    <p className="mt-0.5 text-xs text-zinc-500">
+                      {t(freqKey[s.frequency])}
+                      {s.category?.trim() && (
+                        <span className="ml-1">· {catLabel(s.category.trim())}</span>
+                      )}
+                    </p>
+                  </div>
+                  <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[type]}`}>
+                    {formatMoney(s.amount, s.currency, locale)}
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-500">
-                    {t(freqKey[s.frequency])}
-                    {s.category?.trim() && <span className="ml-1">· {catLabel(s.category.trim())}</span>}
-                  </p>
-                </div>
-                <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[type]}`}>
-                  {formatMoney(s.amount, s.currency, locale)}
-                </p>
-              </button>
-            ))}
-          </section>
-        );
-      })}
+                </button>
+              ))}
+            </section>
+          );
+        })}
 
       {/* Contextual Add menu */}
       {addMenuOpen && (
@@ -493,14 +607,18 @@ export default function MoneyFlow() {
           className="fixed inset-0 z-40 bg-black/40"
         />
       )}
-      <div className={`fixed bottom-fab right-4 z-50 flex flex-col items-end gap-2 ${fabVisibilityCls(fabVisible)}`}>
+      <div
+        className={`fixed bottom-fab right-4 z-50 flex flex-col items-end gap-2 ${fabVisibilityCls(fabVisible)}`}
+      >
         {addMenuOpen && (
           <div className="flex flex-col items-end gap-2">
-            {([
-              ['income', 'money.income', 'border-emerald-500/40 text-emerald-400'],
-              ['expense', 'money.expense', 'border-zinc-700 text-zinc-200'],
-              ['savings', 'money.savings', 'border-teal-500/40 text-teal-300'],
-            ] as [StreamType, string, string][]).map(([type, key, cls]) => (
+            {(
+              [
+                ['income', 'money.income', 'border-emerald-500/40 text-emerald-400'],
+                ['expense', 'money.expense', 'border-zinc-700 text-zinc-200'],
+                ['savings', 'money.savings', 'border-teal-500/40 text-teal-300'],
+              ] as [StreamType, string, string][]
+            ).map(([type, key, cls]) => (
               <button
                 key={type}
                 onClick={() => openAdd(type)}
@@ -516,27 +634,54 @@ export default function MoneyFlow() {
           aria-label={t('money.addStreamAria')}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
         >
-          <svg className={`h-6 w-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className={`h-6 w-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </button>
       </div>
 
       <Modal open={showForm} title={t('money.newStream')} onClose={() => setShowForm(false)}>
-        <StreamForm initialType={newType} onSaved={handleSaved} onCancel={() => setShowForm(false)} />
+        <StreamForm
+          initialType={newType}
+          onSaved={handleSaved}
+          onCancel={() => setShowForm(false)}
+        />
       </Modal>
 
       <Modal open={!!editing} title={t('money.editStream')} onClose={() => setEditing(null)}>
         {editing && (
-          <StreamForm initial={editing} onSaved={handleSaved} onCancel={() => setEditing(null)} onDeleted={handleDeleted} />
+          <StreamForm
+            initial={editing}
+            onSaved={handleSaved}
+            onCancel={() => setEditing(null)}
+            onDeleted={handleDeleted}
+          />
         )}
       </Modal>
 
-      <Modal open={showSavingsForm} title={t('money.addToSavings')} onClose={() => setShowSavingsForm(false)}>
-        <SavingsEntryForm pots={pots} onSaved={handleSavingsSaved} onCancel={() => setShowSavingsForm(false)} />
+      <Modal
+        open={showSavingsForm}
+        title={t('money.addToSavings')}
+        onClose={() => setShowSavingsForm(false)}
+      >
+        <SavingsEntryForm
+          pots={pots}
+          onSaved={handleSavingsSaved}
+          onCancel={() => setShowSavingsForm(false)}
+        />
       </Modal>
 
-      <Modal open={!!editingEntry} title={t('money.editContribution')} onClose={() => setEditingEntry(null)}>
+      <Modal
+        open={!!editingEntry}
+        title={t('money.editContribution')}
+        onClose={() => setEditingEntry(null)}
+      >
         {editingEntry && (
           <SavingsEntryForm
             initial={editingEntry}

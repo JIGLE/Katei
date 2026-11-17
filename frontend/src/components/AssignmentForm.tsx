@@ -62,7 +62,9 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="member" className={labelCls}>{t('form.member')}</label>
+        <label htmlFor="member" className={labelCls}>
+          {t('form.member')}
+        </label>
         <select
           id="member"
           value={userId}
@@ -70,7 +72,9 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
           className={fieldCls}
         >
           {users.map((u) => (
-            <option key={u.id} value={u.id}>{u.name}</option>
+            <option key={u.id} value={u.id}>
+              {u.name}
+            </option>
           ))}
         </select>
       </div>
@@ -85,7 +89,10 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
               <button
                 key={k}
                 type="button"
-                onClick={() => { setKind(k); setTargetId(''); }}
+                onClick={() => {
+                  setKind(k);
+                  setTargetId('');
+                }}
                 className={[
                   'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
                   kind === k
@@ -112,13 +119,23 @@ export function AssignmentForm({ users, events, streams, onSaved, onCancel }: As
         >
           <option value="">{t('common.choose')}</option>
           {kind === 'event'
-            ? events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)
-            : streams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            ? events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
+              ))
+            : streams.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
         </select>
       </div>
 
       <div>
-        <label htmlFor="role" className={labelCls}>{t('form.role')}</label>
+        <label htmlFor="role" className={labelCls}>
+          {t('form.role')}
+        </label>
         <input
           id="role"
           type="text"

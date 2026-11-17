@@ -20,13 +20,20 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
 const addEvent = (title: string) =>
   app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
+    method: 'POST',
+    url: '/api/events',
+    headers: { cookie },
     payload: { title, event_type: 'deadline', target_date: '2999-01-01' },
   });
 
@@ -65,17 +72,23 @@ test('registration attempts are throttled per IP', opts, async () => {
   let saw429 = false;
   for (let i = 0; i < 12; i++) {
     const res = await app.inject({
-      method: 'POST', url: '/api/auth/register',
+      method: 'POST',
+      url: '/api/auth/register',
       payload: { name: `Guess${i}`, password: 'password123', invite_code: 'wrong' },
     });
-    if (res.statusCode === 429) { saw429 = true; break; }
+    if (res.statusCode === 429) {
+      saw429 = true;
+      break;
+    }
     assert.equal(res.statusCode, 403); // invalid invite until the limiter kicks in
   }
   assert.ok(saw429, 'expected a 429 within 12 invalid-invite registrations');
 });
 
 test('wrong calendar tokens are throttled, the valid feed never is', opts, async () => {
-  const tok = (await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })).json().token;
+  const tok = (
+    await app.inject({ method: 'GET', url: '/api/settings/calendar', headers: { cookie } })
+  ).json().token;
   // Burn the failure budget with bad guesses…
   let last = 0;
   for (let i = 0; i < 31; i++) {
@@ -91,7 +104,9 @@ test('current-password guesses on /auth/password are throttled', opts, async () 
   let last;
   for (let i = 0; i < 9; i++) {
     last = await app.inject({
-      method: 'POST', url: '/api/auth/password', headers: { cookie },
+      method: 'POST',
+      url: '/api/auth/password',
+      headers: { cookie },
       payload: { current_password: 'wrong-guess', new_password: 'newpassword123' },
     });
   }
@@ -113,7 +128,8 @@ test('responses carry the helmet security headers', opts, async () => {
 
 test('a foreign Origin is not reflected by default (same-origin only)', opts, async () => {
   const res = await app.inject({
-    method: 'GET', url: '/health',
+    method: 'GET',
+    url: '/health',
     headers: { origin: 'https://evil.example' },
   });
   assert.equal(res.statusCode, 200);
@@ -123,14 +139,17 @@ test('a foreign Origin is not reflected by default (same-origin only)', opts, as
 
 test('a preflight from a foreign origin gets no CORS approval by default', opts, async () => {
   const res = await app.inject({
-    method: 'OPTIONS', url: '/api/events',
+    method: 'OPTIONS',
+    url: '/api/events',
     headers: { origin: 'https://evil.example', 'access-control-request-method': 'POST' },
   });
   assert.equal(res.headers['access-control-allow-origin'], undefined);
 });
 
 test('an allowlisted origin (CORS_ORIGINS) is honoured with credentials', opts, async () => {
-  const allowed = await (await import('../app.js')).buildApp({
+  const allowed = await (
+    await import('../app.js')
+  ).buildApp({
     jwtSecret: 'integration-test-secret',
     logger: false,
     serveStatic: false,
@@ -138,13 +157,17 @@ test('an allowlisted origin (CORS_ORIGINS) is honoured with credentials', opts, 
   });
   try {
     const ok = await allowed.inject({
-      method: 'GET', url: '/health', headers: { origin: 'https://home.example' },
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'https://home.example' },
     });
     assert.equal(ok.headers['access-control-allow-origin'], 'https://home.example');
     assert.equal(ok.headers['access-control-allow-credentials'], 'true');
     // A non-listed origin still gets nothing, even with an allowlist configured.
     const other = await allowed.inject({
-      method: 'GET', url: '/health', headers: { origin: 'https://evil.example' },
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'https://evil.example' },
     });
     assert.equal(other.headers['access-control-allow-origin'], undefined);
   } finally {

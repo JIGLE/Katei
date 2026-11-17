@@ -31,7 +31,11 @@ export const api = {
   upload: async <T>(path: string, file: File): Promise<T> => {
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch(`${BASE}${path}`, { method: 'POST', credentials: 'include', body: form });
+    const res = await fetch(`${BASE}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      body: form,
+    });
     if (!res.ok) {
       const body = (await res.json().catch(() => null)) as { error?: string } | null;
       throw new Error(body?.error ?? res.statusText);

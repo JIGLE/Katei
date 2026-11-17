@@ -54,13 +54,20 @@ export const pushRoutes: FastifyPluginAsync = async (app) => {
     '/unsubscribe',
     {
       schema: {
-        body: { type: 'object', required: ['endpoint'], properties: { endpoint: { type: 'string' } } },
+        body: {
+          type: 'object',
+          required: ['endpoint'],
+          properties: { endpoint: { type: 'string' } },
+        },
       },
     },
     async (req) => {
       const userId = req.user?.id;
       if (userId) {
-        await query(`DELETE FROM push_subscriptions WHERE user_id = $1 AND endpoint = $2`, [userId, req.body.endpoint]);
+        await query(`DELETE FROM push_subscriptions WHERE user_id = $1 AND endpoint = $2`, [
+          userId,
+          req.body.endpoint,
+        ]);
       }
       return { ok: true };
     },

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+backend/public/
+e2e/test-results/
+e2e/playwright-report/
+graphify-out/
+*.min.*
+package-lock.json
+# Locale files are edited by translators; keep their layout as authored.
+frontend/src/locales/

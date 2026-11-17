@@ -76,10 +76,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     } catch {
       return reply.code(401).send({ error: 'Not authenticated' });
     }
-    const { rows } = await query<UserRow>(
-      `SELECT ${USER_COLS} FROM users WHERE id = $1`,
-      [req.user.id],
-    );
+    const { rows } = await query<UserRow>(`SELECT ${USER_COLS} FROM users WHERE id = $1`, [
+      req.user.id,
+    ]);
     if (!rows.length) return reply.code(401).send({ error: 'Not authenticated' });
     return publicUser(rows[0]);
   });
@@ -142,10 +141,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       const { name, password } = req.body;
       const hash = await hashPassword(password);
 
-      const existing = await query<UserRow>(
-        `SELECT ${USER_COLS} FROM users WHERE name = $1`,
-        [name],
-      );
+      const existing = await query<UserRow>(`SELECT ${USER_COLS} FROM users WHERE name = $1`, [
+        name,
+      ]);
 
       let user: UserRow;
       if (existing.rows.length) {
@@ -170,10 +168,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       }
 
       if (invite) {
-        await query(
-          `UPDATE invites SET used_at = CURRENT_TIMESTAMP, used_by = $1 WHERE id = $2`,
-          [user.id, invite.id],
-        );
+        await query(`UPDATE invites SET used_at = CURRENT_TIMESTAMP, used_by = $1 WHERE id = $2`, [
+          user.id,
+          invite.id,
+        ]);
       }
 
       const token = app.jwt.sign({ id: user.id, name: user.name, role: user.role });
@@ -206,10 +204,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         reply.header('Retry-After', String(gate.retryAfterSec));
         return reply.code(429).send({ error: 'Too many attempts. Try again later.' });
       }
-      const { rows } = await query<UserRow>(
-        `SELECT ${USER_COLS} FROM users WHERE name = $1`,
-        [name],
-      );
+      const { rows } = await query<UserRow>(`SELECT ${USER_COLS} FROM users WHERE name = $1`, [
+        name,
+      ]);
       const user = rows[0];
       if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
         return reply.code(401).send({ error: 'Invalid name or password' });
@@ -242,10 +239,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       } catch {
         return reply.code(401).send({ error: 'Not authenticated' });
       }
-      const { rows } = await query<UserRow>(
-        `SELECT ${USER_COLS} FROM users WHERE id = $1`,
-        [req.user.id],
-      );
+      const { rows } = await query<UserRow>(`SELECT ${USER_COLS} FROM users WHERE id = $1`, [
+        req.user.id,
+      ]);
       const user = rows[0];
       if (!user || !user.password_hash) {
         return reply.code(401).send({ error: 'Not authenticated' });

@@ -31,12 +31,12 @@ database, and is built for home servers such as TrueNAS SCALE.
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| App | Fastify + TypeScript serving REST API **and** the built SPA (node:alpine) |
-| Database | PostgreSQL 16 (bundled inside the app image) |
-| DB access | Raw SQL via node-postgres (`pg`) |
-| Frontend | React + TypeScript + Tailwind CSS v3 (Vite) |
+| Layer     | Technology                                                                |
+| --------- | ------------------------------------------------------------------------- |
+| App       | Fastify + TypeScript serving REST API **and** the built SPA (node:alpine) |
+| Database  | PostgreSQL 16 (bundled inside the app image)                              |
+| DB access | Raw SQL via node-postgres (`pg`)                                          |
+| Frontend  | React + TypeScript + Tailwind CSS v3 (Vite)                               |
 
 Everything runs in **one container**. PostgreSQL starts via `entrypoint.sh`, the schema is applied on first boot, then Fastify serves the SPA and API. One volume mount persists the database.
 
@@ -93,16 +93,16 @@ Images are built and pushed to GHCR automatically by GitHub Actions on every pus
 
 **Apps → Discover Apps → Custom App** — fill in the form:
 
-| Field | Value |
-|---|---|
-| Image Repository | `ghcr.io/jigle/katei` |
-| Image Tag | `latest`, or a version such as `1.2.0` to pin a release |
-| Env `POSTGRES_PASSWORD` | your strong password |
-| Env `NODE_ENV` | `production` |
-| Env `JWT_SECRET` *(optional, recommended)* | a long random string |
-| Host Port | `8080` → Container Port `3000` |
-| Volume host path | `/mnt/HDD/app-data/databases/katei` |
-| Volume mount path | `/var/lib/postgresql/data` |
+| Field                                      | Value                                                   |
+| ------------------------------------------ | ------------------------------------------------------- |
+| Image Repository                           | `ghcr.io/jigle/katei`                                   |
+| Image Tag                                  | `latest`, or a version such as `1.2.0` to pin a release |
+| Env `POSTGRES_PASSWORD`                    | your strong password                                    |
+| Env `NODE_ENV`                             | `production`                                            |
+| Env `JWT_SECRET` _(optional, recommended)_ | a long random string                                    |
+| Host Port                                  | `8080` → Container Port `3000`                          |
+| Volume host path                           | `/mnt/HDD/app-data/databases/katei`                     |
+| Volume mount path                          | `/var/lib/postgresql/data`                              |
 
 > Create the `/mnt/HDD/app-data/databases/katei` dataset in TrueNAS before deploying.
 
@@ -114,11 +114,11 @@ The session secret and notification settings live in the database. Set these
 optional env vars to make them authoritative on every boot, so a wiped volume
 self-heals instead of logging everyone out or silently stopping reminders:
 
-| Env var | Effect |
-|---|---|
+| Env var      | Effect                                                                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `JWT_SECRET` | Pins the session-signing secret. Set this so logins survive redeploys and DB resets. If unset, a random secret is generated once and reused. |
-| `NTFY_URL` | Seeds the ntfy topic URL (otherwise managed in the UI). |
-| `LEAD_DAYS` | Seeds how many days ahead reminders fire (default `3`). |
+| `NTFY_URL`   | Seeds the ntfy topic URL (otherwise managed in the UI).                                                                                      |
+| `LEAD_DAYS`  | Seeds how many days ahead reminders fire (default `3`).                                                                                      |
 
 ### Backups
 
@@ -140,7 +140,7 @@ docker exec -it <container> /app/restore.sh katei_2026-06-30.sql
 ```
 
 The app also auto-generates events for recurring money streams — a "monthly"
-stream named *Rent* spawns a *Rent due* event for the first of next month, so
+stream named _Rent_ spawns a _Rent due_ event for the first of next month, so
 recurring obligations show up on the timeline without manual entry.
 
 Point a Cloudflare Tunnel (or reverse proxy) at `<truenas-ip>:8080`.
@@ -149,13 +149,13 @@ Future deploys: `git push` → Actions rebuilds `ghcr.io/jigle/katei:latest` →
 
 ## Domains
 
-| Tab | Route | Purpose |
-|---|---|---|
-| Overview | `/` | The daily glance — what to get, go to, and pay soon. Deliberately carries no money amounts; shortcuts into Shopping and Gifts, dated payment/appointment rows, birthdays, activity |
-| Timeline | `/timeline` | Chronological stream of upcoming events and deadlines |
-| Money Flow | `/money` | Recurring costs, utilities, subscriptions |
-| Lists | `/lists` | Shopping list (grouped by store) and gift lists — everyone's own wishlist plus everyone else's, including people outside the household |
-| Household | `/household` | Family members, roles, and operational assignments |
+| Tab        | Route        | Purpose                                                                                                                                                                            |
+| ---------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview   | `/`          | The daily glance — what to get, go to, and pay soon. Deliberately carries no money amounts; shortcuts into Shopping and Gifts, dated payment/appointment rows, birthdays, activity |
+| Timeline   | `/timeline`  | Chronological stream of upcoming events and deadlines                                                                                                                              |
+| Money Flow | `/money`     | Recurring costs, utilities, subscriptions                                                                                                                                          |
+| Lists      | `/lists`     | Shopping list (grouped by store) and gift lists — everyone's own wishlist plus everyone else's, including people outside the household                                             |
+| Household  | `/household` | Family members, roles, and operational assignments                                                                                                                                 |
 
 A gift list can be shared via a revocable link at `/gift/:token` — reachable
 with no session, for people who aren't Katei users at all.
@@ -186,11 +186,11 @@ Graphiti is additive only. PostgreSQL remains the source of truth.
 
 Environment variables:
 
-| Env var | Effect |
-|---|---|
-| `GRAPHITI_URL` | Base URL for Graphiti API (enables integration when set) |
-| `GRAPHITI_API_KEY` | Optional bearer token for Graphiti API |
-| `GRAPHITI_TIMEOUT_MS` | Optional request timeout (default `2000`) |
+| Env var               | Effect                                                   |
+| --------------------- | -------------------------------------------------------- |
+| `GRAPHITI_URL`        | Base URL for Graphiti API (enables integration when set) |
+| `GRAPHITI_API_KEY`    | Optional bearer token for Graphiti API                   |
+| `GRAPHITI_TIMEOUT_MS` | Optional request timeout (default `2000`)                |
 
 Admin endpoints:
 

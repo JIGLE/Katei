@@ -1,8 +1,8 @@
 name: CI
 
 # Fast checks that complement docker.yml (tests, E2E, image publish). They run
-# on every PR and push, regardless of paths, so a broken type or Dockerfile is
-# caught before merge rather than when the image is built on main.
+# on every PR and push, regardless of paths, so a type error, lint error,
+# unformatted file or broken Dockerfile is caught before merge.
 on:
   pull_request:
     branches: [main]
@@ -44,6 +44,57 @@ jobs:
       - name: Type check
         working-directory: ${{ matrix.package }}
         run: npx tsc --noEmit -p .
+
+  lint:
+    name: Lint (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [backend, frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: ${{ matrix.package }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.package }}
+        run: npm ci
+
+      - name: ESLint
+        working-directory: ${{ matrix.package }}
+        run: npm run lint
+
+  format:
+    name: Formatting (Prettier)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # One check over the whole repository (code, docs, workflows), using the
+      # Prettier version pinned in the backend lockfile.
+      - name: Install Prettier
+        working-directory: backend
+        run: npm ci
+
+      - name: Check formatting
+        run: backend/node_modules/.bin/prettier --check .
 
   docker-build:
     name: Docker build (no push)

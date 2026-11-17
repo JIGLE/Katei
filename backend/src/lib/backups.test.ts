@@ -1,4 +1,4 @@
-import { test, before, after } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -33,11 +33,7 @@ test('pruneBackups keeps only the newest RETENTION dumps', async () => {
   ]);
   await pruneBackups();
   const left = (await readdir(BACKUP_DIR)).sort();
-  assert.deepEqual(left, [
-    'katei_2026-06-27.sql',
-    'katei_2026-06-28.sql',
-    'katei_2026-06-29.sql',
-  ]);
+  assert.deepEqual(left, ['katei_2026-06-27.sql', 'katei_2026-06-28.sql', 'katei_2026-06-29.sql']);
 });
 
 test('pruneBackups leaves non-matching files untouched', async () => {

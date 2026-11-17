@@ -25,7 +25,10 @@ function watchConsole(page: Page): string[] {
   return problems;
 }
 
-test('private money streams stay invisible to other members; Around the house never names an actor', async ({ page, browser }) => {
+test('private money streams stay invisible to other members; Around the house never names an actor', async ({
+  page,
+  browser,
+}) => {
   test.setTimeout(120_000);
   const problems = watchConsole(page);
 
@@ -39,7 +42,13 @@ test('private money streams stay invisible to other members; Around the house ne
 
   await test.step('force English so labels are stable', async () => {
     const res = await page.request.put('/api/settings/preferences', {
-      data: { country: 'GB', currency: 'GBP', locale: 'en-GB', timezone: 'Europe/London', language: 'en' },
+      data: {
+        country: 'GB',
+        currency: 'GBP',
+        locale: 'en-GB',
+        timezone: 'Europe/London',
+        language: 'en',
+      },
     });
     expect(res.ok()).toBeTruthy();
     await page.reload();
@@ -93,7 +102,9 @@ test('private money streams stay invisible to other members; Around the house ne
     // back to the item, so removing the item doesn't remove its log entry) —
     // exactly what's needed to prove it stays out of Around the house, with
     // nothing left in the shared list to collide with.
-    const added = await (await nosy.request.post('/api/shopping', { data: { name: 'Snack Run' } })).json();
+    const added = await (
+      await nosy.request.post('/api/shopping', { data: { name: 'Snack Run' } })
+    ).json();
     await nosy.request.delete(`/api/shopping/${added.id}`);
 
     await nosy.locator('nav a[href="/money"]').click();
