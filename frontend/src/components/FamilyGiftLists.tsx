@@ -143,7 +143,7 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
                       )}
                     </div>
                     {g.status !== 'idea' && (
-                      <p className="mt-0.5 truncate text-xs text-teal-400">
+                      <p className="mt-0.5 truncate text-xs text-zinc-400">
                         {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
                           name: g.bought_by_name ?? t('gifts.someone'),
                         })}
@@ -154,10 +154,13 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
                   <span
                     className={[
                       'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-                      g.status === 'bought'
-                        ? 'bg-teal-500/10 text-teal-300'
-                        : g.status === 'reserved'
-                          ? 'bg-amber-500/10 text-amber-300'
+                      // Gift status isn't time or money, so it stays neutral:
+                      // reserved is the one that matters to the giver (someone
+                      // holds it), so it reads strongest; bought steps back.
+                      g.status === 'reserved'
+                        ? 'bg-zinc-700/60 text-zinc-200'
+                        : g.status === 'bought'
+                          ? 'bg-zinc-800 text-zinc-400'
                           : 'bg-zinc-800 text-zinc-500',
                     ].join(' ')}
                   >

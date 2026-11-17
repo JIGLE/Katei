@@ -125,7 +125,7 @@ export default function PublicGiftList() {
                     </div>
 
                     {g.status !== 'idea' && (
-                      <p className="text-xs text-teal-400">
+                      <p className="text-xs text-zinc-400">
                         {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
                           name: g.bought_by_name ?? t('gifts.someone'),
                         })}

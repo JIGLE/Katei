@@ -105,6 +105,15 @@ Accent usage patterns:
   dropped the light theme's deep-rose text to 4.4:1 against its own fill)
 - **De-emphasized** ("later"/done): drop to `zinc` (`bg-zinc-800 text-zinc-500`)
 
+States that mean none of the above stay **neutral**, however tempting a hue
+is. Gift status (idea, reserved, bought), assignment roles, the Pets heading,
+the Person/Pet picker and the Lists tab carry no accent: reserved reads
+strongest (`bg-zinc-700/60 text-zinc-200`), bought steps back
+(`bg-zinc-800 text-zinc-400`), and a selected segment fills with
+`bg-zinc-700/40 text-zinc-100` unless the choice itself is a meaning (event
+type). `e2e/tests/colour-meaning.spec.ts` keeps amber and teal off those
+screens.
+
 Text hierarchy: primary `text-zinc-100`, secondary `text-zinc-400`, tertiary /
 captions `text-zinc-500`, and `zinc-600` for **non-text only** (icons, drag
 grips, focus borders) or genuinely disabled controls.

@@ -83,7 +83,7 @@ const tabs = [
         />
       </svg>
     ),
-    accent: 'teal' as const,
+    accent: null,
   },
   {
     to: '/household',
@@ -110,7 +110,6 @@ const tabs = [
 const accentColor = {
   amber: 'bg-amber-500',
   emerald: 'bg-emerald-500',
-  teal: 'bg-teal-400',
 };
 
 export function BottomNav() {
