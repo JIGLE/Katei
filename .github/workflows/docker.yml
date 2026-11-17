@@ -67,10 +67,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -116,10 +116,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -130,7 +130,7 @@ jobs:
       # be restored onto a runner it wasn't built for.
       - name: Cache frontend node_modules
         id: fe-modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: fe-${{ runner.os }}-node22-${{ hashFiles('frontend/package-lock.json') }}
@@ -151,7 +151,7 @@ jobs:
 
       - name: Cache backend node_modules
         id: be-modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: backend/node_modules
           key: be-${{ runner.os }}-node22-${{ hashFiles('backend/package-lock.json') }}
@@ -189,7 +189,7 @@ jobs:
 
       - name: Cache e2e node_modules
         id: e2e-modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: e2e/node_modules
           key: e2e-${{ runner.os }}-node22-${{ hashFiles('e2e/package-lock.json') }}
@@ -198,7 +198,7 @@ jobs:
       # skips browsers already on disk, so a cache hit leaves only the apt
       # system-deps step to run.
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: pw-${{ runner.os }}-${{ hashFiles('e2e/package-lock.json') }}
@@ -220,7 +220,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
@@ -239,15 +239,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Expose ACTIONS_CACHE_URL / RUNTIME_TOKEN so `type=gha` cache works when we
       # drive buildx directly (below) instead of via build-push-action.
       - name: Expose GitHub Actions cache to buildx
-        uses: crazy-max/ghaction-github-runtime@v3
+        uses: crazy-max/ghaction-github-runtime@v4
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -255,7 +255,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/jigle/katei
           # `latest` tracks main only, so pushing a version tag for an older
@@ -270,7 +270,7 @@ jobs:
       # which occasionally resets the connection and fails the whole run. Retry the
       # builder bootstrap + build so a transient Docker Hub blip doesn't block a ship.
       - name: Build & push (with retry on transient Docker Hub flakes)
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         env:
           # Pass the (newline-separated) tags as an env var so the shell doesn't
           # choke on the multiline value; expand each line to a --tag flag below.
