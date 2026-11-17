@@ -29,10 +29,16 @@ const iso = (offset: number) => {
 };
 
 test.afterEach(async ({ page }) => {
-  const items: { id: number; name: string }[] = await page.request.get('/api/shopping').then((r) => r.json());
-  for (const i of items.filter((x) => x.name.startsWith(PREFIX))) await page.request.delete(`/api/shopping/${i.id}`);
-  const events: { id: number; title: string }[] = await page.request.get('/api/events').then((r) => r.json());
-  for (const e of events.filter((x) => x.title.startsWith(PREFIX))) await page.request.delete(`/api/events/${e.id}`);
+  const items: { id: number; name: string }[] = await page.request
+    .get('/api/shopping')
+    .then((r) => r.json());
+  for (const i of items.filter((x) => x.name.startsWith(PREFIX)))
+    await page.request.delete(`/api/shopping/${i.id}`);
+  const events: { id: number; title: string }[] = await page.request
+    .get('/api/events')
+    .then((r) => r.json());
+  for (const e of events.filter((x) => x.title.startsWith(PREFIX)))
+    await page.request.delete(`/api/events/${e.id}`);
 });
 
 // Runs in the page: one line per control whose hit box is under 44×44.
@@ -40,7 +46,11 @@ function audit(): string[] {
   const out: string[] = [];
   const sel = 'button, a[href], summary, [role=button], [role=tab], input, select, textarea';
   for (const el of document.querySelectorAll<HTMLElement>(sel)) {
-    if (el instanceof HTMLInputElement && ['hidden', 'checkbox', 'radio', 'range', 'color'].includes(el.type)) continue;
+    if (
+      el instanceof HTMLInputElement &&
+      ['hidden', 'checkbox', 'radio', 'range', 'color'].includes(el.type)
+    )
+      continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
     const cs = getComputedStyle(el);
@@ -48,17 +58,28 @@ function audit(): string[] {
     if (el.closest('[aria-hidden="true"], [inert]')) continue;
     let faded = false;
     for (let e: Element | null = el; e; e = e.parentElement) {
-      if (Number(getComputedStyle(e).opacity) === 0) { faded = true; break; }
+      if (Number(getComputedStyle(e).opacity) === 0) {
+        faded = true;
+        break;
+      }
     }
     if (faded) continue;
     const after = getComputedStyle(el, '::after');
-    const aw = after.content !== 'none' && after.position === 'absolute' ? parseFloat(after.width) || 0 : 0;
-    const ah = after.content !== 'none' && after.position === 'absolute' ? parseFloat(after.height) || 0 : 0;
+    const aw =
+      after.content !== 'none' && after.position === 'absolute' ? parseFloat(after.width) || 0 : 0;
+    const ah =
+      after.content !== 'none' && after.position === 'absolute' ? parseFloat(after.height) || 0 : 0;
     const w = Math.max(r.width, aw);
     const h = Math.max(r.height, ah);
     if (w < 43.5 || h < 43.5) {
-      const name = (el.getAttribute('aria-label') || el.textContent || el.getAttribute('placeholder') || el.tagName)
-        .trim().slice(0, 30);
+      const name = (
+        el.getAttribute('aria-label') ||
+        el.textContent ||
+        el.getAttribute('placeholder') ||
+        el.tagName
+      )
+        .trim()
+        .slice(0, 30);
       out.push(`${Math.round(w)}×${Math.round(h)} ${el.tagName.toLowerCase()} "${name}"`);
     }
   }
@@ -69,9 +90,15 @@ test('every control answers a 44×44 tap on every tab and in a sheet', async ({ 
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 360, height: 740 });
   await signIn(page);
-  await page.request.post('/api/events', { data: { title: `${PREFIX} overdue`, event_type: 'deadline', target_date: iso(-2) } });
-  await page.request.post('/api/events', { data: { title: `${PREFIX} soon`, event_type: 'appointment', target_date: iso(3) } });
-  const done = await page.request.post('/api/shopping', { data: { name: `${PREFIX} bought` } }).then((r) => r.json());
+  await page.request.post('/api/events', {
+    data: { title: `${PREFIX} overdue`, event_type: 'deadline', target_date: iso(-2) },
+  });
+  await page.request.post('/api/events', {
+    data: { title: `${PREFIX} soon`, event_type: 'appointment', target_date: iso(3) },
+  });
+  const done = await page.request
+    .post('/api/shopping', { data: { name: `${PREFIX} bought` } })
+    .then((r) => r.json());
   await page.request.patch(`/api/shopping/${done.id}`, { data: { is_done: true } });
   await page.request.post('/api/shopping', { data: { name: `${PREFIX} open` } });
 
@@ -122,7 +149,10 @@ test('a sheet closes when pulled down and springs back from a short pull', async
   await page.mouse.up();
   await page.waitForTimeout(500);
   await expect(dialog).toBeVisible();
-  expect(Math.abs((await dialog.boundingBox())!.y - top), 'sheet did not spring back').toBeLessThanOrEqual(1);
+  expect(
+    Math.abs((await dialog.boundingBox())!.y - top),
+    'sheet did not spring back',
+  ).toBeLessThanOrEqual(1);
 
   // A long pull closes it.
   await page.mouse.move(x, y);

@@ -26,11 +26,18 @@ test.afterEach(async ({ page }) => {
   const { others }: { others: { id: number; external_name: string | null }[] } = await page.request
     .get('/api/gift-lists')
     .then((r) => r.json());
-  for (const l of others.filter((x) => x.external_name?.startsWith(PREFIX))) await page.request.delete(`/api/gift-lists/${l.id}`);
-  const events: { id: number; title: string }[] = await page.request.get('/api/events').then((r) => r.json());
-  for (const e of events.filter((x) => x.title.startsWith(PREFIX))) await page.request.delete(`/api/events/${e.id}`);
-  const users: { id: number; name: string }[] = await page.request.get('/api/users').then((r) => r.json());
-  for (const u of users.filter((x) => x.name.startsWith(PREFIX))) await page.request.delete(`/api/users/${u.id}`);
+  for (const l of others.filter((x) => x.external_name?.startsWith(PREFIX)))
+    await page.request.delete(`/api/gift-lists/${l.id}`);
+  const events: { id: number; title: string }[] = await page.request
+    .get('/api/events')
+    .then((r) => r.json());
+  for (const e of events.filter((x) => x.title.startsWith(PREFIX)))
+    await page.request.delete(`/api/events/${e.id}`);
+  const users: { id: number; name: string }[] = await page.request
+    .get('/api/users')
+    .then((r) => r.json());
+  for (const u of users.filter((x) => x.name.startsWith(PREFIX)))
+    await page.request.delete(`/api/users/${u.id}`);
 });
 
 // Elements under `root` painted with a time (amber) or savings (teal) accent.
@@ -48,17 +55,31 @@ test('household and gift screens use no time or savings accent', async ({ page }
   await signIn(page);
 
   const me: { id: number } = await page.request.get('/api/auth/me').then((r) => r.json());
-  const pet = await page.request.post('/api/users', { data: { name: `${PREFIX} Pip`, kind: 'pet' } });
+  const pet = await page.request.post('/api/users', {
+    data: { name: `${PREFIX} Pip`, kind: 'pet' },
+  });
   expect(pet.ok()).toBeTruthy();
   const evt = await page.request
-    .post('/api/events', { data: { title: `${PREFIX} vet`, event_type: 'appointment', target_date: '2030-02-01' } })
+    .post('/api/events', {
+      data: { title: `${PREFIX} vet`, event_type: 'appointment', target_date: '2030-02-01' },
+    })
     .then((r) => r.json());
-  const assign = await page.request.post('/api/assignments', { data: { user_id: me.id, event_id: evt.id, role: 'owner' } });
+  const assign = await page.request.post('/api/assignments', {
+    data: { user_id: me.id, event_id: evt.id, role: 'owner' },
+  });
   expect(assign.ok()).toBeTruthy();
 
-  const list = await page.request.post('/api/gift-lists', { data: { external_name: `${PREFIX} Sam` } }).then((r) => r.json());
-  for (const [title, status] of [['Book', 'idea'], ['Scarf', 'reserved'], ['Lamp', 'bought']] as const) {
-    const item = await page.request.post(`/api/gift-lists/${list.id}/items`, { data: { title } }).then((r) => r.json());
+  const list = await page.request
+    .post('/api/gift-lists', { data: { external_name: `${PREFIX} Sam` } })
+    .then((r) => r.json());
+  for (const [title, status] of [
+    ['Book', 'idea'],
+    ['Scarf', 'reserved'],
+    ['Lamp', 'bought'],
+  ] as const) {
+    const item = await page.request
+      .post(`/api/gift-lists/${list.id}/items`, { data: { title } })
+      .then((r) => r.json());
     if (status !== 'idea') {
       const r = await page.request.patch(`/api/gift-lists/items/${item.id}`, { data: { status } });
       expect(r.ok()).toBeTruthy();
