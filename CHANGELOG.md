@@ -17,7 +17,10 @@ Until then, Katei is a rolling release: every merge to `main` publishes
 - Dependabot updates for npm packages, GitHub Actions and the Docker base image.
 - A CI workflow that type-checks the backend and frontend and builds the Docker
   image on every pull request.
+- Bottom sheets close when you pull them down by the handle or header.
 
 ### Changed
 
+- Every button and link now answers a tap of at least 44×44 px, without
+  changing how it looks.
 - The Docker image now runs on Node.js 22, matching CI.
