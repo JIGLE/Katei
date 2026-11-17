@@ -21,22 +21,22 @@
     "@fastify/jwt": "^8.0.1",
     "@fastify/multipart": "^8.3.1",
     "@fastify/static": "^7.0.4",
-    "date-holidays": "^3.32.0",
+    "date-holidays": "^3.39.1",
     "fastify": "^4.28.1",
-    "pg": "^8.12.0",
-    "sharp": "^0.35.4",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^20.14.10",
-    "@types/pg": "^8.11.6",
+    "@types/pg": "^8.23.1",
     "@types/web-push": "^3.6.4",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
     "prettier": "^3.10.1",
-    "tsx": "^4.16.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.73.0"
   }
