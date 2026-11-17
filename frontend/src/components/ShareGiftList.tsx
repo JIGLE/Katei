@@ -23,7 +23,9 @@ export function ShareGiftList({ listId }: ShareGiftListProps) {
       const r = await api.get<{ share_token: string | null }>(`/gift-lists/${listId}/share`);
       setToken(r.share_token);
       setLoaded(true);
-    } catch { /* stays collapsed */ }
+    } catch {
+      /* stays collapsed */
+    }
     setBusy(false);
   };
 
@@ -39,7 +41,9 @@ export function ShareGiftList({ listId }: ShareGiftListProps) {
       const r = await api.post<{ share_token: string }>(`/gift-lists/${listId}/share`, {});
       setToken(r.share_token);
       setCopied(false);
-    } catch { /* keep prior state */ }
+    } catch {
+      /* keep prior state */
+    }
     setBusy(false);
   };
 
@@ -49,14 +53,21 @@ export function ShareGiftList({ listId }: ShareGiftListProps) {
       await api.delete(`/gift-lists/${listId}/share`);
       setToken(null);
       setCopied(false);
-    } catch { /* keep prior state */ }
+    } catch {
+      /* keep prior state */
+    }
     setBusy(false);
   };
 
   const shareUrl = token ? `${window.location.origin}/gift/${token}` : '';
   const copy = async () => {
     if (!shareUrl) return;
-    try { await navigator.clipboard.writeText(shareUrl); setCopied(true); } catch { /* clipboard blocked */ }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+    } catch {
+      /* clipboard blocked */
+    }
   };
 
   return (
@@ -89,14 +100,26 @@ export function ShareGiftList({ listId }: ShareGiftListProps) {
                 onClick={copy}
                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900 p-2.5 text-left"
               >
-                <p className="mb-1 text-xs text-zinc-500">{copied ? t('gifts.shareCopied') : t('gifts.shareUrl')}</p>
+                <p className="mb-1 text-xs text-zinc-500">
+                  {copied ? t('gifts.shareCopied') : t('gifts.shareUrl')}
+                </p>
                 <p className="break-all text-xs text-zinc-300">{shareUrl}</p>
               </button>
               <div className="flex gap-4">
-                <button type="button" onClick={mintOrRotate} disabled={busy} className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300">
+                <button
+                  type="button"
+                  onClick={mintOrRotate}
+                  disabled={busy}
+                  className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+                >
                   {t('gifts.shareRegenerate')}
                 </button>
-                <button type="button" onClick={disable} disabled={busy} className="text-xs text-rose-400/80 underline-offset-2 transition-colors hover:text-rose-400">
+                <button
+                  type="button"
+                  onClick={disable}
+                  disabled={busy}
+                  className="text-xs text-rose-400/80 underline-offset-2 transition-colors hover:text-rose-400"
+                >
                   {t('gifts.shareDisable')}
                 </button>
               </div>

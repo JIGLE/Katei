@@ -22,10 +22,28 @@ test('parseLinkMeta falls back to <title> and handles absence', () => {
 });
 
 test('isPrivateAddress classifies the ranges the server must never fetch', () => {
-  for (const ip of ['127.0.0.1', '10.1.2.3', '172.16.0.9', '172.31.255.1', '192.168.1.1', '169.254.169.254', '100.64.0.1', '0.0.0.0', '::1', 'fe80::1', 'fd00::2', '::ffff:127.0.0.1']) {
+  for (const ip of [
+    '127.0.0.1',
+    '10.1.2.3',
+    '172.16.0.9',
+    '172.31.255.1',
+    '192.168.1.1',
+    '169.254.169.254',
+    '100.64.0.1',
+    '0.0.0.0',
+    '::1',
+    'fe80::1',
+    'fd00::2',
+    '::ffff:127.0.0.1',
+  ]) {
     assert.equal(isPrivateAddress(ip), true, ip);
   }
-  for (const ip of ['93.184.216.34', '172.32.0.1', '8.8.8.8', '2606:2800:220:1:248:1893:25c8:1946']) {
+  for (const ip of [
+    '93.184.216.34',
+    '172.32.0.1',
+    '8.8.8.8',
+    '2606:2800:220:1:248:1893:25c8:1946',
+  ]) {
     assert.equal(isPrivateAddress(ip), false, ip);
   }
 });
@@ -48,7 +66,12 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
@@ -63,12 +86,21 @@ test('rejects non-http schemes and private/loopback hosts with 400', opts, async
     'http://169.254.169.254/latest/meta-data/',
     'not a url',
   ]) {
-    const res = await app.inject({ method: 'POST', url: '/api/link-preview', headers: { cookie }, payload: { url } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/link-preview',
+      headers: { cookie },
+      payload: { url },
+    });
     assert.equal(res.statusCode, 400, url);
   }
 });
 
 test('requires authentication', opts, async () => {
-  const res = await app.inject({ method: 'POST', url: '/api/link-preview', payload: { url: 'https://example.com' } });
+  const res = await app.inject({
+    method: 'POST',
+    url: '/api/link-preview',
+    payload: { url: 'https://example.com' },
+  });
   assert.equal(res.statusCode, 401);
 });

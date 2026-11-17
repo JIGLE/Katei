@@ -181,22 +181,28 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
           <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-zinc-700" />
 
           <header className="flex items-center justify-between">
-            <h2 id={titleId} className="text-lg font-light text-zinc-100">{title}</h2>
+            <h2 id={titleId} className="text-lg font-light text-zinc-100">
+              {title}
+            </h2>
             <button
               onClick={onClose}
               className="text-zinc-500 transition-colors hover:text-zinc-300"
               aria-label={t('common.close')}
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </header>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-sheet-end pt-5">
-          {children}
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-sheet-end pt-5">{children}</div>
       </div>
     </div>
   );

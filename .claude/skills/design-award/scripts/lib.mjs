@@ -23,8 +23,14 @@ export async function launch() {
   let executablePath;
   try {
     const entries = readdirSync(browsersDir);
-    const shell = entries.filter((e) => e.startsWith('chromium_headless_shell-')).sort().pop();
-    const full = entries.filter((e) => /^chromium-\d/.test(e)).sort().pop();
+    const shell = entries
+      .filter((e) => e.startsWith('chromium_headless_shell-'))
+      .sort()
+      .pop();
+    const full = entries
+      .filter((e) => /^chromium-\d/.test(e))
+      .sort()
+      .pop();
     if (shell) executablePath = join(browsersDir, shell, 'chrome-linux', 'headless_shell');
     else if (full) executablePath = join(browsersDir, full, 'chrome-linux', 'chrome');
   } catch {

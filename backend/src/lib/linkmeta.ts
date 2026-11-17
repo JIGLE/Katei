@@ -20,7 +20,9 @@ export function isPrivateAddress(ip: string): boolean {
   if (isIP(ip) === 4) {
     const [a, b] = ip.split('.').map(Number);
     return (
-      a === 0 || a === 10 || a === 127 ||
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
       (a === 100 && b >= 64 && b <= 127) || // CGNAT
       (a === 169 && b === 254) ||
       (a === 172 && b >= 16 && b <= 31) ||
@@ -28,7 +30,13 @@ export function isPrivateAddress(ip: string): boolean {
     );
   }
   const low = ip.toLowerCase();
-  return low === '::' || low === '::1' || low.startsWith('fe80:') || low.startsWith('fc') || low.startsWith('fd');
+  return (
+    low === '::' ||
+    low === '::1' ||
+    low.startsWith('fe80:') ||
+    low.startsWith('fc') ||
+    low.startsWith('fd')
+  );
 }
 
 /**

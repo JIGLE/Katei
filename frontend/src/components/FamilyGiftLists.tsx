@@ -33,8 +33,15 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
   const [personName, setPersonName] = useState('');
   const [savingPerson, setSavingPerson] = useState(false);
 
-  const handleSaved = () => { setAddingFor(null); setEditing(null); refetch(); };
-  const handleDeleted = () => { setEditing(null); refetch(); };
+  const handleSaved = () => {
+    setAddingFor(null);
+    setEditing(null);
+    refetch();
+  };
+  const handleDeleted = () => {
+    setEditing(null);
+    refetch();
+  };
 
   const addPerson = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,17 +53,22 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
       setPersonName('');
       setAddingPerson(false);
       refetch();
-    } catch { /* keep the form open with what they typed */ }
+    } catch {
+      /* keep the form open with what they typed */
+    }
     setSavingPerson(false);
   };
 
   // Matches the backend's own permission check exactly, so this control
   // never offers something that would 403.
-  const canManageShare = (list: GiftListSummary) => list.external_name != null || user?.role === 'admin';
+  const canManageShare = (list: GiftListSummary) =>
+    list.external_name != null || user?.role === 'admin';
 
   return (
     <section className="space-y-6">
-      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{t('gifts.familyFriends')}</p>
+      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+        {t('gifts.familyFriends')}
+      </p>
 
       {lists.length === 0 && !addingPerson && (
         <EmptyState
@@ -87,7 +99,13 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
               aria-label={t('gifts.addGiftAria')}
               className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
             >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
             </button>
@@ -98,16 +116,37 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
           ) : (
             <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
               {list.items.map((g) => (
-                <div key={g.id} className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-800/30">
-                  <button type="button" onClick={() => setEditing({ listId: list.id, item: g })} className="min-w-0 flex-1 text-left">
-                    <p className={`truncate text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}>{g.title}</p>
+                <div
+                  key={g.id}
+                  className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-800/30"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ listId: list.id, item: g })}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p
+                      className={`truncate text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}
+                    >
+                      {g.title}
+                    </p>
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
-                      {g.price != null && <span className="tabular-nums">{formatMoney(g.price, g.currency ?? 'EUR', locale)}</span>}
-                      {g.added_by_name && <span className="truncate">{t('gifts.addedBy', { name: g.added_by_name })}</span>}
+                      {g.price != null && (
+                        <span className="tabular-nums">
+                          {formatMoney(g.price, g.currency ?? 'EUR', locale)}
+                        </span>
+                      )}
+                      {g.added_by_name && (
+                        <span className="truncate">
+                          {t('gifts.addedBy', { name: g.added_by_name })}
+                        </span>
+                      )}
                     </div>
                     {g.status !== 'idea' && (
                       <p className="mt-0.5 truncate text-xs text-teal-400">
-                        {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', { name: g.bought_by_name ?? t('gifts.someone') })}
+                        {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
+                          name: g.bought_by_name ?? t('gifts.someone'),
+                        })}
                       </p>
                     )}
                   </button>
@@ -152,18 +191,27 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
             {t('gifts.addExternal')}
           </button>
         </form>
-      ) : lists.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setAddingPerson(true)}
-          className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
-        >
-          {t('gifts.addExternalPerson')}
-        </button>
+      ) : (
+        lists.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setAddingPerson(true)}
+            className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
+          >
+            {t('gifts.addExternalPerson')}
+          </button>
+        )
       )}
 
       <Modal open={!!addingFor} title={t('gifts.newGift')} onClose={() => setAddingFor(null)}>
-        {addingFor && <GiftForm listId={addingFor.id} isOwnList={false} onSaved={handleSaved} onCancel={() => setAddingFor(null)} />}
+        {addingFor && (
+          <GiftForm
+            listId={addingFor.id}
+            isOwnList={false}
+            onSaved={handleSaved}
+            onCancel={() => setAddingFor(null)}
+          />
+        )}
       </Modal>
 
       <Modal open={!!editing} title={t('gifts.editGift')} onClose={() => setEditing(null)}>

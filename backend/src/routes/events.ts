@@ -37,10 +37,11 @@ async function recordSavingsContribution(
     }
   }
   if (amount == null || Number.isNaN(amount)) return;
-  await query(
-    `INSERT INTO savings_entries (amount, note, money_stream_id) VALUES ($1, $2, $3)`,
-    [amount, note, streamId],
-  );
+  await query(`INSERT INTO savings_entries (amount, note, money_stream_id) VALUES ($1, $2, $3)`, [
+    amount,
+    note,
+    streamId,
+  ]);
 }
 
 export const eventsRoutes: FastifyPluginAsync = async (app) => {
@@ -107,7 +108,10 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: ['string', 'null'] },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income', 'savings'] },
+            event_type: {
+              type: 'string',
+              enum: ['deadline', 'payment', 'appointment', 'income', 'savings'],
+            },
             target_date: { type: 'string', format: 'date' },
             // Nullable: the form sends null for "no linked cost". Without 'null'
             // here, Fastify's type coercion turns null into 0, which then fails
@@ -160,7 +164,10 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             title: { type: 'string', minLength: 1, maxLength: 255 },
             description: { type: 'string' },
-            event_type: { type: 'string', enum: ['deadline', 'payment', 'appointment', 'income', 'savings'] },
+            event_type: {
+              type: 'string',
+              enum: ['deadline', 'payment', 'appointment', 'income', 'savings'],
+            },
             target_date: { type: 'string', format: 'date' },
             is_completed: { type: 'boolean' },
             money_stream_id: { type: ['integer', 'null'] },
@@ -178,7 +185,13 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const allowed = [
-        'title', 'description', 'event_type', 'target_date', 'is_completed', 'money_stream_id', 'actual_amount',
+        'title',
+        'description',
+        'event_type',
+        'target_date',
+        'is_completed',
+        'money_stream_id',
+        'actual_amount',
       ] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
@@ -227,11 +240,14 @@ export const eventsRoutes: FastifyPluginAsync = async (app) => {
       const wasCompleted = before.rows[0].is_completed;
 
       const { rows } = await query<{
-        title: string; event_type: string; money_stream_id: number | null; actual_amount: string | null;
-      }>(
-        `UPDATE household_events SET is_completed = $1 WHERE id = $2 RETURNING ${COLS}`,
-        [req.body.is_completed, req.params.id],
-      );
+        title: string;
+        event_type: string;
+        money_stream_id: number | null;
+        actual_amount: string | null;
+      }>(`UPDATE household_events SET is_completed = $1 WHERE id = $2 RETURNING ${COLS}`, [
+        req.body.is_completed,
+        req.params.id,
+      ]);
       // Only celebrate finishing something, not un-checking it. Payments read
       // differently from chores, so they get their own verb.
       if (req.body.is_completed && !wasCompleted) {

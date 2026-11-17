@@ -15,7 +15,9 @@ const iso = (offset: number) => {
   return d.toISOString().slice(0, 10);
 };
 
-test('an overdue item named in the status line is shown under Needs attention', async ({ page }) => {
+test('an overdue item named in the status line is shown under Needs attention', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.locator('#name').fill('Alex');
   await page.locator('#password').fill('password123');
@@ -39,7 +41,9 @@ test('an overdue item named in the status line is shown under Needs attention', 
   expect(later.ok()).toBeTruthy();
 
   await page.reload();
-  const attention = page.locator('section', { has: page.getByText('Needs attention', { exact: true }) });
+  const attention = page.locator('section', {
+    has: page.getByText('Needs attention', { exact: true }),
+  });
   await expect(attention).toBeVisible();
   await expect(attention.getByText('Attention spec: overdue')).toBeVisible();
   await expect(attention.getByText('Attention spec: deadline')).toBeVisible();

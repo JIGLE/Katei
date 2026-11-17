@@ -22,6 +22,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - Versioned releases: a `vX.Y.Z` tag publishes matching image tags and a GitHub
   Release. Images now carry OCI labels linking them to their source commit.
 
+- ESLint and Prettier for the backend and frontend, checked in CI.
+
 ### Changed
 
 - The Docker image now runs on Node.js 22, matching CI.

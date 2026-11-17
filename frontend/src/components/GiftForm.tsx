@@ -23,7 +23,14 @@ interface GiftFormProps {
   onDeleted?: (id: number) => void;
 }
 
-export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDeleted }: GiftFormProps) {
+export function GiftForm({
+  listId,
+  isOwnList,
+  initial,
+  onSaved,
+  onCancel,
+  onDeleted,
+}: GiftFormProps) {
   const { t } = useTranslation();
   const { currency: defaultCurrency } = usePreferences();
   const isEdit = Boolean(initial);
@@ -58,7 +65,8 @@ export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDele
       url: url.trim() || null,
       link_title: url.trim() ? linkTitle : null,
       link_site: url.trim() ? linkSite : null,
-      price: price !== '' && !Number.isNaN(parseFloat(String(price))) ? parseFloat(String(price)) : null,
+      price:
+        price !== '' && !Number.isNaN(parseFloat(String(price))) ? parseFloat(String(price)) : null,
       currency,
       ...(isEdit && !isOwnList ? { status } : {}),
     };
@@ -87,7 +95,9 @@ export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDele
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="gift_title" className={labelCls}>{t('form.title')}</label>
+        <label htmlFor="gift_title" className={labelCls}>
+          {t('form.title')}
+        </label>
         <input
           id="gift_title"
           type="text"
@@ -110,7 +120,9 @@ export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDele
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="gift_price" className={labelCls}>{t('form.amount')}</label>
+          <label htmlFor="gift_price" className={labelCls}>
+            {t('form.amount')}
+          </label>
           <input
             id="gift_price"
             type="number"
@@ -124,9 +136,20 @@ export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDele
           />
         </div>
         <div>
-          <label htmlFor="gift_currency" className={labelCls}>{t('form.currency')}</label>
-          <select id="gift_currency" value={currency ?? defaultCurrency} onChange={(e) => setCurrency(e.target.value)} className={fieldCls}>
-            {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          <label htmlFor="gift_currency" className={labelCls}>
+            {t('form.currency')}
+          </label>
+          <select
+            id="gift_currency"
+            value={currency ?? defaultCurrency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className={fieldCls}
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -171,7 +194,9 @@ export function GiftForm({ listId, isOwnList, initial, onSaved, onCancel, onDele
             disabled={submitting}
             className={[
               'rounded-xl border px-3 py-2.5 text-sm transition-colors',
-              confirmDelete ? 'border-rose-500/40 text-rose-400' : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+              confirmDelete
+                ? 'border-rose-500/40 text-rose-400'
+                : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
             ].join(' ')}
           >
             {confirmDelete ? t('common.confirm') : t('form.deleteGift')}

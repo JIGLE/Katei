@@ -11,14 +11,12 @@ export const ITEM_SELECT =
   'gi.id, gi.list_id, gi.title, gi.url, gi.link_title, gi.link_site, gi.price, gi.currency, gi.status, ' +
   'ab.name AS added_by_name, bb.name AS bought_by_user_name, gi.bought_by_note, gi.created_at';
 
-export const ITEM_FROM =
-  `FROM gift_items gi
+export const ITEM_FROM = `FROM gift_items gi
    LEFT JOIN users ab ON ab.id = gi.added_by
    LEFT JOIN users bb ON bb.id = gi.bought_by_user_id`;
 
 // Ideas (still an opportunity to give) surface above claimed/bought items.
-export const ITEM_ORDER =
-  `ORDER BY CASE gi.status WHEN 'idea' THEN 0 WHEN 'reserved' THEN 1 ELSE 2 END, gi.id ASC`;
+export const ITEM_ORDER = `ORDER BY CASE gi.status WHEN 'idea' THEN 0 WHEN 'reserved' THEN 1 ELSE 2 END, gi.id ASC`;
 
 export interface RawGiftItemRow {
   id: number;

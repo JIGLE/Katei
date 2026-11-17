@@ -18,7 +18,12 @@ beforeEach(async () => {
   await h.truncateAll();
   cookie = await h.registerAndLogin(app);
 });
-after(async () => { if (dbAvailable) { await app?.close(); await h.closePool(); } });
+after(async () => {
+  if (dbAvailable) {
+    await app?.close();
+    await h.closePool();
+  }
+});
 
 const opts = { skip: dbAvailable ? false : 'no DATABASE_URL' };
 
@@ -29,82 +34,203 @@ const thisMonth = () => {
 };
 
 test('monthly-spend sums completed payments and prefers the actual amount', opts, async () => {
-  const stream = (await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
-    payload: { name: 'Water', amount: 100, currency: 'EUR', stream_type: 'expense' },
-  })).json();
+  const stream = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/money-streams',
+      headers: { cookie },
+      payload: { name: 'Water', amount: 100, currency: 'EUR', stream_type: 'expense' },
+    })
+  ).json();
 
-  const event = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Water due', event_type: 'payment', target_date: thisMonth(), money_stream_id: stream.id },
-  })).json();
+  const event = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { cookie },
+      payload: {
+        title: 'Water due',
+        event_type: 'payment',
+        target_date: thisMonth(),
+        money_stream_id: stream.id,
+      },
+    })
+  ).json();
 
   // Before completion, nothing is counted.
-  let series = (await app.inject({ method: 'GET', url: '/api/analytics/monthly-spend?months=1', headers: { cookie } })).json();
+  let series = (
+    await app.inject({
+      method: 'GET',
+      url: '/api/analytics/monthly-spend?months=1',
+      headers: { cookie },
+    })
+  ).json();
   assert.equal(series.at(-1).total, 0);
 
   // Mark paid with an actual amount that differs from the stream's expected 100.
   await app.inject({
-    method: 'PATCH', url: `/api/events/${event.id}`, headers: { cookie },
+    method: 'PATCH',
+    url: `/api/events/${event.id}`,
+    headers: { cookie },
     payload: { is_completed: true, actual_amount: 142.84 },
   });
 
-  series = (await app.inject({ method: 'GET', url: '/api/analytics/monthly-spend?months=1', headers: { cookie } })).json();
-  assert.equal(series.at(-1).total, 142.84, 'should use actual_amount, not the stream expected amount');
+  series = (
+    await app.inject({
+      method: 'GET',
+      url: '/api/analytics/monthly-spend?months=1',
+      headers: { cookie },
+    })
+  ).json();
+  assert.equal(
+    series.at(-1).total,
+    142.84,
+    'should use actual_amount, not the stream expected amount',
+  );
 });
 
 test('variance reports expected vs actual for paid bills', opts, async () => {
-  const stream = (await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
-    payload: { name: 'Water', amount: 100, currency: 'EUR', stream_type: 'expense' },
-  })).json();
-  const event = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Water due', event_type: 'payment', target_date: thisMonth(), money_stream_id: stream.id },
-  })).json();
+  const stream = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/money-streams',
+      headers: { cookie },
+      payload: { name: 'Water', amount: 100, currency: 'EUR', stream_type: 'expense' },
+    })
+  ).json();
+  const event = (
+    await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { cookie },
+      payload: {
+        title: 'Water due',
+        event_type: 'payment',
+        target_date: thisMonth(),
+        money_stream_id: stream.id,
+      },
+    })
+  ).json();
   await app.inject({
-    method: 'PATCH', url: `/api/events/${event.id}`, headers: { cookie },
+    method: 'PATCH',
+    url: `/api/events/${event.id}`,
+    headers: { cookie },
     payload: { is_completed: true, actual_amount: 142.84 },
   });
 
-  const series = (await app.inject({ method: 'GET', url: '/api/analytics/variance?months=1', headers: { cookie } })).json();
+  const series = (
+    await app.inject({
+      method: 'GET',
+      url: '/api/analytics/variance?months=1',
+      headers: { cookie },
+    })
+  ).json();
   assert.equal(series.at(-1).expected, 100);
   assert.equal(series.at(-1).actual, 142.84);
 });
 
-test('completed payments without an actual amount fall back to the stream amount', opts, async () => {
-  const stream = (await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
-    payload: { name: 'Rent', amount: 1200, currency: 'EUR', stream_type: 'expense' },
-  })).json();
-  const event = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Rent due', event_type: 'payment', target_date: thisMonth(), money_stream_id: stream.id },
-  })).json();
-  await app.inject({ method: 'PATCH', url: `/api/events/${event.id}/complete`, headers: { cookie }, payload: { is_completed: true } });
+test(
+  'completed payments without an actual amount fall back to the stream amount',
+  opts,
+  async () => {
+    const stream = (
+      await app.inject({
+        method: 'POST',
+        url: '/api/money-streams',
+        headers: { cookie },
+        payload: { name: 'Rent', amount: 1200, currency: 'EUR', stream_type: 'expense' },
+      })
+    ).json();
+    const event = (
+      await app.inject({
+        method: 'POST',
+        url: '/api/events',
+        headers: { cookie },
+        payload: {
+          title: 'Rent due',
+          event_type: 'payment',
+          target_date: thisMonth(),
+          money_stream_id: stream.id,
+        },
+      })
+    ).json();
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/events/${event.id}/complete`,
+      headers: { cookie },
+      payload: { is_completed: true },
+    });
 
-  const series = (await app.inject({ method: 'GET', url: '/api/analytics/monthly-spend?months=1', headers: { cookie } })).json();
-  assert.equal(series.at(-1).total, 1200);
-});
+    const series = (
+      await app.inject({
+        method: 'GET',
+        url: '/api/analytics/monthly-spend?months=1',
+        headers: { cookie },
+      })
+    ).json();
+    assert.equal(series.at(-1).total, 1200);
+  },
+);
 
-test('a private stream\'s paid bills are excluded from analytics for every viewer, including the owner', opts, async () => {
-  const stream = (await app.inject({
-    method: 'POST', url: '/api/money-streams', headers: { cookie },
-    payload: { name: 'Therapy', amount: 80, currency: 'EUR', stream_type: 'expense', private: true },
-  })).json();
-  const event = (await app.inject({
-    method: 'POST', url: '/api/events', headers: { cookie },
-    payload: { title: 'Therapy due', event_type: 'payment', target_date: thisMonth(), money_stream_id: stream.id },
-  })).json();
-  await app.inject({
-    method: 'PATCH', url: `/api/events/${event.id}`, headers: { cookie },
-    payload: { is_completed: true, actual_amount: 80 },
-  });
+test(
+  "a private stream's paid bills are excluded from analytics for every viewer, including the owner",
+  opts,
+  async () => {
+    const stream = (
+      await app.inject({
+        method: 'POST',
+        url: '/api/money-streams',
+        headers: { cookie },
+        payload: {
+          name: 'Therapy',
+          amount: 80,
+          currency: 'EUR',
+          stream_type: 'expense',
+          private: true,
+        },
+      })
+    ).json();
+    const event = (
+      await app.inject({
+        method: 'POST',
+        url: '/api/events',
+        headers: { cookie },
+        payload: {
+          title: 'Therapy due',
+          event_type: 'payment',
+          target_date: thisMonth(),
+          money_stream_id: stream.id,
+        },
+      })
+    ).json();
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/events/${event.id}`,
+      headers: { cookie },
+      payload: { is_completed: true, actual_amount: 80 },
+    });
 
-  const spend = (await app.inject({ method: 'GET', url: '/api/analytics/monthly-spend?months=1', headers: { cookie } })).json();
-  assert.equal(spend.at(-1).total, 0, 'a private stream is excluded from analytics even for its own owner');
+    const spend = (
+      await app.inject({
+        method: 'GET',
+        url: '/api/analytics/monthly-spend?months=1',
+        headers: { cookie },
+      })
+    ).json();
+    assert.equal(
+      spend.at(-1).total,
+      0,
+      'a private stream is excluded from analytics even for its own owner',
+    );
 
-  const variance = (await app.inject({ method: 'GET', url: '/api/analytics/variance?months=1', headers: { cookie } })).json();
-  assert.equal(variance.at(-1).expected, 0);
-  assert.equal(variance.at(-1).actual, 0);
-});
+    const variance = (
+      await app.inject({
+        method: 'GET',
+        url: '/api/analytics/variance?months=1',
+        headers: { cookie },
+      })
+    ).json();
+    assert.equal(variance.at(-1).expected, 0);
+    assert.equal(variance.at(-1).actual, 0);
+  },
+);

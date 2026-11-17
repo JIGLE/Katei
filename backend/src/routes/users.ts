@@ -6,28 +6,32 @@ import { deleteAvatar, processAvatarImage, saveAvatar, sniffImageType } from '..
 import { hit } from '../lib/ratelimit.js';
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
-  const COLS = "id, name, email, avatar_url, ntfy_url, kind, to_char(birthday, 'YYYY-MM-DD') AS birthday, role, created_at";
+  const COLS =
+    "id, name, email, avatar_url, ntfy_url, kind, to_char(birthday, 'YYYY-MM-DD') AS birthday, role, created_at";
 
   // GET /api/users
   app.get('/', async () => {
-    const { rows } = await query(
-      `SELECT ${COLS} FROM users ORDER BY created_at ASC`,
-    );
+    const { rows } = await query(`SELECT ${COLS} FROM users ORDER BY created_at ASC`);
     return rows;
   });
 
   // GET /api/users/:id
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
-    const { rows } = await query(
-      `SELECT ${COLS} FROM users WHERE id = $1`,
-      [req.params.id],
-    );
+    const { rows } = await query(`SELECT ${COLS} FROM users WHERE id = $1`, [req.params.id]);
     if (!rows.length) return reply.code(404).send({ error: 'User not found' });
     return rows[0];
   });
 
   // POST /api/users — add a (passwordless) household member or pet. Admin only.
-  app.post<{ Body: { name: string; avatar_url?: string; ntfy_url?: string; kind?: string; birthday?: string } }>(
+  app.post<{
+    Body: {
+      name: string;
+      avatar_url?: string;
+      ntfy_url?: string;
+      kind?: string;
+      birthday?: string;
+    };
+  }>(
     '/',
     {
       preHandler: requireAdmin,
@@ -46,7 +50,13 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (req, reply) => {
-      const { name, avatar_url = null, ntfy_url = null, kind = 'human', birthday = null } = req.body;
+      const {
+        name,
+        avatar_url = null,
+        ntfy_url = null,
+        kind = 'human',
+        birthday = null,
+      } = req.body;
       const { rows } = await query(
         `INSERT INTO users (name, avatar_url, ntfy_url, kind, birthday) VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`,
         [name, avatar_url, ntfy_url, kind, birthday || null],
@@ -58,7 +68,17 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   // PATCH /api/users/:id — a member may edit only their own profile; admins may
   // edit anyone. (Previously any member could rename any other member.)
-  app.patch<{ Params: { id: string }; Body: { name?: string; email?: string; avatar_url?: string; ntfy_url?: string; kind?: string; birthday?: string | null } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: {
+      name?: string;
+      email?: string;
+      avatar_url?: string;
+      ntfy_url?: string;
+      kind?: string;
+      birthday?: string | null;
+    };
+  }>(
     '/:id',
     {
       schema: {
@@ -102,26 +122,30 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // DELETE /api/users/:id — admin only.
-  app.delete<{ Params: { id: string } }>('/:id', { preHandler: requireAdmin }, async (req, reply) => {
-    // owner_user_id is ON DELETE SET NULL, which alone would leave a private
-    // stream's still-pending events intact with no owner-only assignment left
-    // to stop the next scheduler sweep from broadcasting their (denormalized)
-    // titles to the whole household. Clear those pending events first, before
-    // the user delete cascades the assignment rows away.
-    const { rows: owned } = await query<{ id: number }>(
-      `SELECT id FROM money_streams WHERE owner_user_id = $1 AND private = TRUE`,
-      [req.params.id],
-    );
-    if (owned.length) {
-      await query(
-        `DELETE FROM household_events WHERE money_stream_id = ANY($1::int[]) AND is_completed = FALSE`,
-        [owned.map((s) => s.id)],
+  app.delete<{ Params: { id: string } }>(
+    '/:id',
+    { preHandler: requireAdmin },
+    async (req, reply) => {
+      // owner_user_id is ON DELETE SET NULL, which alone would leave a private
+      // stream's still-pending events intact with no owner-only assignment left
+      // to stop the next scheduler sweep from broadcasting their (denormalized)
+      // titles to the whole household. Clear those pending events first, before
+      // the user delete cascades the assignment rows away.
+      const { rows: owned } = await query<{ id: number }>(
+        `SELECT id FROM money_streams WHERE owner_user_id = $1 AND private = TRUE`,
+        [req.params.id],
       );
-    }
-    const { rowCount } = await query('DELETE FROM users WHERE id = $1', [req.params.id]);
-    if (!rowCount) return reply.code(404).send({ error: 'User not found' });
-    return reply.code(204).send();
-  });
+      if (owned.length) {
+        await query(
+          `DELETE FROM household_events WHERE money_stream_id = ANY($1::int[]) AND is_completed = FALSE`,
+          [owned.map((s) => s.id)],
+        );
+      }
+      const { rowCount } = await query('DELETE FROM users WHERE id = $1', [req.params.id]);
+      if (!rowCount) return reply.code(404).send({ error: 'User not found' });
+      return reply.code(204).send();
+    },
+  );
 
   // POST /api/users/:id/avatar — upload a JPG/PNG (≤20 MB original; downscaled
   // and re-encoded to a small stored size regardless of source dimensions).
@@ -158,7 +182,9 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     try {
       processed = await processAvatarImage(buf, ext);
     } catch {
-      return reply.code(400).send({ error: "That image couldn't be processed. Try a different photo." });
+      return reply
+        .code(400)
+        .send({ error: "That image couldn't be processed. Try a different photo." });
     }
     const url = await saveAvatar(id, processed, ext);
     const { rows: before } = await query<{ avatar_url: string | null }>(

@@ -20,10 +20,16 @@ async function signIn(page: Page) {
 
 // Leave the shared database as found: the smoke journey counts shopping rows.
 async function cleanup(page: Page, prefix: string) {
-  const items: { id: number; name: string }[] = await page.request.get('/api/shopping').then((r) => r.json());
-  for (const i of items.filter((x) => x.name.startsWith(prefix))) await page.request.delete(`/api/shopping/${i.id}`);
-  const events: { id: number; title: string }[] = await page.request.get('/api/events').then((r) => r.json());
-  for (const e of events.filter((x) => x.title.startsWith(prefix))) await page.request.delete(`/api/events/${e.id}`);
+  const items: { id: number; name: string }[] = await page.request
+    .get('/api/shopping')
+    .then((r) => r.json());
+  for (const i of items.filter((x) => x.name.startsWith(prefix)))
+    await page.request.delete(`/api/shopping/${i.id}`);
+  const events: { id: number; title: string }[] = await page.request
+    .get('/api/events')
+    .then((r) => r.json());
+  for (const e of events.filter((x) => x.title.startsWith(prefix)))
+    await page.request.delete(`/api/events/${e.id}`);
 }
 
 // Runs even when an assertion fails, so one failure can't cascade into the
@@ -56,15 +62,19 @@ test('the shopping add field docks flush on the nav and never covers a row', asy
     await page.waitForTimeout(150);
     const barBox = (await bar.boundingBox())!;
     const navBox = (await nav.boundingBox())!;
-    expect(Math.abs(barBox.y + barBox.height - navBox.y), `bar is not flush on the nav at scroll ${y}`)
-      .toBeLessThanOrEqual(1);
+    expect(
+      Math.abs(barBox.y + barBox.height - navBox.y),
+      `bar is not flush on the nav at scroll ${y}`,
+    ).toBeLessThanOrEqual(1);
   }
 
   // At the end of the list, the last row ends above the bar.
   const lastRow = page.locator('[data-shopping-id]').last();
   const rowBox = (await lastRow.boundingBox())!;
   const barBox = (await bar.boundingBox())!;
-  expect(rowBox.y + rowBox.height, 'last row is hidden behind the add bar').toBeLessThanOrEqual(barBox.y);
+  expect(rowBox.y + rowBox.height, 'last row is hidden behind the add bar').toBeLessThanOrEqual(
+    barBox.y,
+  );
 
   // Adding brings the new row into view above the bar.
   await scrollMain(page, 0);
@@ -74,17 +84,28 @@ test('the shopping add field docks flush on the nav and never covers a row', asy
   await expect(newest).toBeVisible();
   const barTop = (await bar.boundingBox())!.y;
   await expect
-    .poll(async () => { const b = (await newest.boundingBox())!; return b.y + b.height; },
-      { message: 'new row landed behind the add bar' })
+    .poll(
+      async () => {
+        const b = (await newest.boundingBox())!;
+        return b.y + b.height;
+      },
+      { message: 'new row landed behind the add bar' },
+    )
     .toBeLessThanOrEqual(barTop + 1);
 });
 
-test('the add button steps aside while scrolling down and returns on scroll up', async ({ page }) => {
+test('the add button steps aside while scrolling down and returns on scroll up', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await signIn(page);
   for (let i = 1; i <= 10; i++) {
     await page.request.post('/api/events', {
-      data: { title: `Fab spec ${i}`, event_type: 'appointment', target_date: `2030-01-${String(i).padStart(2, '0')}` },
+      data: {
+        title: `Fab spec ${i}`,
+        event_type: 'appointment',
+        target_date: `2030-01-${String(i).padStart(2, '0')}`,
+      },
     });
   }
   await page.reload();

@@ -8,8 +8,7 @@
 // app uses are variables for the same reason: dark keeps Tailwind's values,
 // light remaps them to deep steps that hold contrast on white.
 const v = (name) => (n) => `rgb(var(--${name}-${n}) / <alpha-value>)`;
-const scale = (name, steps) =>
-  Object.fromEntries(steps.map((n) => [n, v(name)(n)]));
+const scale = (name, steps) => Object.fromEntries(steps.map((n) => [n, v(name)(n)]));
 const zinc = v('zinc');
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],

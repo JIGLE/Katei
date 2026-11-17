@@ -22,7 +22,12 @@ export function Splash({ leaving, onDone }: SplashProps) {
       aria-hidden="true"
     >
       <div className="flex flex-col items-center">
-        <Logo size="lg" withWordmark markClassName="splash-mark" className="splash-lockup text-zinc-100" />
+        <Logo
+          size="lg"
+          withWordmark
+          markClassName="splash-mark"
+          className="splash-lockup text-zinc-100"
+        />
         <span className="splash-underline mt-3 h-px bg-emerald-500" />
       </div>
     </div>

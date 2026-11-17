@@ -43,7 +43,9 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
         ? await api.patch<User>(`/users/${initial!.id}`, body)
         : await api.post<User>('/users', body);
       // Upload the photo once the member exists to receive it.
-      const finalUser = avatarFile ? await api.upload<User>(`/users/${saved.id}/avatar`, avatarFile) : saved;
+      const finalUser = avatarFile
+        ? await api.upload<User>(`/users/${saved.id}/avatar`, avatarFile)
+        : saved;
       onSaved(finalUser);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('form.errSaveMember'));
@@ -88,20 +90,26 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
       </div>
 
       <div>
-        <label htmlFor="name" className={labelCls}>{t('form.name')}</label>
+        <label htmlFor="name" className={labelCls}>
+          {t('form.name')}
+        </label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={kind === 'pet' ? t('form.petNamePlaceholder') : t('form.memberNamePlaceholder')}
+          placeholder={
+            kind === 'pet' ? t('form.petNamePlaceholder') : t('form.memberNamePlaceholder')
+          }
           autoFocus
           className={fieldCls}
         />
       </div>
 
       <div>
-        <label htmlFor="birthday" className={labelCls}>{t('form.birthday')}</label>
+        <label htmlFor="birthday" className={labelCls}>
+          {t('form.birthday')}
+        </label>
         <input
           id="birthday"
           type="date"
@@ -113,7 +121,12 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
 
       <div>
         <span className={labelCls}>{t('form.photo')}</span>
-        <AvatarPicker name={name} url={initial?.avatar_url ?? null} file={avatarFile} onPick={setAvatarFile} />
+        <AvatarPicker
+          name={name}
+          url={initial?.avatar_url ?? null}
+          file={avatarFile}
+          onPick={setAvatarFile}
+        />
       </div>
 
       {error && <p className="text-sm text-rose-400">{error}</p>}

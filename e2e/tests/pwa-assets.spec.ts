@@ -14,7 +14,9 @@ import { test, expect } from '@playwright/test';
 //
 // Needs no session — it only wants a same-origin document to decode in.
 
-test('the notification badge is a transparent silhouette, not an opaque block', async ({ page }) => {
+test('the notification badge is a transparent silhouette, not an opaque block', async ({
+  page,
+}) => {
   await page.goto('/');
 
   const alpha = await page.evaluate(async () => {
@@ -33,7 +35,13 @@ test('the notification badge is a transparent silhouette, not an opaque block', 
       if (data[i] === 0) clear++;
       else if (data[i] === 255) solid++;
     }
-    return { width: canvas.width, height: canvas.height, total: canvas.width * canvas.height, clear, solid };
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      total: canvas.width * canvas.height,
+      clear,
+      solid,
+    };
   });
 
   expect(alpha.width, 'badge should be 96px square').toBe(96);
@@ -69,8 +77,9 @@ test('the service worker points its badge at that asset', async ({ page }) => {
   // `badge` is a Notification API key, so minification cannot rename it.
   const badge = source.match(/badge:\s*["']([^"']+)["']/);
   expect(badge, 'sw.js should set a badge option on showNotification').not.toBeNull();
-  expect(badge![1], 'badge must be the transparent monochrome mark, not the opaque app icon')
-    .toBe('/badge-96.png');
+  expect(badge![1], 'badge must be the transparent monochrome mark, not the opaque app icon').toBe(
+    '/badge-96.png',
+  );
 
   // icon is the large in-body image, where the opaque app icon is correct.
   const icon = source.match(/icon:\s*["']([^"']+)["']/);

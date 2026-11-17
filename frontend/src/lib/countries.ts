@@ -28,9 +28,21 @@ export const COUNTRIES: Country[] = [
   { code: 'IT', name: 'Italy', currency: 'EUR', locale: 'it-IT', timezone: 'Europe/Rome' },
   { code: 'LV', name: 'Latvia', currency: 'EUR', locale: 'lv-LV', timezone: 'Europe/Riga' },
   { code: 'LT', name: 'Lithuania', currency: 'EUR', locale: 'lt-LT', timezone: 'Europe/Vilnius' },
-  { code: 'LU', name: 'Luxembourg', currency: 'EUR', locale: 'fr-LU', timezone: 'Europe/Luxembourg' },
+  {
+    code: 'LU',
+    name: 'Luxembourg',
+    currency: 'EUR',
+    locale: 'fr-LU',
+    timezone: 'Europe/Luxembourg',
+  },
   { code: 'MT', name: 'Malta', currency: 'EUR', locale: 'en-MT', timezone: 'Europe/Malta' },
-  { code: 'NL', name: 'Netherlands', currency: 'EUR', locale: 'nl-NL', timezone: 'Europe/Amsterdam' },
+  {
+    code: 'NL',
+    name: 'Netherlands',
+    currency: 'EUR',
+    locale: 'nl-NL',
+    timezone: 'Europe/Amsterdam',
+  },
   { code: 'PL', name: 'Poland', currency: 'PLN', locale: 'pl-PL', timezone: 'Europe/Warsaw' },
   { code: 'PT', name: 'Portugal', currency: 'EUR', locale: 'pt-PT', timezone: 'Europe/Lisbon' },
   { code: 'RO', name: 'Romania', currency: 'RON', locale: 'ro-RO', timezone: 'Europe/Bucharest' },
@@ -39,10 +51,22 @@ export const COUNTRIES: Country[] = [
   { code: 'ES', name: 'Spain', currency: 'EUR', locale: 'es-ES', timezone: 'Europe/Madrid' },
   { code: 'SE', name: 'Sweden', currency: 'SEK', locale: 'sv-SE', timezone: 'Europe/Stockholm' },
   // Common non-EU neighbours.
-  { code: 'GB', name: 'United Kingdom', currency: 'GBP', locale: 'en-GB', timezone: 'Europe/London' },
+  {
+    code: 'GB',
+    name: 'United Kingdom',
+    currency: 'GBP',
+    locale: 'en-GB',
+    timezone: 'Europe/London',
+  },
   { code: 'CH', name: 'Switzerland', currency: 'CHF', locale: 'de-CH', timezone: 'Europe/Zurich' },
   { code: 'NO', name: 'Norway', currency: 'NOK', locale: 'nb-NO', timezone: 'Europe/Oslo' },
-  { code: 'US', name: 'United States', currency: 'USD', locale: 'en-US', timezone: 'America/New_York' },
+  {
+    code: 'US',
+    name: 'United States',
+    currency: 'USD',
+    locale: 'en-US',
+    timezone: 'America/New_York',
+  },
 ];
 
 export const DEFAULT_COUNTRY = COUNTRIES.find((c) => c.code === 'DE')!;

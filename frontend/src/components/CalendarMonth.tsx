@@ -36,7 +36,13 @@ const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}
 // and week, Home/End jump within the month, PageUp/PageDown change month.
 // Each day announces its full date, its event count, and today; the dots are
 // decoration only.
-export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay }: CalendarMonthProps) {
+export function CalendarMonth({
+  events,
+  lang,
+  timezone,
+  selectedDay,
+  onSelectDay,
+}: CalendarMonthProps) {
   const { t } = useTranslation();
   const today = todayInTimezone(timezone); // 'YYYY-MM-DD'
   // A selected/deep-linked day opens its month; otherwise today's. Read only
@@ -70,9 +76,13 @@ export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const rovingDay = Math.min(focusDay, daysInMonth);
 
-  const monthLabel = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(new Date(y, m, 1));
+  const monthLabel = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(
+    new Date(y, m, 1),
+  );
   const dayName = (d: number) =>
-    new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(y, m, d));
+    new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+      new Date(y, m, d),
+    );
   // Weekday headers, Monday-first, in the UI locale.
   const weekdays = useMemo(() => {
     const fmt = new Intl.DateTimeFormat(lang, { weekday: 'short' });
@@ -105,15 +115,32 @@ export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay
     const d = rovingDay;
     let target: Date | null = null;
     switch (e.key) {
-      case 'ArrowRight': target = new Date(y, m, d + 1); break;
-      case 'ArrowLeft': target = new Date(y, m, d - 1); break;
-      case 'ArrowDown': target = new Date(y, m, d + 7); break;
-      case 'ArrowUp': target = new Date(y, m, d - 7); break;
-      case 'Home': target = new Date(y, m, 1); break;
-      case 'End': target = new Date(y, m, daysInMonth); break;
-      case 'PageUp': target = new Date(y, m - 1, Math.min(d, new Date(y, m, 0).getDate())); break;
-      case 'PageDown': target = new Date(y, m + 1, Math.min(d, new Date(y, m + 2, 0).getDate())); break;
-      default: return;
+      case 'ArrowRight':
+        target = new Date(y, m, d + 1);
+        break;
+      case 'ArrowLeft':
+        target = new Date(y, m, d - 1);
+        break;
+      case 'ArrowDown':
+        target = new Date(y, m, d + 7);
+        break;
+      case 'ArrowUp':
+        target = new Date(y, m, d - 7);
+        break;
+      case 'Home':
+        target = new Date(y, m, 1);
+        break;
+      case 'End':
+        target = new Date(y, m, daysInMonth);
+        break;
+      case 'PageUp':
+        target = new Date(y, m - 1, Math.min(d, new Date(y, m, 0).getDate()));
+        break;
+      case 'PageDown':
+        target = new Date(y, m + 1, Math.min(d, new Date(y, m + 2, 0).getDate()));
+        break;
+      default:
+        return;
     }
     e.preventDefault();
     moveFocus(target);
@@ -154,7 +181,13 @@ export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay
       <div role="grid" aria-label={monthLabel} onKeyDown={onGridKey} className="text-center">
         <div role="row" className="grid grid-cols-7 gap-1">
           {weekdays.map((w) => (
-            <div key={w} role="columnheader" className="pb-1 text-[0.6875rem] uppercase tracking-wide text-zinc-500">{w}</div>
+            <div
+              key={w}
+              role="columnheader"
+              className="pb-1 text-[0.6875rem] uppercase tracking-wide text-zinc-500"
+            >
+              {w}
+            </div>
           ))}
         </div>
         {weeks.map((week, wi) => (
@@ -173,25 +206,38 @@ export function CalendarMonth({ events, lang, timezone, selectedDay, onSelectDay
               return (
                 <button
                   key={dayKey}
-                  ref={(el) => { if (el) cellRefs.current.set(day, el); }}
+                  ref={(el) => {
+                    if (el) cellRefs.current.set(day, el);
+                  }}
                   type="button"
                   role="gridcell"
                   aria-selected={isSelected}
                   aria-current={isToday ? 'date' : undefined}
                   aria-label={label}
                   tabIndex={day === rovingDay ? 0 : -1}
-                  onClick={() => { onSelectDay(dayKey); setFocusDay(day); }}
+                  onClick={() => {
+                    onSelectDay(dayKey);
+                    setFocusDay(day);
+                  }}
                   className={[
                     'flex aspect-square flex-col items-center justify-center gap-1 rounded-lg text-sm transition-colors',
                     isSelected ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-300 hover:bg-zinc-800/50',
                     isToday && !isSelected ? 'ring-1 ring-inset ring-zinc-700' : '',
                   ].join(' ')}
                 >
-                  <span aria-hidden className={`tabular-nums ${isToday ? 'font-semibold text-emerald-400' : ''}`}>{day}</span>
+                  <span
+                    aria-hidden
+                    className={`tabular-nums ${isToday ? 'font-semibold text-emerald-400' : ''}`}
+                  >
+                    {day}
+                  </span>
                   {dayEvents.length > 0 && (
                     <span aria-hidden className="flex gap-0.5">
                       {dayEvents.slice(0, 3).map((e) => (
-                        <span key={e.id} className={`h-1 w-1 rounded-full ${e.is_completed ? 'bg-zinc-600' : DOT[e.event_type]}`} />
+                        <span
+                          key={e.id}
+                          className={`h-1 w-1 rounded-full ${e.is_completed ? 'bg-zinc-600' : DOT[e.event_type]}`}
+                        />
                       ))}
                     </span>
                   )}

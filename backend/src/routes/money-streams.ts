@@ -86,7 +86,20 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
       const { rows } = await query(
         `INSERT INTO money_streams (name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, private, owner_user_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING ${COLS}`,
-        [name, amount, currency, is_recurring, frequency, category, stream_type, due_day, due_shift, automated, isPrivate, ownerUserId],
+        [
+          name,
+          amount,
+          currency,
+          is_recurring,
+          frequency,
+          category,
+          stream_type,
+          due_day,
+          due_shift,
+          automated,
+          isPrivate,
+          ownerUserId,
+        ],
       );
       await logActivity(req.user?.id ?? null, 'stream_added', name, rows[0].id);
       return reply.code(201).send(rows[0]);
@@ -145,7 +158,18 @@ export const moneyStreamsRoutes: FastifyPluginAsync = async (app) => {
         return reply.code(404).send({ error: 'Money stream not found' });
       }
 
-      const allowed = ['name', 'amount', 'currency', 'is_recurring', 'frequency', 'category', 'stream_type', 'due_day', 'due_shift', 'automated'] as const;
+      const allowed = [
+        'name',
+        'amount',
+        'currency',
+        'is_recurring',
+        'frequency',
+        'category',
+        'stream_type',
+        'due_day',
+        'due_shift',
+        'automated',
+      ] as const;
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;

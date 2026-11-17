@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  return (
+    typeof window !== 'undefined' &&
+    !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  );
 }
 
 interface SavingsRingProps {
@@ -47,7 +50,14 @@ export function SavingsRing({ pct, label, size = 92 }: SavingsRingProps) {
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-zinc-800" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          strokeWidth={stroke}
+          className="stroke-zinc-800"
+        />
         <circle
           cx={size / 2}
           cy={size / 2}

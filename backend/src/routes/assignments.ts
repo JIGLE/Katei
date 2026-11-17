@@ -6,7 +6,10 @@ import { visibleEventOrNull, visibleStreamOrNull } from '../lib/privacy.js';
 // (money_stream_id names a private stream someone else owns) or indirectly
 // (event_id names an event linked to one). Both hops are LEFT JOINs so a null
 // money_stream_id — the common case — never excludes a row.
-async function visibleAssignmentOrNull(id: string, viewerId: number): Promise<{ id: number } | null> {
+async function visibleAssignmentOrNull(
+  id: string,
+  viewerId: number,
+): Promise<{ id: number } | null> {
   const { rows } = await query<{ id: number }>(
     `SELECT a.id FROM assignments a
        LEFT JOIN money_streams sm ON sm.id = a.money_stream_id
@@ -29,15 +32,28 @@ export const assignmentsRoutes: FastifyPluginAsync = async (app) => {
     const conditions: string[] = [];
     const values: unknown[] = [];
     let i = 1;
-    if (req.query.user_id) { conditions.push(`a.user_id = $${i++}`); values.push(req.query.user_id); }
-    if (req.query.event_id) { conditions.push(`a.event_id = $${i++}`); values.push(req.query.event_id); }
-    if (req.query.money_stream_id) { conditions.push(`a.money_stream_id = $${i++}`); values.push(req.query.money_stream_id); }
+    if (req.query.user_id) {
+      conditions.push(`a.user_id = $${i++}`);
+      values.push(req.query.user_id);
+    }
+    if (req.query.event_id) {
+      conditions.push(`a.event_id = $${i++}`);
+      values.push(req.query.event_id);
+    }
+    if (req.query.money_stream_id) {
+      conditions.push(`a.money_stream_id = $${i++}`);
+      values.push(req.query.money_stream_id);
+    }
     // A phantom assignment pointing at a private stream/event — directly, or
     // indirectly through the event it's for — must not leak, including via
     // the query filters above (e.g. ?event_id= probing).
-    conditions.push(`(a.money_stream_id IS NULL OR sm.private = FALSE OR sm.owner_user_id = $${i++})`);
+    conditions.push(
+      `(a.money_stream_id IS NULL OR sm.private = FALSE OR sm.owner_user_id = $${i++})`,
+    );
     values.push(req.user.id);
-    conditions.push(`(he.money_stream_id IS NULL OR se.private = FALSE OR se.owner_user_id = $${i++})`);
+    conditions.push(
+      `(he.money_stream_id IS NULL OR se.private = FALSE OR se.owner_user_id = $${i++})`,
+    );
     values.push(req.user.id);
 
     const { rows } = await query(

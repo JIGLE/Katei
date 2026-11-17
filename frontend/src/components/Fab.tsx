@@ -40,7 +40,9 @@ export function useFabVisible(pinned = false): boolean {
 export function fabVisibilityCls(visible: boolean): string {
   return [
     'transition-[transform,opacity] duration-[var(--dur-base)] ease-[var(--ease-enter)] motion-reduce:transition-none',
-    visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0 focus-within:pointer-events-auto focus-within:translate-y-0 focus-within:opacity-100',
+    visible
+      ? 'translate-y-0 opacity-100'
+      : 'pointer-events-none translate-y-4 opacity-0 focus-within:pointer-events-auto focus-within:translate-y-0 focus-within:opacity-100',
   ].join(' ');
 }
 
@@ -57,7 +59,14 @@ export function Fab({ label, onClick }: { label: string; onClick: () => void }) 
         aria-label={label}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
       >
-        <svg aria-hidden className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg
+          aria-hidden
+          className="h-6 w-6"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d={PLUS} />
         </svg>
       </button>

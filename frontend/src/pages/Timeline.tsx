@@ -21,10 +21,7 @@ const fieldCls =
 
 type Accent = 'amber' | 'emerald' | 'rose' | 'teal';
 
-const typeConfig: Record<
-  HouseholdEvent['event_type'],
-  { accent: Accent; labelKey: string }
-> = {
+const typeConfig: Record<HouseholdEvent['event_type'], { accent: Accent; labelKey: string }> = {
   deadline: { accent: 'rose', labelKey: 'eventType.deadline' },
   payment: { accent: 'emerald', labelKey: 'eventType.payment' },
   appointment: { accent: 'amber', labelKey: 'eventType.appointment' },
@@ -48,7 +45,9 @@ export default function Timeline() {
   const [streams, setStreams] = useState<Record<number, { amount: string; currency: string }>>({});
   // A deep link from the home week strip or "upcoming" list lands here as ?day=…
   const [searchParams] = useSearchParams();
-  const [selectedDay, setSelectedDay] = useState<string | null>(() => searchParams.get('day') ?? null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(
+    () => searchParams.get('day') ?? null,
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mineOnly, setMineOnly] = useState(false);
   const [query, setQuery] = useState('');
@@ -71,19 +70,27 @@ export default function Timeline() {
 
   // The calendar needs every event (including completed, for its dots and for
   // a selected day's history) — there's no separate filtered fetch anymore.
-  useEffect(() => { fetchEvents(); }, []);
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   // Assignments and money streams are independent of day selection — load once.
   useEffect(() => {
-    api.get<AssignmentDetail[]>('/assignments').then(setAssignments).catch(() => {});
+    api
+      .get<AssignmentDetail[]>('/assignments')
+      .then(setAssignments)
+      .catch(() => {});
     // Money streams let "mark as paid" prefill the expected amount + currency
     // — skipped outright when money is off, nothing to prefill.
     if (!money_enabled) return;
-    api.get<MoneyStream[]>('/money-streams').then((rows) => {
-      const m: Record<number, { amount: string; currency: string }> = {};
-      for (const s of rows) m[s.id] = { amount: s.amount, currency: s.currency };
-      setStreams(m);
-    }).catch(() => {});
+    api
+      .get<MoneyStream[]>('/money-streams')
+      .then((rows) => {
+        const m: Record<number, { amount: string; currency: string }> = {};
+        for (const s of rows) m[s.id] = { amount: s.amount, currency: s.currency };
+        setStreams(m);
+      })
+      .catch(() => {});
   }, [money_enabled]);
 
   // Index assignments by event so each row can show who's responsible.
@@ -112,13 +119,17 @@ export default function Timeline() {
   const mineFilteredActive = activeAll.filter((e) => !mineOnly || mineEventIds.has(e.id));
   const searchingActive = query.trim() !== '' || typeFilter !== 'all';
   const visibleActive = mineFilteredActive.filter(
-    (e) => (typeFilter === 'all' || e.event_type === typeFilter) && matchesQuery(query, e.title, e.description),
+    (e) =>
+      (typeFilter === 'all' || e.event_type === typeFilter) &&
+      matchesQuery(query, e.title, e.description),
   );
 
   const selectedDayCaption = selectedDay
-    ? new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
-        new Date(`${selectedDay}T00:00:00`),
-      )
+    ? new Intl.DateTimeFormat(i18n.language, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(new Date(`${selectedDay}T00:00:00`))
     : t('timeline.upcomingHeading');
 
   const handleSaved = () => {
@@ -156,7 +167,9 @@ export default function Timeline() {
   };
 
   const payCurrency =
-    paying?.money_stream_id != null ? streams[paying.money_stream_id]?.currency ?? currency : currency;
+    paying?.money_stream_id != null
+      ? (streams[paying.money_stream_id]?.currency ?? currency)
+      : currency;
 
   const confirmPaid = async () => {
     if (!paying) return;
@@ -175,7 +188,8 @@ export default function Timeline() {
 
   const renderRow = (evt: HouseholdEvent, i: number) => {
     const overdue = !evt.is_completed && daysUntil(evt.target_date, timezone) < 0;
-    const linked = money_enabled && evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
+    const linked =
+      money_enabled && evt.money_stream_id != null ? streams[evt.money_stream_id] : undefined;
     const amount =
       money_enabled && evt.event_type === 'payment'
         ? evt.actual_amount != null
@@ -197,7 +211,9 @@ export default function Timeline() {
           onClick={() => toggleComplete(evt)}
           className={[
             'flex-shrink-0 h-5 w-5 rounded-full border-2 transition-colors',
-            evt.is_completed ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-600 hover:border-zinc-400',
+            evt.is_completed
+              ? 'border-emerald-500 bg-emerald-500'
+              : 'border-zinc-600 hover:border-zinc-400',
           ].join(' ')}
           aria-label={evt.is_completed ? t('timeline.markIncomplete') : t('timeline.markComplete')}
         >
@@ -218,17 +234,23 @@ export default function Timeline() {
         </button>
 
         <button type="button" onClick={() => setEditing(evt)} className="min-w-0 flex-1 text-left">
-          <p className={`truncate text-sm ${evt.is_completed ? 'line-through text-zinc-500' : overdue ? 'text-rose-400' : 'text-zinc-100'}`}>
+          <p
+            className={`truncate text-sm ${evt.is_completed ? 'line-through text-zinc-500' : overdue ? 'text-rose-400' : 'text-zinc-100'}`}
+          >
             {evt.title}
           </p>
         </button>
 
-        {amount && <span className="flex-shrink-0 text-xs tabular-nums text-zinc-400">{amount}</span>}
+        {amount && (
+          <span className="flex-shrink-0 text-xs tabular-nums text-zinc-400">{amount}</span>
+        )}
 
         <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
 
         {selectedDay ? (
-          <span className={`h-2 w-2 flex-shrink-0 rounded-full ${evt.is_completed ? 'bg-zinc-600' : DOT[evt.event_type]}`} />
+          <span
+            className={`h-2 w-2 flex-shrink-0 rounded-full ${evt.is_completed ? 'bg-zinc-600' : DOT[evt.event_type]}`}
+          />
         ) : (
           <span
             className={[
@@ -256,7 +278,9 @@ export default function Timeline() {
           lang={i18n.language}
           timezone={timezone}
           selectedDay={selectedDay}
-          onSelectDay={(day) => setSelectedDay((prev) => (day != null && prev === day ? null : day))}
+          onSelectDay={(day) =>
+            setSelectedDay((prev) => (day != null && prev === day ? null : day))
+          }
         />
       )}
 
@@ -266,7 +290,9 @@ export default function Timeline() {
       {!loading && !error && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">{selectedDayCaption}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+              {selectedDayCaption}
+            </p>
             <button
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
@@ -274,8 +300,18 @@ export default function Timeline() {
               aria-label={t('timeline.filtersAria')}
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800/60 hover:text-zinc-300"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"
+                />
               </svg>
             </button>
           </div>
@@ -298,7 +334,9 @@ export default function Timeline() {
                   {t('timeline.assignedToMe')}
                 </button>
                 <span aria-hidden className="my-1 w-px flex-shrink-0 bg-zinc-800" />
-                {(['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]).map((tk) => (
+                {(
+                  ['all', ...Object.keys(typeConfig)] as (HouseholdEvent['event_type'] | 'all')[]
+                ).map((tk) => (
                   <button
                     key={tk}
                     type="button"
@@ -325,11 +363,15 @@ export default function Timeline() {
           )}
 
           {mineFilteredActive.length === 0 && mineOnly && activeAll.length > 0 && (
-            <EmptyState icon="🧹" title={t('timeline.noneAssigned')} hint={t('timeline.noneAssignedHint')} />
+            <EmptyState
+              icon="🧹"
+              title={t('timeline.noneAssigned')}
+              hint={t('timeline.noneAssignedHint')}
+            />
           )}
 
-          {activeAll.length === 0 && (
-            selectedDay ? (
+          {activeAll.length === 0 &&
+            (selectedDay ? (
               <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900 py-6 text-center">
                 <p className="text-xs text-zinc-500">{t('timeline.noEventsThisDay')}</p>
                 <button
@@ -337,10 +379,12 @@ export default function Timeline() {
                   onClick={() => setShowForm(true)}
                   className="mx-auto mt-2 block text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
                 >
-                  ＋ {t('timeline.addOnDay', {
-                    date: new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'long' }).format(
-                      new Date(`${selectedDay}T00:00:00`),
-                    ),
+                  ＋{' '}
+                  {t('timeline.addOnDay', {
+                    date: new Intl.DateTimeFormat(i18n.language, {
+                      day: 'numeric',
+                      month: 'long',
+                    }).format(new Date(`${selectedDay}T00:00:00`)),
                   })}
                 </button>
               </div>
@@ -360,8 +404,7 @@ export default function Timeline() {
                 actionLabel={t('timeline.addEvent')}
                 onAction={() => setShowForm(true)}
               />
-            )
-          )}
+            ))}
 
           {visibleActive.length > 0 && (
             <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
@@ -387,7 +430,10 @@ export default function Timeline() {
         <div className="space-y-4">
           <p className="text-sm text-zinc-400">{paying?.title}</p>
           <div>
-            <label htmlFor="paid_amount" className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+            <label
+              htmlFor="paid_amount"
+              className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+            >
               {t('timeline.amountPaid')}
             </label>
             <div className="flex items-center gap-2">

@@ -12,8 +12,13 @@ import type { FastifyPluginAsync } from 'fastify';
 import { query, getSetting } from '../db.js';
 import { isAdmin } from '../lib/authz.js';
 import {
-  ITEM_SELECT, ITEM_FROM, ITEM_ORDER, shapeGiftItem, findList,
-  type RawGiftItemRow, type GiftListRow,
+  ITEM_SELECT,
+  ITEM_FROM,
+  ITEM_ORDER,
+  shapeGiftItem,
+  findList,
+  type RawGiftItemRow,
+  type GiftListRow,
 } from '../lib/giftlists.js';
 
 interface ListSummaryRow {
@@ -84,9 +89,17 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/gift-lists — a list for someone who isn't a Katei user.
   app.post<{ Body: { external_name: string } }>(
     '/',
-    { schema: { body: { type: 'object', required: ['external_name'], properties: {
-      external_name: { type: 'string', minLength: 1, maxLength: 120 },
-    } } } },
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['external_name'],
+          properties: {
+            external_name: { type: 'string', minLength: 1, maxLength: 120 },
+          },
+        },
+      },
+    },
     async (req, reply) => {
       const name = req.body.external_name.trim();
       if (!name) return reply.code(400).send({ error: 'Name is required' });
@@ -95,8 +108,15 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
         [name, req.user.id],
       );
       return reply.code(201).send({
-        id: rows[0].id, owner_user_id: null, owner_name: null, owner_avatar: null,
-        owner_kind: null, external_name: name, is_mine: false, share_enabled: false, items: [],
+        id: rows[0].id,
+        owner_user_id: null,
+        owner_name: null,
+        owner_avatar: null,
+        owner_kind: null,
+        external_name: name,
+        is_mine: false,
+        share_enabled: false,
+        items: [],
       });
     },
   );
@@ -105,13 +125,22 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
   // list takes its name from `users.name`, so renaming it makes no sense.
   app.patch<{ Params: { id: string }; Body: { external_name: string } }>(
     '/:id',
-    { schema: { body: { type: 'object', required: ['external_name'], properties: {
-      external_name: { type: 'string', minLength: 1, maxLength: 120 },
-    } } } },
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['external_name'],
+          properties: {
+            external_name: { type: 'string', minLength: 1, maxLength: 120 },
+          },
+        },
+      },
+    },
     async (req, reply) => {
       const list = await findList(req.params.id);
       if (!list) return reply.code(404).send({ error: 'List not found' });
-      if (list.owner_user_id !== null) return reply.code(400).send({ error: "Can't rename a member's list" });
+      if (list.owner_user_id !== null)
+        return reply.code(400).send({ error: "Can't rename a member's list" });
       const name = req.body.external_name.trim();
       if (!name) return reply.code(400).send({ error: 'Name is required' });
       await query(`UPDATE gift_lists SET external_name = $1 WHERE id = $2`, [name, req.params.id]);
@@ -124,7 +153,8 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
     const list = await findList(req.params.id);
     if (!list) return reply.code(404).send({ error: 'List not found' });
-    if (list.owner_user_id !== null) return reply.code(400).send({ error: "Can't delete a member's list" });
+    if (list.owner_user_id !== null)
+      return reply.code(400).send({ error: "Can't delete a member's list" });
     await query(`DELETE FROM gift_lists WHERE id = $1`, [req.params.id]);
     return reply.code(204).send();
   });
@@ -165,8 +195,12 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
   app.post<{
     Params: { id: string };
     Body: {
-      title: string; url?: string | null; link_title?: string | null;
-      link_site?: string | null; price?: number | null; currency?: string;
+      title: string;
+      url?: string | null;
+      link_title?: string | null;
+      link_site?: string | null;
+      price?: number | null;
+      currency?: string;
     };
   }>(
     '/:id/items',
@@ -189,14 +223,23 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
     async (req, reply) => {
       const list = await findList(req.params.id);
       if (!list) return reply.code(404).send({ error: 'List not found' });
-      const currency = (req.body.currency ?? (await getSetting('default_currency')) ?? 'EUR').toUpperCase();
+      const currency = (
+        req.body.currency ??
+        (await getSetting('default_currency')) ??
+        'EUR'
+      ).toUpperCase();
       const { rows } = await query<{ id: number }>(
         `INSERT INTO gift_items (list_id, title, url, link_title, link_site, price, currency, added_by)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
         [
-          req.params.id, req.body.title.trim(), req.body.url ?? null,
-          req.body.link_title ?? null, req.body.link_site ?? null,
-          req.body.price ?? null, currency, req.user.id,
+          req.params.id,
+          req.body.title.trim(),
+          req.body.url ?? null,
+          req.body.link_title ?? null,
+          req.body.link_site ?? null,
+          req.body.price ?? null,
+          currency,
+          req.user.id,
         ],
       );
       const { rows: full } = await query<RawGiftItemRow>(
@@ -214,8 +257,13 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
   app.patch<{
     Params: { itemId: string };
     Body: {
-      title?: string; url?: string | null; link_title?: string | null; link_site?: string | null;
-      price?: number | null; currency?: string; status?: 'idea' | 'reserved' | 'bought';
+      title?: string;
+      url?: string | null;
+      link_title?: string | null;
+      link_site?: string | null;
+      price?: number | null;
+      currency?: string;
+      status?: 'idea' | 'reserved' | 'bought';
     };
   }>(
     '/items/:itemId',
@@ -249,11 +297,22 @@ export const giftListsRoutes: FastifyPluginAsync = async (app) => {
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;
-      const contentFields = ['title', 'url', 'link_title', 'link_site', 'price', 'currency'] as const;
+      const contentFields = [
+        'title',
+        'url',
+        'link_title',
+        'link_site',
+        'price',
+        'currency',
+      ] as const;
       for (const key of contentFields) {
         if (req.body[key] !== undefined) {
           fields.push(`${key} = $${i++}`);
-          values.push(key === 'currency' && req.body[key] != null ? String(req.body[key]).toUpperCase() : req.body[key]);
+          values.push(
+            key === 'currency' && req.body[key] != null
+              ? String(req.body[key]).toUpperCase()
+              : req.body[key],
+          );
         }
       }
       if (req.body.status !== undefined) {

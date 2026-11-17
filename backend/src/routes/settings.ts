@@ -19,7 +19,12 @@ import { graphitiStatus, graphitiEnabled, queryGraphiti } from '../lib/graphiti.
 const adminOnly = { preHandler: requireAdmin } as const;
 
 // EU-leaning defaults when a household hasn't set preferences yet.
-const PREF_DEFAULTS = { country: 'DE', currency: 'EUR', locale: 'de-DE', timezone: 'Europe/Berlin' };
+const PREF_DEFAULTS = {
+  country: 'DE',
+  currency: 'EUR',
+  locale: 'de-DE',
+  timezone: 'Europe/Berlin',
+};
 
 // 'system' follows the device's colour scheme on the client; unset stays dark
 // so long-standing households don't flip theme on upgrade.
@@ -50,7 +55,18 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
 
   // PUT /api/settings/preferences
   app.put<{
-    Body: { country: string; currency: string; locale: string; timezone: string; language: string; savings_goal?: number; savings_opening?: number; theme?: string; household_name?: string; money_enabled?: boolean };
+    Body: {
+      country: string;
+      currency: string;
+      locale: string;
+      timezone: string;
+      language: string;
+      savings_goal?: number;
+      savings_opening?: number;
+      theme?: string;
+      household_name?: string;
+      money_enabled?: boolean;
+    };
   }>(
     '/preferences',
     {
@@ -154,12 +170,16 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       `SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1`,
       [userId],
     );
-    if (!subs.length) return reply.code(400).send({ error: 'No device is subscribed to notifications yet' });
+    if (!subs.length)
+      return reply.code(400).send({ error: 'No device is subscribed to notifications yet' });
     let delivered = 0;
     for (const sub of subs) {
       try {
-        if ((await sendPush(sub, { title: 'Katei', body: 'Test notification', url: '/' })) === 'ok') delivered += 1;
-      } catch { /* ignore a single device's failure */ }
+        if ((await sendPush(sub, { title: 'Katei', body: 'Test notification', url: '/' })) === 'ok')
+          delivered += 1;
+      } catch {
+        /* ignore a single device's failure */
+      }
     }
     if (!delivered) return reply.code(502).send({ error: 'Could not deliver to any device' });
     return { ok: true, delivered };

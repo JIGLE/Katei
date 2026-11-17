@@ -16,7 +16,10 @@ function esc(s: string): string {
 
 // A UTC timestamp as YYYYMMDDTHHMMSSZ.
 function stamp(d: Date): string {
-  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return d
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
 }
 
 /**

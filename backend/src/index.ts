@@ -16,14 +16,21 @@ await migrate();
 await seedSettingsFromEnv();
 const authSecret = await getOrCreateAuthSecret();
 
-const app = await buildApp({ jwtSecret: authSecret, logger: true, corsOrigins: config.corsOrigins });
+const app = await buildApp({
+  jwtSecret: authSecret,
+  logger: true,
+  corsOrigins: config.corsOrigins,
+});
 
 const start = async () => {
   try {
     await verifyConnection();
     app.log.info('Database connection verified.');
   } catch (err) {
-    app.log.error({ err }, 'Database unreachable at startup — continuing; /health will report status.');
+    app.log.error(
+      { err },
+      'Database unreachable at startup — continuing; /health will report status.',
+    );
   }
 
   try {

@@ -22,7 +22,14 @@ interface LinkFieldProps {
  * blur. Parsing is a bonus, never a blocker: failures keep the raw link and
  * say nothing — the link still works.
  */
-export function LinkField({ id, url, onChange, onParsed, parsedTitle, parsedSite }: LinkFieldProps) {
+export function LinkField({
+  id,
+  url,
+  onChange,
+  onParsed,
+  parsedTitle,
+  parsedSite,
+}: LinkFieldProps) {
   const { t } = useTranslation();
   const [fetching, setFetching] = useState(false);
   const lastParsed = useRef<string>('');
@@ -44,7 +51,10 @@ export function LinkField({ id, url, onChange, onParsed, parsedTitle, parsedSite
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500"
+      >
         {t('form.link')}
       </label>
       <input
@@ -61,7 +71,7 @@ export function LinkField({ id, url, onChange, onParsed, parsedTitle, parsedSite
       />
       {fetching ? (
         <p className="mt-1.5 text-xs text-zinc-500">{t('form.linkFetching')}</p>
-      ) : (parsedTitle || parsedSite) ? (
+      ) : parsedTitle || parsedSite ? (
         <p className="mt-1.5 truncate text-xs text-zinc-500">
           {parsedTitle && <span className="text-zinc-400">{parsedTitle}</span>}
           {parsedTitle && parsedSite ? ' · ' : ''}
@@ -76,7 +86,11 @@ export function LinkField({ id, url, onChange, onParsed, parsedTitle, parsedSite
 export function DomainChip({ url, site }: { url: string; site?: string | null }) {
   let domain = site ?? '';
   if (!domain) {
-    try { domain = new URL(url).hostname.replace(/^www\./, ''); } catch { domain = url; }
+    try {
+      domain = new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      domain = url;
+    }
   }
   return (
     <a
@@ -87,8 +101,19 @@ export function DomainChip({ url, site }: { url: string; site?: string | null })
       className="inline-flex max-w-[10rem] flex-shrink-0 items-center gap-1 rounded-full border border-zinc-800 px-2 py-0.5 text-xs text-zinc-400 transition-colors hover:border-zinc-600 hover:text-zinc-200"
     >
       <span className="truncate">{domain}</span>
-      <svg aria-hidden className="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+      <svg
+        aria-hidden
+        className="h-3 w-3 flex-shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+        />
       </svg>
     </a>
   );

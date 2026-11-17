@@ -18,7 +18,10 @@ function watchConsole(page: Page): string[] {
   return problems;
 }
 
-test('first-run household journey: register, event, money stream, persistence', async ({ page, request }) => {
+test('first-run household journey: register, event, money stream, persistence', async ({
+  page,
+  request,
+}) => {
   const problems = watchConsole(page);
 
   await test.step('first-run registration creates the admin', async () => {
@@ -32,7 +35,13 @@ test('first-run household journey: register, event, money stream, persistence', 
 
   await test.step('switch the household to English so labels are stable', async () => {
     const res = await page.request.put('/api/settings/preferences', {
-      data: { country: 'GB', currency: 'GBP', locale: 'en-GB', timezone: 'Europe/London', language: 'en' },
+      data: {
+        country: 'GB',
+        currency: 'GBP',
+        locale: 'en-GB',
+        timezone: 'Europe/London',
+        language: 'en',
+      },
     });
     expect(res.ok()).toBeTruthy();
     await page.reload();

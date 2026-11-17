@@ -29,7 +29,9 @@ export const linkPreviewRoutes: FastifyPluginAsync = async (app) => {
       try {
         url = await assertFetchableUrl(req.body.url.trim());
       } catch (err) {
-        return reply.code(400).send({ error: err instanceof Error ? err.message : 'Not a valid link' });
+        return reply
+          .code(400)
+          .send({ error: err instanceof Error ? err.message : 'Not a valid link' });
       }
       const meta = await fetchLinkMeta(url);
       return { url: url.toString(), title: meta.title, site: meta.site };

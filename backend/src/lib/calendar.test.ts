@@ -6,7 +6,15 @@ const NOW = new Date(Date.UTC(2026, 6, 1, 12, 0, 0));
 
 test('buildICS wraps events in a valid VCALENDAR with all-day VEVENTs', () => {
   const ics = buildICS(
-    [{ id: 5, title: 'Rent due', event_type: 'payment', target_date: '2026-07-01', description: null }],
+    [
+      {
+        id: 5,
+        title: 'Rent due',
+        event_type: 'payment',
+        target_date: '2026-07-01',
+        description: null,
+      },
+    ],
     { now: NOW },
   );
   assert.match(ics, /^BEGIN:VCALENDAR\r\n/);

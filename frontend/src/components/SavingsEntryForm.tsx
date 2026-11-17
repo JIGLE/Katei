@@ -21,7 +21,13 @@ const fieldCls =
 // Record a one-time deposit (or withdrawal) into the savings ledger, or correct a
 // mistaken one. This is the answer to "adding savings doesn't update the total" —
 // every entry moves the balance, and a mistake can be edited or removed.
-export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }: SavingsEntryFormProps) {
+export function SavingsEntryForm({
+  initial,
+  pots,
+  onSaved,
+  onCancel,
+  onDeleted,
+}: SavingsEntryFormProps) {
   const { t } = useTranslation();
   const { currency, timezone } = usePreferences();
   const isEdit = Boolean(initial);
@@ -29,7 +35,9 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
   const [amount, setAmount] = useState(initial ? String(Number(initial.amount)) : '');
   const [note, setNote] = useState(initial?.note ?? '');
   const [goalId, setGoalId] = useState<number | undefined>(initial?.goal_id ?? defaultPotId);
-  const [occurredOn, setOccurredOn] = useState(() => initial?.occurred_on?.slice(0, 10) ?? todayInTimezone(timezone));
+  const [occurredOn, setOccurredOn] = useState(
+    () => initial?.occurred_on?.slice(0, 10) ?? todayInTimezone(timezone),
+  );
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +52,12 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
     setSubmitting(true);
     setError(null);
     try {
-      const body = { amount: parsed, note: note.trim() || null, occurred_on: occurredOn, goal_id: goalId ?? null };
+      const body = {
+        amount: parsed,
+        note: note.trim() || null,
+        occurred_on: occurredOn,
+        goal_id: goalId ?? null,
+      };
       const summary = isEdit
         ? await api.patch<SavingsSummary>(`/savings/entries/${initial!.id}`, body)
         : await api.post<SavingsSummary>('/savings/entries', body);
@@ -90,7 +103,9 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
 
       {pots.length > 1 && (
         <div>
-          <label htmlFor="savings-pot" className={labelCls}>{t('money.pot')}</label>
+          <label htmlFor="savings-pot" className={labelCls}>
+            {t('money.pot')}
+          </label>
           <select
             id="savings-pot"
             value={goalId ?? ''}
@@ -98,14 +113,18 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
             className={fieldCls}
           >
             {pots.map((p) => (
-              <option key={p.id} value={p.id}>{p.is_default ? t('money.generalPot') : p.name}</option>
+              <option key={p.id} value={p.id}>
+                {p.is_default ? t('money.generalPot') : p.name}
+              </option>
             ))}
           </select>
         </div>
       )}
 
       <div>
-        <label htmlFor="savings-note" className={labelCls}>{t('money.contributionNote')}</label>
+        <label htmlFor="savings-note" className={labelCls}>
+          {t('money.contributionNote')}
+        </label>
         <input
           id="savings-note"
           type="text"
@@ -118,7 +137,9 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
       </div>
 
       <div>
-        <label htmlFor="savings-date" className={labelCls}>{t('money.contributionDate')}</label>
+        <label htmlFor="savings-date" className={labelCls}>
+          {t('money.contributionDate')}
+        </label>
         <input
           id="savings-date"
           type="date"
@@ -143,7 +164,11 @@ export function SavingsEntryForm({ initial, pots, onSaved, onCancel, onDeleted }
           disabled={submitting}
           className="flex-1 rounded-xl bg-zinc-100 py-2.5 text-sm font-medium text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {submitting ? t('common.saving') : isEdit ? t('common.saveChanges') : t('money.addToSavings')}
+          {submitting
+            ? t('common.saving')
+            : isEdit
+              ? t('common.saveChanges')
+              : t('money.addToSavings')}
         </button>
       </div>
 

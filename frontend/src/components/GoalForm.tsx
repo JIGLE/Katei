@@ -78,7 +78,9 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
     <form onSubmit={handleSubmit} className="space-y-4">
       {!isDefault && (
         <div>
-          <label htmlFor="pot-name" className={labelCls}>{t('money.potName')}</label>
+          <label htmlFor="pot-name" className={labelCls}>
+            {t('money.potName')}
+          </label>
           <input
             id="pot-name"
             type="text"
@@ -102,7 +104,9 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
               onClick={() => setIcon(ic)}
               className={[
                 'flex h-9 w-9 items-center justify-center rounded-xl border text-base transition-colors',
-                icon === ic ? 'border-teal-500/50 bg-teal-500/15' : 'border-zinc-800 hover:border-zinc-700',
+                icon === ic
+                  ? 'border-teal-500/50 bg-teal-500/15'
+                  : 'border-zinc-800 hover:border-zinc-700',
               ].join(' ')}
               aria-pressed={icon === ic}
             >

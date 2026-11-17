@@ -72,7 +72,10 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // PATCH /api/shopping/:id — rename, note, store, or (un)check.
-  app.patch<{ Params: { id: string }; Body: { name?: string; note?: string | null; store?: string | null; is_done?: boolean } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { name?: string; note?: string | null; store?: string | null; is_done?: boolean };
+  }>(
     '/:id',
     {
       schema: {
@@ -91,11 +94,21 @@ export const shoppingRoutes: FastifyPluginAsync = async (app) => {
       const fields: string[] = [];
       const values: unknown[] = [];
       let i = 1;
-      if (req.body.name !== undefined) { fields.push(`name = $${i++}`); values.push(req.body.name.trim()); }
-      if (req.body.note !== undefined) { fields.push(`note = $${i++}`); values.push(req.body.note?.trim() || null); }
-      if (req.body.store !== undefined) { fields.push(`store = $${i++}`); values.push(req.body.store?.trim() || null); }
+      if (req.body.name !== undefined) {
+        fields.push(`name = $${i++}`);
+        values.push(req.body.name.trim());
+      }
+      if (req.body.note !== undefined) {
+        fields.push(`note = $${i++}`);
+        values.push(req.body.note?.trim() || null);
+      }
+      if (req.body.store !== undefined) {
+        fields.push(`store = $${i++}`);
+        values.push(req.body.store?.trim() || null);
+      }
       if (req.body.is_done !== undefined) {
-        fields.push(`is_done = $${i++}`); values.push(req.body.is_done);
+        fields.push(`is_done = $${i++}`);
+        values.push(req.body.is_done);
         fields.push(`done_at = ${req.body.is_done ? 'CURRENT_TIMESTAMP' : 'NULL'}`);
       }
       if (!fields.length) return reply.code(400).send({ error: 'Nothing to update' });
