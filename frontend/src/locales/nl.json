@@ -116,7 +116,10 @@
     "today": "Vandaag",
     "dayEvents_one": "{{count}} gebeurtenis",
     "dayEvents_other": "{{count}} gebeurtenissen",
-    "addOnDay": "Toevoegen op {{date}}"
+    "addOnDay": "Toevoegen op {{date}}",
+    "groupOverdue": "Te laat",
+    "groupThisWeek": "Komende 7 dagen",
+    "groupLater": "Later"
   },
   "eventType": {
     "deadline": "Deadline",

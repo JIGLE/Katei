@@ -115,7 +115,10 @@
     "today": "Today",
     "dayEvents_one": "{{count}} event",
     "dayEvents_other": "{{count}} events",
-    "addOnDay": "Add on {{date}}"
+    "addOnDay": "Add on {{date}}",
+    "groupOverdue": "Overdue",
+    "groupThisWeek": "Next 7 days",
+    "groupLater": "Later"
   },
   "eventType": {
     "deadline": "Deadline",

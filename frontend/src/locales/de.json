@@ -116,7 +116,10 @@
     "today": "Heute",
     "dayEvents_one": "{{count}} Termin",
     "dayEvents_other": "{{count}} Termine",
-    "addOnDay": "Am {{date}} hinzufügen"
+    "addOnDay": "Am {{date}} hinzufügen",
+    "groupOverdue": "Überfällig",
+    "groupThisWeek": "Nächste 7 Tage",
+    "groupLater": "Später"
   },
   "eventType": {
     "deadline": "Frist",

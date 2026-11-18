@@ -252,6 +252,12 @@ reinvent.
   household. Each row is a quiet verb, a dot, then the item as written
   ("Finished · Fix bicycle brakes"), so an item never gets glued into a
   sentence with the wrong casing.
+- **Timeline** — the month grid stays on top but compact: each week is one
+  44px row, so at 390×844 the first list rows show without scrolling. A
+  "Today" link appears beside the month name only while another month is
+  showing. With no day picked, open events read in three groups, Overdue
+  (its label in rose), Next 7 days and Later; a picked day lists just that
+  day.
 - **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
   `Europe/Berlin`). Picking a country sets currency, date and number format
   and timezone together, shown as one line ("Euro (€) · German (Germany) ·

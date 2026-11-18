@@ -46,5 +46,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - Settings show the region as one plain line ("Euro (€) · German (Germany) ·
   Berlin time") with a "Change" link instead of raw codes; picking a country
   sets all three. "Locale" is now "Date and number format".
+- The Timeline's month grid is compact, so the list starts on the first
+  screen, grouped into Overdue, Next 7 days and Later. A "Today" link brings
+  you back from another month.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
