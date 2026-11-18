@@ -404,11 +404,11 @@
     "savings_added_self": "Je hebt {{item}} opzijgezet",
     "shopping_added": "{{actor}} heeft {{item}} op het boodschappenlijstje gezet",
     "shopping_added_self": "Je hebt {{item}} op het boodschappenlijstje gezet",
-    "stream_added_plain": "{{item}} toegevoegd",
-    "event_added_plain": "{{item}} toegevoegd",
-    "event_done_plain": "{{item}} afgerond",
-    "payment_paid_plain": "{{item}} betaald",
-    "savings_added_plain": "{{item}} opzijgezet"
+    "stream_added_plain": "Toegevoegd",
+    "event_added_plain": "Toegevoegd",
+    "event_done_plain": "Afgerond",
+    "payment_paid_plain": "Betaald",
+    "savings_added_plain": "Opzijgezet"
   },
   "notifications": {
     "title": "Meldingen",
@@ -437,7 +437,6 @@
     "reorderAria": "Sleep om te herschikken"
   },
   "gifts": {
-    "forName": "Voor {{name}}",
     "status": "Status",
     "status_idea": "Idee",
     "status_reserved": "Gereserveerd",
@@ -476,6 +475,13 @@
     "someone": "Iemand",
     "publicTitle": "Verlanglijst van {{name}}",
     "publicNotFound": "Deze lijst is niet beschikbaar.",
-    "publicEmpty": "Nog niets op deze lijst."
+    "publicEmpty": "Nog niets op deze lijst.",
+    "addPerson": "Persoon toevoegen",
+    "countGifts_one": "{{count}} cadeau",
+    "countGifts_other": "{{count}} cadeaus",
+    "countReserved_one": "{{count}} gereserveerd",
+    "countReserved_other": "{{count}} gereserveerd",
+    "countBought_one": "{{count}} gekocht",
+    "countBought_other": "{{count}} gekocht"
   }
 }

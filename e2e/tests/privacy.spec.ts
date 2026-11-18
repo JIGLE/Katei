@@ -116,16 +116,23 @@ test('private money streams stay invisible to other members; Around the house ne
     await expect(nosy.getByText('Broadband', { exact: true })).toBeVisible();
   });
 
-  await test.step('Around the house shows the stream but not the shopping item, and names no one', async () => {
-    await nosy.locator('nav a[href="/"]').click();
-    const section = nosy.locator('section', { hasText: 'Around the house' });
-    // Not exact: the row renders as a full sentence ("Added Broadband"), not
-    // the item name standing alone.
-    await expect(section.getByText('Broadband')).toBeVisible({ timeout: 15_000 });
+  await test.step('Around the house shows Alex what Nosy did, never who, and never the shopping item', async () => {
+    await page.reload();
+    await page.locator('nav a[href="/"]').click();
+    const section = page.locator('section', { hasText: 'Around the house' });
+    await expect(section.getByText('Broadband', { exact: true })).toBeVisible({ timeout: 15_000 });
     await expect(section.getByText('Snack Run')).toHaveCount(0);
-    // Money/event activity renders with no attribution at all — Nosy's own
-    // name must not appear here even though Nosy performed the action.
+    // Money/event activity renders with no attribution at all — Nosy did it,
+    // and Nosy's name must not appear.
     await expect(section.getByText('Nosy')).toHaveCount(0);
+  });
+
+  await test.step("Nosy's own action isn't news to Nosy", async () => {
+    await nosy.locator('nav a[href="/"]').click();
+    await nosy.reload();
+    await nosy.waitForLoadState('networkidle');
+    const section = nosy.locator('section', { hasText: 'Around the house' });
+    await expect(section.getByText('Broadband', { exact: true })).toHaveCount(0);
   });
 
   await test.step('no page exceptions or CSP violations anywhere in the journey', async () => {

@@ -9,7 +9,7 @@ import { Modal } from './Modal';
 import { EmptyState } from './EmptyState';
 import { GiftForm } from './GiftForm';
 import { DomainChip } from './LinkField';
-import { ShareGiftList } from './ShareGiftList';
+import { ShareButton, ShareGiftPanel } from './ShareGiftList';
 import { Avatar } from './Avatar';
 import { SectionAdd } from './SectionAdd';
 
@@ -33,6 +33,30 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
   const [addingPerson, setAddingPerson] = useState(false);
   const [personName, setPersonName] = useState('');
   const [savingPerson, setSavingPerson] = useState(false);
+  // Each person's list folds to one summary row so a big family fits on a
+  // screen or two. A single list has nothing to fold against, so it opens.
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [sharing, setSharing] = useState<number | null>(null);
+  const isOpen = (id: number) => lists.length === 1 || expanded.has(id);
+  const toggle = (id: number) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const summary = (list: GiftListSummary) => {
+    if (list.items.length === 0) return t('gifts.noIdeasYet');
+    const reserved = list.items.filter((g) => g.status === 'reserved').length;
+    const bought = list.items.filter((g) => g.status === 'bought').length;
+    return [
+      t('gifts.countGifts', { count: list.items.length }),
+      reserved > 0 && t('gifts.countReserved', { count: reserved }),
+      bought > 0 && t('gifts.countBought', { count: bought }),
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  };
 
   const handleSaved = () => {
     setAddingFor(null);
@@ -67,105 +91,20 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
 
   return (
     <section className="space-y-6">
-      <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-        {t('gifts.familyFriends')}
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+          {t('gifts.familyFriends')}
+        </p>
+        {lists.length > 0 && !addingPerson && (
+          <SectionAdd
+            label={t('gifts.addPerson')}
+            ariaLabel={t('gifts.addExternalPerson')}
+            onClick={() => setAddingPerson(true)}
+          />
+        )}
+      </div>
 
-      {lists.length === 0 && !addingPerson && (
-        <EmptyState
-          icon="🎀"
-          title={t('gifts.familyEmpty')}
-          hint={t('gifts.familyEmptyHint')}
-          actionLabel={t('gifts.addExternalPerson')}
-          onAction={() => setAddingPerson(true)}
-        />
-      )}
-
-      {lists.map((list) => (
-        <div key={list.id} className="space-y-2">
-          <div className="flex items-center gap-2">
-            {list.owner_name ? (
-              <Avatar name={list.owner_name} url={list.owner_avatar} size="sm" />
-            ) : (
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[0.6875rem] font-medium text-zinc-300">
-                {(list.external_name ?? '?').trim().slice(0, 1).toUpperCase()}
-              </span>
-            )}
-            <p className="min-w-0 flex-1 truncate text-xs font-medium uppercase tracking-widest text-zinc-500">
-              {t('gifts.forName', { name: list.owner_name ?? list.external_name })}
-            </p>
-            <SectionAdd
-              label={t('gifts.addGift')}
-              ariaLabel={`${t('gifts.addGift')}: ${list.owner_name ?? list.external_name}`}
-              onClick={() => setAddingFor(list)}
-            />
-          </div>
-
-          {list.items.length === 0 ? (
-            <p className="px-1 text-xs text-zinc-500">{t('gifts.noIdeasYet')}</p>
-          ) : (
-            <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-              {list.items.map((g) => (
-                <div
-                  key={g.id}
-                  className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-800/30"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setEditing({ listId: list.id, item: g })}
-                    className="min-w-0 flex-1 text-left"
-                  >
-                    <p
-                      className={`truncate text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}
-                    >
-                      {g.title}
-                    </p>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
-                      {g.price != null && (
-                        <span className="tabular-nums">
-                          {formatMoney(g.price, g.currency ?? 'EUR', locale)}
-                        </span>
-                      )}
-                      {g.added_by_name && (
-                        <span className="truncate">
-                          {t('gifts.addedBy', { name: g.added_by_name })}
-                        </span>
-                      )}
-                    </div>
-                    {g.status !== 'idea' && (
-                      <p className="mt-0.5 truncate text-xs text-zinc-400">
-                        {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
-                          name: g.bought_by_name ?? t('gifts.someone'),
-                        })}
-                      </p>
-                    )}
-                  </button>
-                  {g.url && <DomainChip url={g.url} site={g.link_site} />}
-                  <span
-                    className={[
-                      'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-                      // Gift status isn't time or money, so it stays neutral:
-                      // reserved is the one that matters to the giver (someone
-                      // holds it), so it reads strongest; bought steps back.
-                      g.status === 'reserved'
-                        ? 'bg-zinc-700/60 text-zinc-200'
-                        : g.status === 'bought'
-                          ? 'bg-zinc-800 text-zinc-400'
-                          : 'bg-zinc-800 text-zinc-500',
-                    ].join(' ')}
-                  >
-                    {t(`gifts.status_${g.status}`)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {canManageShare(list) && <ShareGiftList listId={list.id} />}
-        </div>
-      ))}
-
-      {addingPerson ? (
+      {addingPerson && (
         <form onSubmit={addPerson} className="flex gap-2">
           <input
             type="text"
@@ -184,11 +123,150 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
             {t('gifts.addExternal')}
           </button>
         </form>
-      ) : (
-        lists.length > 0 && (
-          <SectionAdd label={t('gifts.addExternalPerson')} onClick={() => setAddingPerson(true)} />
-        )
       )}
+
+      {lists.length === 0 && !addingPerson && (
+        <EmptyState
+          icon="🎀"
+          title={t('gifts.familyEmpty')}
+          hint={t('gifts.familyEmptyHint')}
+          actionLabel={t('gifts.addExternalPerson')}
+          onAction={() => setAddingPerson(true)}
+        />
+      )}
+
+      <div className="space-y-3">
+        {lists.map((list) => {
+          const name = list.owner_name ?? list.external_name ?? '?';
+          const open = isOpen(list.id);
+          return (
+            <div
+              key={list.id}
+              className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900"
+            >
+              <div className="flex items-center gap-2 pr-3">
+                <button
+                  type="button"
+                  onClick={() => toggle(list.id)}
+                  aria-expanded={open}
+                  aria-controls={`gifts-${list.id}`}
+                  disabled={lists.length === 1}
+                  className="flex min-w-0 flex-1 items-center gap-3 p-4 text-left disabled:cursor-default"
+                >
+                  <span aria-hidden className="flex-shrink-0">
+                    {list.owner_name ? (
+                      <Avatar name={list.owner_name} url={list.owner_avatar} size="sm" />
+                    ) : (
+                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[0.6875rem] font-medium text-zinc-300">
+                        {name.trim().slice(0, 1).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-zinc-100">{name}</span>
+                    <span className="block truncate text-xs text-zinc-500">{summary(list)}</span>
+                  </span>
+                  {lists.length > 1 && (
+                    <svg
+                      aria-hidden
+                      className={`h-4 w-4 flex-shrink-0 text-zinc-500 transition-transform duration-[var(--dur-fast)] ${open ? 'rotate-180' : ''}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  )}
+                </button>
+                {open && canManageShare(list) && (
+                  <ShareButton
+                    open={sharing === list.id}
+                    onClick={() => setSharing((v) => (v === list.id ? null : list.id))}
+                    controls={`share-${list.id}`}
+                  />
+                )}
+              </div>
+
+              {open && (
+                <div id={`gifts-${list.id}`} className="border-t border-zinc-800/60">
+                  {sharing === list.id && (
+                    <div className="border-b border-zinc-800/60 p-3">
+                      <ShareGiftPanel listId={list.id} id={`share-${list.id}`} />
+                    </div>
+                  )}
+                  <div className="divide-y divide-zinc-800/60">
+                    {list.items.map((g) => (
+                      <div
+                        key={g.id}
+                        className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-800/30"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setEditing({ listId: list.id, item: g })}
+                          className="min-w-0 flex-1 text-left"
+                        >
+                          <p
+                            className={`truncate text-sm ${g.status === 'bought' ? 'text-zinc-400' : 'text-zinc-100'}`}
+                          >
+                            {g.title}
+                          </p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
+                            {g.price != null && (
+                              <span className="tabular-nums">
+                                {formatMoney(g.price, g.currency ?? 'EUR', locale)}
+                              </span>
+                            )}
+                            {g.added_by_name && (
+                              <span className="truncate">
+                                {t('gifts.addedBy', { name: g.added_by_name })}
+                              </span>
+                            )}
+                          </div>
+                          {g.status !== 'idea' && (
+                            <p className="mt-0.5 truncate text-xs text-zinc-400">
+                              {t(g.status === 'bought' ? 'gifts.boughtBy' : 'gifts.reservedBy', {
+                                name: g.bought_by_name ?? t('gifts.someone'),
+                              })}
+                            </p>
+                          )}
+                        </button>
+                        {g.url && <DomainChip url={g.url} site={g.link_site} />}
+                        <span
+                          className={[
+                            'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+                            // Gift status isn't time or money, so it stays neutral:
+                            // reserved is the one that matters to the giver (someone
+                            // holds it), so it reads strongest; bought steps back.
+                            g.status === 'reserved'
+                              ? 'bg-zinc-700/60 text-zinc-200'
+                              : g.status === 'bought'
+                                ? 'bg-zinc-800 text-zinc-400'
+                                : 'bg-zinc-800 text-zinc-500',
+                          ].join(' ')}
+                        >
+                          {t(`gifts.status_${g.status}`)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-zinc-800/60 px-4 py-3">
+                    <SectionAdd
+                      label={t('gifts.addGift')}
+                      ariaLabel={`${t('gifts.addGift')}: ${name}`}
+                      onClick={() => setAddingFor(list)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       <Modal open={!!addingFor} title={t('gifts.newGift')} onClose={() => setAddingFor(null)}>
         {addingFor && (

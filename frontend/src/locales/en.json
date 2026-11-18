@@ -403,11 +403,11 @@
     "savings_added_self": "You set aside {{item}}",
     "shopping_added": "{{actor}} put {{item}} on the shopping list",
     "shopping_added_self": "You put {{item}} on the shopping list",
-    "stream_added_plain": "Added {{item}}",
-    "event_added_plain": "Added {{item}}",
-    "event_done_plain": "Finished {{item}}",
-    "payment_paid_plain": "Paid {{item}}",
-    "savings_added_plain": "Set aside {{item}}"
+    "stream_added_plain": "Added",
+    "event_added_plain": "Added",
+    "event_done_plain": "Finished",
+    "payment_paid_plain": "Paid",
+    "savings_added_plain": "Set aside"
   },
   "notifications": {
     "title": "Notifications",
@@ -436,7 +436,6 @@
     "reorderAria": "Drag to reorder"
   },
   "gifts": {
-    "forName": "For {{name}}",
     "status": "Status",
     "status_idea": "Idea",
     "status_reserved": "Reserved",
@@ -475,6 +474,13 @@
     "someone": "Someone",
     "publicTitle": "{{name}}'s wishlist",
     "publicNotFound": "This list isn't available.",
-    "publicEmpty": "Nothing on this list yet."
+    "publicEmpty": "Nothing on this list yet.",
+    "addPerson": "Add person",
+    "countGifts_one": "{{count}} gift",
+    "countGifts_other": "{{count}} gifts",
+    "countReserved_one": "{{count}} reserved",
+    "countReserved_other": "{{count}} reserved",
+    "countBought_one": "{{count}} bought",
+    "countBought_other": "{{count}} bought"
   }
 }

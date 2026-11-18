@@ -250,7 +250,13 @@ export default function Overview() {
   // The five rows Around the house actually shows — money/event verbs only,
   // narrowed further to non-money verbs when money is off.
   const glanceActions = money_enabled ? MONEY_EVENT_ACTIONS : NON_MONEY_EVENT_ACTIONS;
-  const glanceActivity = activity.filter((a) => glanceActions.has(a.action)).slice(0, 5);
+  // Your own actions aren't news to you, and a household of one has no one
+  // else's, so the section only ever shows what other people did.
+  const otherPeople = members.filter((m) => m.kind !== 'pet' && m.id !== user?.id).length;
+  const glanceActivity =
+    otherPeople === 0
+      ? []
+      : activity.filter((a) => glanceActions.has(a.action) && a.actor_id !== user?.id).slice(0, 5);
 
   // A warm, personal header that leads with the household identity: the home's
   // name is the eyebrow and a time-of-day greeting to the member is the title,
@@ -464,8 +470,15 @@ export default function Overview() {
           <ul className="space-y-3">
             {glanceActivity.map((a) => (
               <li key={a.id} className="flex items-center gap-3">
-                <span className="line-clamp-2 flex-1 text-sm text-zinc-300">
-                  {t(`activity.${a.action}_plain`, { item: a.summary })}
+                {/* The verb is a quiet label and the item is the news, so the
+                    item keeps its own casing instead of being glued into a
+                    sentence ("Finished Fix bicycle brakes"). */}
+                <span className="line-clamp-2 flex-1 text-sm">
+                  <span className="text-zinc-500">{t(`activity.${a.action}_plain`)}</span>
+                  <span aria-hidden className="text-zinc-500">
+                    {' · '}
+                  </span>
+                  <span className="text-zinc-200">{a.summary}</span>
                 </span>
                 <time className="flex-shrink-0 text-xs tabular-nums text-zinc-500">
                   {formatRelativeTime(a.created_at, lang)}

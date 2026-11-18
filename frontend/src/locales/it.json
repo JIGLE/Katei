@@ -404,11 +404,11 @@
     "savings_added_self": "Hai messo da parte {{item}}",
     "shopping_added": "{{actor}} ha messo {{item}} nella lista della spesa",
     "shopping_added_self": "Hai messo {{item}} nella lista della spesa",
-    "stream_added_plain": "{{item}} aggiunto",
-    "event_added_plain": "{{item}} aggiunto",
-    "event_done_plain": "{{item}} completato",
-    "payment_paid_plain": "{{item}} pagato",
-    "savings_added_plain": "{{item}} messo da parte"
+    "stream_added_plain": "Aggiunto",
+    "event_added_plain": "Aggiunto",
+    "event_done_plain": "Completato",
+    "payment_paid_plain": "Pagato",
+    "savings_added_plain": "Messo da parte"
   },
   "notifications": {
     "title": "Notifiche",
@@ -437,7 +437,6 @@
     "reorderAria": "Trascina per riordinare"
   },
   "gifts": {
-    "forName": "Per {{name}}",
     "status": "Stato",
     "status_idea": "Idea",
     "status_reserved": "Riservato",
@@ -476,6 +475,13 @@
     "someone": "Qualcuno",
     "publicTitle": "Lista dei desideri di {{name}}",
     "publicNotFound": "Questa lista non è disponibile.",
-    "publicEmpty": "Ancora niente in questa lista."
+    "publicEmpty": "Ancora niente in questa lista.",
+    "addPerson": "Aggiungi persona",
+    "countGifts_one": "{{count}} regalo",
+    "countGifts_other": "{{count}} regali",
+    "countReserved_one": "{{count}} prenotato",
+    "countReserved_other": "{{count}} prenotati",
+    "countBought_one": "{{count}} comprato",
+    "countBought_other": "{{count}} comprati"
   }
 }

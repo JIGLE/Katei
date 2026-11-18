@@ -95,6 +95,9 @@ test('household and gift screens use no time or savings accent', async ({ page }
   // Gifts: reserved and bought pills, "got this" lines, the status picker.
   await page.goto('/lists');
   await page.getByRole('button', { name: 'Gifts', exact: true }).click();
+  // Other people's lists fold to a summary row; open Sam's.
+  const sam = page.getByRole('button', { name: new RegExp(`^${PREFIX} Sam`) });
+  if ((await sam.getAttribute('aria-expanded')) === 'false') await sam.click();
   const scarf = page.getByText('Scarf', { exact: true });
   await scarf.scrollIntoViewIfNeeded();
   await expect(scarf).toBeVisible();
