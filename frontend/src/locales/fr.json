@@ -160,7 +160,6 @@
     "savingsGoal": "Objectif d'épargne",
     "trends": "Tendances des dépenses",
     "trendsHigh": "Max",
-    "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici.",
     "auto": "Auto",
     "private": "Privé",
     "expectedActual": "Prévu vs réel",
@@ -195,7 +194,9 @@
     "addHintIncome": "De l’argent qui rentre, comme un salaire",
     "addHintExpense": "Une facture ou un coût régulier",
     "addHintSavings": "Un montant régulier mis de côté",
-    "addHintContribution": "Verser une fois dans une cagnotte"
+    "addHintContribution": "Verser une fois dans une cagnotte",
+    "viewSummary": "Résumé",
+    "viewFlow": "Entrées/sorties"
   },
   "freq": {
     "monthly": "Mensuel",

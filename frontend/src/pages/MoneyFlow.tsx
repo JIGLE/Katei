@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type {
   AssignmentDetail,
@@ -81,7 +82,18 @@ const TYPE_AMOUNT: Record<StreamType, string> = {
   expense: 'text-zinc-200',
   savings: 'text-teal-300',
 };
-const TYPE_ORDER: StreamType[] = ['income', 'expense', 'savings'];
+// Income and bills share the In & out view; savings plans live with the pots.
+const FLOW_TYPES: StreamType[] = ['expense', 'income'];
+// The search field earns its place once a view holds this many streams.
+const SEARCH_FROM = 15;
+
+type View = 'summary' | 'flow' | 'savings';
+const VIEWS: View[] = ['summary', 'flow', 'savings'];
+const VIEW_LABEL: Record<View, string> = {
+  summary: 'money.viewSummary',
+  flow: 'money.viewFlow',
+  savings: 'money.savings',
+};
 const TYPE_HEADER_KEY: Record<StreamType, string> = {
   income: 'money.income',
   expense: 'money.expenses',
@@ -89,6 +101,19 @@ const TYPE_HEADER_KEY: Record<StreamType, string> = {
 };
 
 export default function MoneyFlow() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const view: View = VIEWS.includes(viewParam as View) ? (viewParam as View) : 'summary';
+  const setView = (v: View) =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (v === 'summary') next.delete('view');
+        else next.set('view', v);
+        return next;
+      },
+      { replace: true },
+    );
   const [streams, setStreams] = useState<MoneyStream[]>([]);
   const [savingsData, setSavingsData] = useState<SavingsSummary | null>(null);
   const [trends, setTrends] = useState<MonthlySpend[]>([]);
@@ -146,6 +171,8 @@ export default function MoneyFlow() {
   }, []);
 
   const handleSaved = () => {
+    // A new stream lands in its own view, so it's visible right after saving.
+    if (showForm) setView(newType === 'savings' ? 'savings' : 'flow');
     setShowForm(false);
     setEditing(null);
     fetchStreams();
@@ -156,6 +183,7 @@ export default function MoneyFlow() {
   };
   const handleSavingsSaved = (s: SavingsSummary) => {
     setSavingsData(s);
+    if (showSavingsForm) setView('savings');
     setShowSavingsForm(false);
     setEditingEntry(null);
     setEditingPot(null);
@@ -195,6 +223,14 @@ export default function MoneyFlow() {
   const mineStreams = mineOnly ? streams.filter((s) => mineStreamIds.has(s.id)) : streams;
   const listStreams = mineStreams.filter((s) => matchesQuery(query, s.name, s.category));
 
+  const flowCount = mineStreams.filter((s) => FLOW_TYPES.includes(s.stream_type)).length;
+  const savingsStreams = streams
+    .filter((s) => s.stream_type === 'savings')
+    .sort(
+      (a, b) =>
+        (monthlyEquiv(b) || parseFloat(b.amount)) - (monthlyEquiv(a) || parseFloat(a.amount)),
+    );
+
   const expenseStreams = homeStreams.filter((s) => s.stream_type === 'expense');
   const slices = byCategory(expenseStreams);
   const catLabel = (c: string) => (c === 'Uncategorised' ? t('money.uncategorised') : c);
@@ -209,381 +245,438 @@ export default function MoneyFlow() {
   // the number and the currency instead of splitting "kr." itself.
   const fmtWrap = (n: number) => fmt(n).replace(/[  ]/g, ' ');
 
+  // One stream row, shared by the In & out list and the savings plans.
+  const renderStream = (s: MoneyStream, i: number) => (
+    <button
+      key={s.id}
+      type="button"
+      onClick={() => setEditing(s)}
+      style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+      className="animate-fade-slide-in flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
+    >
+      <div className="flex-1 min-w-0">
+        <p className="flex items-center gap-2 text-sm text-zinc-100">
+          <span className="truncate">{s.name}</span>
+          {s.automated && (
+            <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
+              {t('money.auto')}
+            </span>
+          )}
+          {s.private && (
+            <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
+              {t('money.private')}
+            </span>
+          )}
+        </p>
+        <p className="mt-0.5 text-xs text-zinc-500">
+          {t(freqKey[s.frequency])}
+          {s.category?.trim() && <span className="ml-1">· {catLabel(s.category.trim())}</span>}
+        </p>
+      </div>
+      <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[s.stream_type]}`}>
+        {formatMoney(s.amount, s.currency, locale)}
+      </p>
+    </button>
+  );
+
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.eyebrow')}</p>
-        <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('money.title')}</h1>
+      <header className="space-y-4">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.eyebrow')}</p>
+          <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('money.title')}</h1>
+        </div>
+        {/* Summary | In & out | Savings — the Lists segmented pattern. The
+            view lives in the URL so a reload or a back step keeps it. */}
+        <div className="flex gap-1 rounded-xl border border-zinc-800/60 bg-zinc-900 p-1">
+          {VIEWS.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v)}
+              aria-pressed={view === v}
+              className={[
+                'flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors',
+                view === v ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300',
+              ].join(' ')}
+            >
+              {t(VIEW_LABEL[v])}
+            </button>
+          ))}
+        </div>
       </header>
-
-      {/* Net — the headline: what's left after expenses and savings. This is the
-          page's single focal point, so it leads as bare large type (no card),
-          with the savings rate as a subordinate caption. */}
-      <div>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.net')}</p>
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <p
-            className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
-          >
-            {loading ? '—' : fmt(animatedNet)}
-          </p>
-          {!loading && income > 0 && (
-            <p className="text-xs text-zinc-500">
-              {t('money.savingsRate')}{' '}
-              <span className="tabular-nums text-zinc-400">{savingsRate.toFixed(0)}%</span>
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Income / Expenses / Savings — one panel of three related figures, split
-          by dividers rather than three competing cards. Colour lives in the
-          numbers (emerald / neutral / teal), not in card fills. */}
-      <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('money.income')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">
-            {loading ? '—' : fmtWrap(income)}
-          </p>
-        </div>
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">
-            {loading ? '—' : fmtWrap(expenses)}
-          </p>
-        </div>
-        <div className="p-4">
-          <p className="text-xs text-zinc-500">{t('money.savings')}</p>
-          <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
-            {loading ? '—' : fmtWrap(plannedMonthly)}
-          </p>
-        </div>
-      </div>
-
-      {!loading && foreignCount > 0 && (
-        <p className="-mt-4 text-xs text-zinc-500">
-          {t('money.foreignExcluded', { count: foreignCount })}
-        </p>
-      )}
-
-      {/* Savings — the accumulated balance, split across pots (goals). The total
-          is the hero; each pot below shows its own balance and progress, so a
-          deposit to "Trip" moves that pot without touching the rest. */}
-      {!loading && savingsData && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-              {t('money.savingsBalance')}
-            </p>
-            <SectionAdd label={t('money.addToSavings')} onClick={() => setShowSavingsForm(true)} />
-          </div>
-
-          <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(animatedBalance)}</p>
-          {plannedMonthly > 0 && (
-            <p className="mt-1 text-xs tabular-nums text-zinc-500">
-              {t('money.plannedMonthly')}{' '}
-              <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
-            </p>
-          )}
-
-          {/* Pots — tap one to rename / retarget / delete it. */}
-          <ul className="mt-4 space-y-3 border-t border-zinc-800/60 pt-4">
-            {pots.map((pot) => {
-              const pct =
-                pot.target && pot.target > 0
-                  ? Math.min(100, (pot.balance / pot.target) * 100)
-                  : null;
-              // The chip is a link, so it lives on its own line under the
-              // row's edit button — nested interactives are invalid, and
-              // inline it would squeeze the pot's name and bar.
-              return (
-                <li
-                  key={pot.id}
-                  className="-mx-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-800/40"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setEditingPot(pot)}
-                    className="block w-full text-left"
-                  >
-                    <div className="flex items-center gap-2 text-sm">
-                      <span aria-hidden>{pot.icon || '🐷'}</span>
-                      <span className="flex-1 truncate text-zinc-200">
-                        {pot.is_default ? t('money.generalPot') : pot.name}
-                      </span>
-                      <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
-                      {pot.target ? (
-                        <span className="text-xs tabular-nums text-zinc-500">
-                          / {fmt(pot.target)}
-                        </span>
-                      ) : null}
-                      {pct !== null && pct >= 100 && (
-                        <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-teal-300">
-                          {t('money.goalReached')}
-                        </span>
-                      )}
-                    </div>
-                    {pct !== null && (
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                        <div
-                          className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    )}
-                  </button>
-                  {pot.url && (
-                    <div className="mt-1.5 flex justify-end">
-                      <DomainChip url={pot.url} site={pot.link_site} />
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-            <li>
-              <SectionAdd label={t('money.newPot')} onClick={() => setShowNewPot(true)} />
-            </li>
-          </ul>
-
-          {/* Recent contributions — tap one to correct or remove a mistake. */}
-          {savingsData.entries.length > 0 && (
-            <ul className="mt-4 space-y-1 border-t border-zinc-800/60 pt-4">
-              {savingsData.entries.slice(0, 4).map((e) => (
-                <li key={e.id}>
-                  <button
-                    type="button"
-                    onClick={() => setEditingEntry(e)}
-                    className="-mx-2 flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-zinc-800/40"
-                  >
-                    <span className="flex-1 truncate text-zinc-300">
-                      {e.note?.trim() || t('money.contribution')}
-                    </span>
-                    <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
-
-      {/* Expected vs actual — did the paid bills match their usual amounts? */}
-      {!loading && !error && latestVar && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <div className="mb-3 flex items-baseline justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-              {t('money.expectedActual')}
-            </p>
-            <p className="text-xs tabular-nums text-zinc-500">
-              {formatMonthShort(latestVar.month, locale)}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-zinc-500">{t('money.expected')}</p>
-              <p className="mt-1 text-sm font-light tabular-nums text-zinc-200">
-                {fmt(latestVar.expected)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500">{t('money.actual')}</p>
-              <p
-                className={`mt-1 text-sm font-light tabular-nums ${latestVar.actual > latestVar.expected ? 'text-rose-500' : 'text-emerald-500'}`}
-              >
-                {fmt(latestVar.actual)}
-                {latestVar.actual !== latestVar.expected && (
-                  <span className="ml-1 text-xs">
-                    ({latestVar.actual > latestVar.expected ? '+' : '−'}
-                    {fmt(Math.abs(latestVar.actual - latestVar.expected))})
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Spending trends — completed payments per month */}
-      {!loading && !error && trends.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <div className="mb-4 flex items-baseline justify-between">
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-              {t('money.trends')}
-            </p>
-            {maxSpend > 0 && (
-              <p className="text-xs tabular-nums text-zinc-500">
-                {t('money.trendsHigh')} {fmt(maxSpend)}
-              </p>
-            )}
-          </div>
-          {maxSpend === 0 ? (
-            <p className="py-4 text-center text-sm text-zinc-500">{t('money.trendsEmpty')}</p>
-          ) : (
-            <div className="flex h-28 gap-2">
-              {trends.map((d) => {
-                const h = maxSpend > 0 ? (d.total / maxSpend) * 100 : 0;
-                return (
-                  <div key={d.month} className="flex flex-1 flex-col items-center gap-1.5">
-                    <div
-                      className="flex w-full flex-1 items-end"
-                      title={`${formatMonthShort(d.month, locale)} — ${fmt(d.total)}`}
-                    >
-                      <div
-                        className="w-full rounded-t bg-emerald-500/80"
-                        style={{ height: `${d.total > 0 ? Math.max(h, 3) : 0}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] tabular-nums text-zinc-500">
-                      {formatMonthShort(d.month, locale)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Expense breakdown */}
-      {!loading && !error && slices.length > 0 && (
-        <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
-            {t('money.whereItGoes')}
-          </p>
-          {/* Adjacent segments are steps of one green — rank, not identity —
-              so a 2px gap separates them and the sorted list below is the
-              real legend (same order as the bar, largest first). Colour dots
-              on the rows would promise a mapping the shades can't deliver. */}
-          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-zinc-800">
-            {slices.map((s, i) => (
-              <div
-                key={s.category}
-                className={`${SEGMENT_BG[i % SEGMENT_BG.length]} first:rounded-l-full last:rounded-r-full`}
-                style={{ width: `${s.pct}%` }}
-                title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`}
-              />
-            ))}
-          </div>
-          <ul className="mt-4 space-y-2.5">
-            {slices.map((s) => (
-              <li key={s.category} className="flex items-center gap-3">
-                <span className="flex-1 truncate text-sm text-zinc-300">
-                  {catLabel(s.category)}
-                </span>
-                <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
-                <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
-                  {fmt(s.monthly)}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-right text-xs text-zinc-500">{t('money.perMonth')}</p>
-        </section>
-      )}
 
       {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      {!loading && !error && streams.length === 0 && (
-        <EmptyState
-          icon="💸"
-          title={t('money.noStreamsYet')}
-          hint={t('money.noStreamsHint')}
-          actionLabel={t('money.addFirstStream')}
-          onAction={() => openAdd('expense')}
-        />
-      )}
-
-      {/* Streams grouped by type. Search earns its place with volume; the
-          personal filter is cheap and stays. */}
-      {!loading && !error && streams.length > 0 && (
-        <div className="flex items-center justify-end gap-2">
-          {(streams.length >= 8 || query !== '') && (
-            <div className="flex-1">
-              <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+      {view === 'summary' && (
+        <div className="animate-fade-slide-in space-y-6">
+          {/* Net — the headline: what's left after expenses and savings. This is the
+            page's single focal point, so it leads as bare large type (no card),
+            with the savings rate as a subordinate caption. */}
+          <div>
+            <p className="text-xs uppercase tracking-widest text-zinc-500">{t('money.net')}</p>
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p
+                className={`text-3xl font-light tabular-nums ${net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
+              >
+                {loading ? '—' : fmt(animatedNet)}
+              </p>
+              {!loading && income > 0 && (
+                <p className="text-xs text-zinc-500">
+                  {t('money.savingsRate')}{' '}
+                  <span className="tabular-nums text-zinc-400">{savingsRate.toFixed(0)}%</span>
+                </p>
+              )}
             </div>
+          </div>
+
+          {/* Income / Expenses / Savings — one panel of three related figures, split
+            by dividers rather than three competing cards. Colour lives in the
+            numbers (emerald / neutral / teal), not in card fills. */}
+          <div className="grid grid-cols-3 divide-x divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+            <div className="p-4">
+              <p className="text-xs text-zinc-500">{t('money.income')}</p>
+              <p className="mt-1 text-sm font-light leading-tight tabular-nums text-emerald-500">
+                {loading ? '—' : fmtWrap(income)}
+              </p>
+            </div>
+            <div className="p-4">
+              <p className="text-xs text-zinc-500">{t('money.expenses')}</p>
+              <p className="mt-1 text-sm font-light leading-tight tabular-nums text-zinc-200">
+                {loading ? '—' : fmtWrap(expenses)}
+              </p>
+            </div>
+            <div className="p-4">
+              <p className="text-xs text-zinc-500">{t('money.savings')}</p>
+              <p className="mt-1 text-sm font-light leading-tight tabular-nums text-teal-300">
+                {loading ? '—' : fmtWrap(plannedMonthly)}
+              </p>
+            </div>
+          </div>
+
+          {!loading && foreignCount > 0 && (
+            <p className="-mt-4 text-xs text-zinc-500">
+              {t('money.foreignExcluded', { count: foreignCount })}
+            </p>
           )}
-          <button
-            type="button"
-            onClick={() => setMineOnly((v) => !v)}
-            aria-pressed={mineOnly}
-            className={[
-              'flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-              mineOnly
-                ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
-                : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-            ].join(' ')}
-          >
-            {t('timeline.assignedToMe')}
-          </button>
+
+          {!loading && !error && streams.length === 0 && (
+            <EmptyState
+              icon="💸"
+              title={t('money.noStreamsYet')}
+              hint={t('money.noStreamsHint')}
+              actionLabel={t('money.addFirstStream')}
+              onAction={() => openAdd('expense')}
+            />
+          )}
+
+          {/* Expected vs actual — did the paid bills match their usual amounts? */}
+          {!loading && !error && latestVar && (
+            <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+              <div className="mb-3 flex items-baseline justify-between">
+                <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                  {t('money.expectedActual')}
+                </p>
+                <p className="text-xs tabular-nums text-zinc-500">
+                  {formatMonthShort(latestVar.month, locale)}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-zinc-500">{t('money.expected')}</p>
+                  <p className="mt-1 text-sm font-light tabular-nums text-zinc-200">
+                    {fmt(latestVar.expected)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500">{t('money.actual')}</p>
+                  <p
+                    className={`mt-1 text-sm font-light tabular-nums ${latestVar.actual > latestVar.expected ? 'text-rose-500' : 'text-emerald-500'}`}
+                  >
+                    {fmt(latestVar.actual)}
+                    {latestVar.actual !== latestVar.expected && (
+                      <span className="ml-1 text-xs">
+                        ({latestVar.actual > latestVar.expected ? '+' : '−'}
+                        {fmt(Math.abs(latestVar.actual - latestVar.expected))})
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Spending trends — completed payments per month. Hidden until
+              there's a month with something in it; an empty chart says nothing. */}
+          {!loading && !error && maxSpend > 0 && (
+            <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+              <div className="mb-4 flex items-baseline justify-between">
+                <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                  {t('money.trends')}
+                </p>
+                <p className="text-xs tabular-nums text-zinc-500">
+                  {t('money.trendsHigh')} {fmt(maxSpend)}
+                </p>
+              </div>
+              <div className="flex h-28 gap-2">
+                {trends.map((d) => {
+                  const h = (d.total / maxSpend) * 100;
+                  return (
+                    <div key={d.month} className="flex flex-1 flex-col items-center gap-1.5">
+                      <div
+                        className="flex w-full flex-1 items-end"
+                        title={`${formatMonthShort(d.month, locale)} — ${fmt(d.total)}`}
+                      >
+                        <div
+                          className="w-full rounded-t bg-emerald-500/80"
+                          style={{ height: `${d.total > 0 ? Math.max(h, 3) : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] tabular-nums text-zinc-500">
+                        {formatMonthShort(d.month, locale)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Expense breakdown */}
+          {!loading && !error && slices.length > 0 && (
+            <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
+                {t('money.whereItGoes')}
+              </p>
+              {/* Adjacent segments are steps of one green — rank, not identity —
+                so a 2px gap separates them and the sorted list below is the
+                real legend (same order as the bar, largest first). Colour dots
+                on the rows would promise a mapping the shades can't deliver. */}
+              <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-zinc-800">
+                {slices.map((s, i) => (
+                  <div
+                    key={s.category}
+                    className={`${SEGMENT_BG[i % SEGMENT_BG.length]} first:rounded-l-full last:rounded-r-full`}
+                    style={{ width: `${s.pct}%` }}
+                    title={`${catLabel(s.category)} — ${s.pct.toFixed(0)}%`}
+                  />
+                ))}
+              </div>
+              <ul className="mt-4 space-y-2.5">
+                {slices.map((s) => (
+                  <li key={s.category} className="flex items-center gap-3">
+                    <span className="flex-1 truncate text-sm text-zinc-300">
+                      {catLabel(s.category)}
+                    </span>
+                    <span className="text-xs tabular-nums text-zinc-500">{s.pct.toFixed(0)}%</span>
+                    <span className="w-24 text-right text-sm tabular-nums text-zinc-200">
+                      {fmt(s.monthly)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-right text-xs text-zinc-500">{t('money.perMonth')}</p>
+            </section>
+          )}
         </div>
       )}
-      {!loading && !error && streams.length > 0 && mineOnly && mineStreams.length === 0 && (
-        <EmptyState
-          icon="🧹"
-          title={t('timeline.noneAssigned')}
-          hint={t('timeline.noneAssignedHint')}
-        />
-      )}
-      {!loading &&
-        !error &&
-        streams.length > 0 &&
-        mineStreams.length > 0 &&
-        listStreams.length === 0 && (
-          <EmptyState icon="🔍" title={t('search.noMatches')} hint={t('search.noMatchesHint')} />
-        )}
-      {!loading &&
-        !error &&
-        TYPE_ORDER.map((type) => {
-          // Heaviest first — the list's order should match the money's weight,
-          // not the order someone happened to type things in.
-          const weight = (s: MoneyStream) => monthlyEquiv(s) || parseFloat(s.amount);
-          const group = listStreams
-            .filter((s) => s.stream_type === type)
-            .sort((a, b) => weight(b) - weight(a));
-          if (group.length === 0) return null;
-          return (
-            <section key={type} className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-                {t(TYPE_HEADER_KEY[type])}
-              </p>
-              {group.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setEditing(s)}
-                  style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
-                  className="animate-fade-slide-in flex w-full items-center gap-4 rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4 text-left transition-colors hover:border-zinc-700"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="flex items-center gap-2 text-sm text-zinc-100">
-                      <span className="truncate">{s.name}</span>
-                      {s.automated && (
-                        <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
-                          {t('money.auto')}
-                        </span>
-                      )}
-                      {s.private && (
-                        <span className="flex-shrink-0 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-zinc-400">
-                          {t('money.private')}
-                        </span>
-                      )}
-                    </p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
-                      {t(freqKey[s.frequency])}
-                      {s.category?.trim() && (
-                        <span className="ml-1">· {catLabel(s.category.trim())}</span>
-                      )}
-                    </p>
-                  </div>
-                  <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[type]}`}>
-                    {formatMoney(s.amount, s.currency, locale)}
+
+      {view === 'flow' && (
+        <div className="animate-fade-slide-in space-y-6">
+          {!loading && !error && streams.length === 0 && (
+            <EmptyState
+              icon="💸"
+              title={t('money.noStreamsYet')}
+              hint={t('money.noStreamsHint')}
+              actionLabel={t('money.addFirstStream')}
+              onAction={() => openAdd('expense')}
+            />
+          )}
+
+          {/* Streams grouped by type. Search earns its place with volume; the
+            personal filter is cheap and stays. */}
+          {!loading && !error && flowCount > 0 && (
+            <div className="flex items-center justify-end gap-2">
+              {(flowCount >= SEARCH_FROM || query !== '') && (
+                <div className="flex-1">
+                  <SearchInput value={query} onChange={setQuery} label={t('search.streams')} />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setMineOnly((v) => !v)}
+                aria-pressed={mineOnly}
+                className={[
+                  'flex-shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                  mineOnly
+                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t('timeline.assignedToMe')}
+              </button>
+            </div>
+          )}
+          {!loading && !error && streams.length > 0 && mineOnly && mineStreams.length === 0 && (
+            <EmptyState
+              icon="🧹"
+              title={t('timeline.noneAssigned')}
+              hint={t('timeline.noneAssignedHint')}
+            />
+          )}
+          {!loading &&
+            !error &&
+            streams.length > 0 &&
+            mineStreams.length > 0 &&
+            listStreams.length === 0 && (
+              <EmptyState
+                icon="🔍"
+                title={t('search.noMatches')}
+                hint={t('search.noMatchesHint')}
+              />
+            )}
+          {!loading &&
+            !error &&
+            FLOW_TYPES.map((type) => {
+              // Heaviest first — the list's order should match the money's weight,
+              // not the order someone happened to type things in.
+              const weight = (s: MoneyStream) => monthlyEquiv(s) || parseFloat(s.amount);
+              const group = listStreams
+                .filter((s) => s.stream_type === type)
+                .sort((a, b) => weight(b) - weight(a));
+              if (group.length === 0) return null;
+              return (
+                <section key={type} className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                    {t(TYPE_HEADER_KEY[type])}
                   </p>
-                </button>
-              ))}
+                  {group.map((s, i) => renderStream(s, i))}
+                </section>
+              );
+            })}
+        </div>
+      )}
+
+      {view === 'savings' && (
+        <div className="animate-fade-slide-in space-y-6">
+          {/* Savings — the accumulated balance, split across pots (goals). The total
+            is the hero; each pot below shows its own balance and progress, so a
+            deposit to "Trip" moves that pot without touching the rest. */}
+          {!loading && savingsData && (
+            <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                  {t('money.savingsBalance')}
+                </p>
+                <SectionAdd
+                  label={t('money.addToSavings')}
+                  onClick={() => setShowSavingsForm(true)}
+                />
+              </div>
+
+              <p className="text-2xl font-light tabular-nums text-teal-300">
+                {fmt(animatedBalance)}
+              </p>
+              {plannedMonthly > 0 && (
+                <p className="mt-1 text-xs tabular-nums text-zinc-500">
+                  {t('money.plannedMonthly')}{' '}
+                  <span className="text-zinc-400">{fmt(plannedMonthly)}</span>
+                </p>
+              )}
+
+              {/* Pots — tap one to rename / retarget / delete it. */}
+              <ul className="mt-4 space-y-3 border-t border-zinc-800/60 pt-4">
+                {pots.map((pot) => {
+                  const pct =
+                    pot.target && pot.target > 0
+                      ? Math.min(100, (pot.balance / pot.target) * 100)
+                      : null;
+                  // The chip is a link, so it lives on its own line under the
+                  // row's edit button — nested interactives are invalid, and
+                  // inline it would squeeze the pot's name and bar.
+                  return (
+                    <li
+                      key={pot.id}
+                      className="-mx-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-800/40"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setEditingPot(pot)}
+                        className="block w-full text-left"
+                      >
+                        <div className="flex items-center gap-2 text-sm">
+                          <span aria-hidden>{pot.icon || '🐷'}</span>
+                          <span className="flex-1 truncate text-zinc-200">
+                            {pot.is_default ? t('money.generalPot') : pot.name}
+                          </span>
+                          <span className="tabular-nums text-teal-300">{fmt(pot.balance)}</span>
+                          {pot.target ? (
+                            <span className="text-xs tabular-nums text-zinc-500">
+                              / {fmt(pot.target)}
+                            </span>
+                          ) : null}
+                          {pct !== null && pct >= 100 && (
+                            <span className="flex-shrink-0 rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-teal-300">
+                              {t('money.goalReached')}
+                            </span>
+                          )}
+                        </div>
+                        {pct !== null && (
+                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+                            <div
+                              className="h-full rounded-full bg-teal-400 transition-[width] duration-500 ease-[var(--ease-move)] motion-reduce:transition-none"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        )}
+                      </button>
+                      {pot.url && (
+                        <div className="mt-1.5 flex justify-end">
+                          <DomainChip url={pot.url} site={pot.link_site} />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+                <li>
+                  <SectionAdd label={t('money.newPot')} onClick={() => setShowNewPot(true)} />
+                </li>
+              </ul>
+
+              {/* Recent contributions — tap one to correct or remove a mistake. */}
+              {savingsData.entries.length > 0 && (
+                <ul className="mt-4 space-y-1 border-t border-zinc-800/60 pt-4">
+                  {savingsData.entries.slice(0, 4).map((e) => (
+                    <li key={e.id}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingEntry(e)}
+                        className="-mx-2 flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-zinc-800/40"
+                      >
+                        <span className="flex-1 truncate text-zinc-300">
+                          {e.note?.trim() || t('money.contribution')}
+                        </span>
+                        <span className="tabular-nums text-teal-300">{fmt(Number(e.amount))}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
-          );
-        })}
+          )}
+
+          {/* Planned monthly savings — the recurring streams that feed the pots. */}
+          {!loading && !error && savingsStreams.length > 0 && (
+            <section className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+                {t('money.plannedMonthly')}
+              </p>
+              {savingsStreams.map((s, i) => renderStream(s, i))}
+            </section>
+          )}
+        </div>
+      )}
 
       {/* One add button, like every tab. Money has several kinds of thing to
           add, so it opens a chooser sheet first (BRAND.md §7). The chooser

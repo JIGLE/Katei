@@ -258,6 +258,14 @@ reinvent.
   showing. With no day picked, open events read in three groups, Overdue
   (its label in rose), Next 7 days and Later; a picked day lists just that
   day.
+- **Money views** — Money is three views behind the same segmented switch as
+  Lists: **Summary** (net, the three totals, expected vs actual, spending
+  trends, where it goes), **In & out** (expense and income streams) and
+  **Savings** (balance, pots, contributions and the planned monthly savings
+  streams). The view lives in `?view=` so reload and back keep it; the bottom
+  nav always opens Summary. A new stream opens the view it landed in. Each
+  view stays under two phone screens; the spending chart is hidden until a
+  month has spending, and a view only grows a search field at 15 streams.
 - **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
   `Europe/Berlin`). Picking a country sets currency, date and number format
   and timezone together, shown as one line ("Euro (€) · German (Germany) ·

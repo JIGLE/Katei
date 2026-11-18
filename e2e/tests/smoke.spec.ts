@@ -134,6 +134,8 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.locator('nav a[href="/timeline"]').click();
     await expect(page.getByText('Dentist appointment')).toBeVisible();
     await page.locator('nav a[href="/money"]').click();
+    // Streams live in the In & out view; Money opens on its summary.
+    await page.getByRole('button', { name: 'In & out', exact: true }).click();
     await expect(page.getByText('Rent', { exact: true })).toBeVisible();
     await page.locator('nav a[href="/lists"]').click();
     await expect(page.getByText('Milk', { exact: true })).toBeVisible();

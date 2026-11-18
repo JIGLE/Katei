@@ -159,7 +159,6 @@
     "savingsGoal": "Savings goal",
     "trends": "Spending trends",
     "trendsHigh": "Peak",
-    "trendsEmpty": "No completed payments yet — your monthly spending will chart here.",
     "auto": "Auto",
     "private": "Private",
     "expectedActual": "Expected vs actual",
@@ -194,7 +193,9 @@
     "addHintIncome": "Money coming in, like a salary",
     "addHintExpense": "A bill or a regular cost",
     "addHintSavings": "A regular amount you set aside",
-    "addHintContribution": "Put money into a pot once"
+    "addHintContribution": "Put money into a pot once",
+    "viewSummary": "Summary",
+    "viewFlow": "In & out"
   },
   "freq": {
     "monthly": "Monthly",

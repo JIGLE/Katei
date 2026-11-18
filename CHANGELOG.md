@@ -49,5 +49,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - The Timeline's month grid is compact, so the list starts on the first
   screen, grouped into Overdue, Next 7 days and Later. A "Today" link brings
   you back from another month.
+- Money is split into Summary, In & out and Savings views, kept in the
+  address so a reload stays put. The empty spending chart is gone until there
+  is spending, and search only appears once a view has 15 streams.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
