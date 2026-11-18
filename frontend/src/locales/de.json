@@ -315,7 +315,8 @@
     "linkFetching": "Seitentitel wird geladen…",
     "deleteItem": "Löschen",
     "deleteGift": "Löschen",
-    "typeFromStream": "Vom Geldfluss festgelegt"
+    "typeFromStream": "Vom Geldfluss festgelegt",
+    "pickDate": "Datum wählen"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",

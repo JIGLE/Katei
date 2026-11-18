@@ -278,7 +278,10 @@ export default function MoneyFlow() {
           {s.category?.trim() && <span className="ml-1">· {catLabel(s.category.trim())}</span>}
         </p>
       </div>
-      <p className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[s.stream_type]}`}>
+      <p
+        data-fab-avoid
+        className={`flex-shrink-0 text-sm font-medium ${TYPE_AMOUNT[s.stream_type]}`}
+      >
         {formatMoney(s.amount, s.currency, locale)}
       </p>
     </button>

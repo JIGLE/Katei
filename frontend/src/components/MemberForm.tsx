@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { AvatarPicker } from './AvatarPicker';
 import type { User, MemberKind } from '../lib/types';
+import DateField from './DateField';
 
 interface MemberFormProps {
   initial?: User;
@@ -110,13 +111,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
         <label htmlFor="birthday" className={labelCls}>
           {t('form.birthday')}
         </label>
-        <input
-          id="birthday"
-          type="date"
-          value={birthday}
-          onChange={(e) => setBirthday(e.target.value)}
-          className={`${fieldCls} [color-scheme:dark]`}
-        />
+        <DateField id="birthday" value={birthday} onChange={setBirthday} />
       </div>
 
       <div>

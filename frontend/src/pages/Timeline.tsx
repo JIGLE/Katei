@@ -261,7 +261,9 @@ export default function Timeline() {
         </button>
 
         {amount && (
-          <span className="flex-shrink-0 text-xs tabular-nums text-zinc-400">{amount}</span>
+          <span data-fab-avoid className="flex-shrink-0 text-xs tabular-nums text-zinc-400">
+            {amount}
+          </span>
         )}
 
         <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
@@ -272,6 +274,7 @@ export default function Timeline() {
           />
         ) : (
           <span
+            data-fab-avoid
             className={[
               'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               overdue ? 'bg-rose-500/15 text-rose-400' : 'bg-zinc-800 text-zinc-400',

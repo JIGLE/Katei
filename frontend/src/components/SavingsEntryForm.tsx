@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { todayInTimezone } from '../lib/format';
 import type { SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
+import DateField from './DateField';
 
 interface SavingsEntryFormProps {
   initial?: SavingsEntry;
@@ -140,13 +141,7 @@ export function SavingsEntryForm({
         <label htmlFor="savings-date" className={labelCls}>
           {t('money.contributionDate')}
         </label>
-        <input
-          id="savings-date"
-          type="date"
-          value={occurredOn}
-          onChange={(e) => setOccurredOn(e.target.value)}
-          className={`${fieldCls} [color-scheme:dark]`}
-        />
+        <DateField id="savings-date" value={occurredOn} onChange={setOccurredOn} />
       </div>
 
       {error && <p className="text-sm text-rose-400">{error}</p>}

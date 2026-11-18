@@ -314,7 +314,8 @@
     "linkFetching": "Fetching the page title…",
     "deleteItem": "Delete",
     "deleteGift": "Delete",
-    "typeFromStream": "Set by its money stream"
+    "typeFromStream": "Set by its money stream",
+    "pickDate": "Pick a date"
   },
   "settings": {
     "notificationsTitle": "Notifications",

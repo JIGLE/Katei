@@ -218,6 +218,7 @@ export default function Household() {
                 )}
                 <span className="ml-auto font-medium capitalize text-zinc-500">{a.role}</span>
                 <button
+                  data-fab-avoid
                   type="button"
                   onClick={() =>
                     confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id)

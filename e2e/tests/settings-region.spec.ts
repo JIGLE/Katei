@@ -49,6 +49,10 @@ test('picking a country sets currency, format and timezone in one go', async ({ 
     await expect(summary).toContainText('€');
     await expect(summary).toContainText('German (Germany)');
     await expect(summary).toContainText('Berlin time');
+    // One line at phone width: the symbol stands in for the currency's name.
+    const box = (await summary.boundingBox())!;
+    const lineHeight = await summary.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+    expect(box.height).toBeLessThan(lineHeight * 1.5);
     // The individual fields stay folded away until asked for.
     await expect(sheet.locator('#pref_currency')).toHaveCount(0);
 

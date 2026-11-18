@@ -26,6 +26,19 @@ export function currencyLabel(code: string, uiLang: string): string {
   }
 }
 
+/** "€" — the symbol a currency prints with, or its code when it has none. */
+export function currencySymbol(code: string, uiLang: string): string {
+  try {
+    return (
+      new Intl.NumberFormat(uiLang, { style: 'currency', currency: code })
+        .formatToParts(0)
+        .find((p) => p.type === 'currency')?.value ?? code
+    );
+  } catch {
+    return code;
+  }
+}
+
 /** "German (Germany)" — the format's name in the viewer's language. */
 export function formatName(locale: string, uiLang: string): string {
   return displayName(uiLang, 'language', locale);
