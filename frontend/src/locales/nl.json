@@ -12,7 +12,10 @@
     "choose": "Kiezen…",
     "signOut": "Afmelden",
     "settings": "Instellingen",
-    "confirm": "bevestigen"
+    "confirm": "bevestigen",
+    "loadFailed": "Kon dit nu niet laden.",
+    "tryAgain": "Opnieuw proberen",
+    "offline": "Je bent offline. Je ziet wat het laatst is geladen."
   },
   "nav": {
     "overview": "Overzicht",
@@ -218,8 +221,6 @@
     "addMemberAria": "Lid toevoegen",
     "addFirstMember": "Voeg je eerste lid toe",
     "assignmentsLabel": "Toewijzingen",
-    "assignmentCount_one": "{{count}} toewijzing",
-    "assignmentCount_other": "{{count}} toewijzingen",
     "admin": "Admin",
     "invites": "Uitnodigingen",
     "createInvite": "Uitnodiging maken",

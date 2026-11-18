@@ -52,5 +52,12 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - Money is split into Summary, In & out and Savings views, kept in the
   address so a reload stays put. The empty spending chart is gone until there
   is spending, and search only appears once a view has 15 streams.
+- Lists load with quiet placeholder rows, and a failed load offers "Try
+  again" instead of a raw error. Offline, each tab shows what it last loaded
+  with a short note; the offline copy is cleared when you sign out.
+- Smaller fixes: the German "Add to savings" fits on a phone, the sign-in
+  password field has no dot placeholder, the empty photo circle shows a
+  person shape instead of a dot, and household members no longer repeat
+  their assignment count above the list of assignments.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.

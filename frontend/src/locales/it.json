@@ -12,7 +12,10 @@
     "choose": "Scegli…",
     "signOut": "Esci",
     "settings": "Impostazioni",
-    "confirm": "conferma"
+    "confirm": "conferma",
+    "loadFailed": "Impossibile caricare in questo momento.",
+    "tryAgain": "Riprova",
+    "offline": "Sei offline. Vedi quanto caricato l'ultima volta."
   },
   "nav": {
     "overview": "Panoramica",
@@ -218,8 +221,6 @@
     "addMemberAria": "Aggiungi membro",
     "addFirstMember": "Aggiungi il tuo primo membro",
     "assignmentsLabel": "Assegnazioni",
-    "assignmentCount_one": "{{count}} assegnazione",
-    "assignmentCount_other": "{{count}} assegnazioni",
     "admin": "Admin",
     "invites": "Inviti",
     "createInvite": "Crea invito",

@@ -14,6 +14,18 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// The service worker keeps the last API answers for offline use (sw.ts).
+// They belong to whoever was signed in, so they go when that person leaves
+// and before someone else signs in on the same device.
+const API_CACHE = 'katei-api';
+async function clearApiCache() {
+  try {
+    if ('caches' in window) await caches.delete(API_CACHE);
+  } catch {
+    // Storage blocked or unavailable: nothing was cached either.
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -34,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (name: string, password: string) => {
     const me = await api.post<User>('/auth/login', { name, password });
+    await clearApiCache();
     setUser(me);
     setNeedsSetup(false);
   };
@@ -44,12 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       ...(inviteCode ? { invite_code: inviteCode } : {}),
     });
+    await clearApiCache();
     setUser(me);
     setNeedsSetup(false);
   };
 
   const logout = async () => {
     await api.post('/auth/logout', {});
+    await clearApiCache();
     setUser(null);
   };
 

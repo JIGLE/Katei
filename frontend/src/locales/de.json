@@ -12,7 +12,10 @@
     "choose": "Auswählen…",
     "signOut": "Abmelden",
     "settings": "Einstellungen",
-    "confirm": "bestätigen"
+    "confirm": "bestätigen",
+    "loadFailed": "Konnte gerade nicht geladen werden.",
+    "tryAgain": "Erneut versuchen",
+    "offline": "Du bist offline. Angezeigt wird der zuletzt geladene Stand."
   },
   "nav": {
     "overview": "Übersicht",
@@ -166,7 +169,7 @@
     "expected": "Erwartet",
     "actual": "Tatsächlich",
     "savingsBalance": "Sparguthaben",
-    "addToSavings": "Zu Ersparnissen hinzufügen",
+    "addToSavings": "Einzahlen",
     "addToSavingsHint": "Erfasse zurückgelegtes Geld. Es wird sofort deinem Sparguthaben hinzugefügt.",
     "ofGoal": "von {{goal}}",
     "plannedMonthly": "Monatlich geplant",
@@ -218,8 +221,6 @@
     "addMemberAria": "Mitglied hinzufügen",
     "addFirstMember": "Erstes Mitglied hinzufügen",
     "assignmentsLabel": "Zuweisungen",
-    "assignmentCount_one": "{{count}} Zuweisung",
-    "assignmentCount_other": "{{count}} Zuweisungen",
     "admin": "Admin",
     "invites": "Einladungen",
     "createInvite": "Einladung erstellen",

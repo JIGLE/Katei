@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
@@ -59,12 +60,16 @@ export default function Timeline() {
   const [paying, setPaying] = useState<HouseholdEvent | null>(null);
   const [payAmount, setPayAmount] = useState('');
 
+  // Refetches after a save keep the list on screen; only the first load and
+  // a retry show placeholders.
   const fetchEvents = () => {
-    setLoading(true);
     api
       .get<HouseholdEvent[]>('/events')
       .then(setEvents)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        console.error(e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -298,8 +303,16 @@ export default function Timeline() {
         />
       )}
 
-      {error && <p className="text-sm text-rose-400">{error}</p>}
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
+      {error && (
+        <ErrorRow
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            fetchEvents();
+          }}
+        />
+      )}
+      {loading && <SkeletonRows />}
 
       {!loading && !error && (
         <div className="space-y-3">

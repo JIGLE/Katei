@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -44,8 +45,9 @@ export default function Household() {
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
 
+  // Refetches after a save keep the list on screen; only the first load and
+  // a retry show placeholders.
   const fetchAll = () => {
-    setLoading(true);
     Promise.all([
       api.get<User[]>('/users'),
       api.get<AssignmentDetail[]>('/assignments'),
@@ -58,7 +60,10 @@ export default function Household() {
         setEvents(e);
         setStreams(s);
       })
-      .catch((err: Error) => setError(err.message))
+      .catch((err: Error) => {
+        console.error(err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -190,15 +195,13 @@ export default function Household() {
                 </span>
               )}
             </p>
-            {/* Pets don't do chores — their caption is the birthday nudge or
-                nothing, never "0 assignments". */}
-            {(nearBirthday || u.kind !== 'pet') && (
-              <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                {nearBirthday
-                  ? days === 0
-                    ? `🎂 ${t('household.birthdayToday')}`
-                    : `🎂 ${t('household.birthdayIn', { count: days })}`
-                  : t('household.assignmentCount', { count: userAssignments.length })}
+            {/* The assignments are listed right below, so the caption is only
+                ever the birthday nudge; counting them here said it twice. */}
+            {nearBirthday && (
+              <p className="mt-0.5 text-xs text-zinc-300">
+                {days === 0
+                  ? `🎂 ${t('household.birthdayToday')}`
+                  : `🎂 ${t('household.birthdayIn', { count: days })}`}
               </p>
             )}
           </div>
@@ -254,8 +257,16 @@ export default function Household() {
         )}
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
-      {error && <p className="text-sm text-rose-400">{error}</p>}
+      {loading && <SkeletonRows />}
+      {error && (
+        <ErrorRow
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            fetchAll();
+          }}
+        />
+      )}
 
       {!loading && !error && users.length === 0 && (
         <EmptyState
