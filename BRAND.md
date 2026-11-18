@@ -252,6 +252,12 @@ reinvent.
   household. Each row is a quiet verb, a dot, then the item as written
   ("Finished · Fix bicycle brakes"), so an item never gets glued into a
   sentence with the wrong casing.
+- **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
+  `Europe/Berlin`). Picking a country sets currency, date and number format
+  and timezone together, shown as one line ("Euro (€) · German (Germany) ·
+  Berlin time") with a "Change" link that unfolds the individual fields,
+  whose options are written out too. Names come from `Intl` in the UI
+  language (`frontend/src/lib/region.ts`), so they need no translation.
 - **Avatar** — circle with initials on a `zinc-800` ground (`rounded-full`),
   used for household members. Falls back to initials when no `avatar_url`.
 

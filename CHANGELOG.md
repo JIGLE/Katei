@@ -43,5 +43,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
   Family & friends heading. The wishlist hint wraps instead of being cut off.
 - Around the house no longer shows your own actions, hides in a one-person
   household, and shows each item as written ("Finished · Fix bicycle brakes").
+- Settings show the region as one plain line ("Euro (€) · German (Germany) ·
+  Berlin time") with a "Change" link instead of raw codes; picking a country
+  sets all three. "Locale" is now "Date and number format".
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.

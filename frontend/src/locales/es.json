@@ -317,7 +317,7 @@
     "preferences": "Preferencias",
     "country": "País",
     "currency": "Moneda",
-    "locale": "Configuración regional",
+    "locale": "Formato de fecha y números",
     "timezone": "Zona horaria",
     "savePreferences": "Guardar preferencias",
     "preferencesSaved": "Preferencias guardadas.",
@@ -370,7 +370,9 @@
     "themeDeviceHint": "Este dispositivo recuerda tu elección de tema.",
     "moneyEnabled": "Seguimiento del dinero",
     "moneyEnabledOn": "Activado — la pestaña Dinero, las facturas y los importes de pago son visibles.",
-    "moneyEnabledOff": "Desactivado — el dinero está oculto en toda la aplicación."
+    "moneyEnabledOff": "Desactivado — el dinero está oculto en toda la aplicación.",
+    "timeIn": "Hora de {{city}}",
+    "regionChange": "Cambiar"
   },
   "account": {
     "title": "Mi cuenta",
