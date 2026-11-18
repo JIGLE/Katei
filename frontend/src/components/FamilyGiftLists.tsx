@@ -11,6 +11,7 @@ import { GiftForm } from './GiftForm';
 import { DomainChip } from './LinkField';
 import { ShareGiftList } from './ShareGiftList';
 import { Avatar } from './Avatar';
+import { SectionAdd } from './SectionAdd';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -93,22 +94,11 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
             <p className="min-w-0 flex-1 truncate text-xs font-medium uppercase tracking-widest text-zinc-500">
               {t('gifts.forName', { name: list.owner_name ?? list.external_name })}
             </p>
-            <button
-              type="button"
+            <SectionAdd
+              label={t('gifts.addGift')}
+              ariaLabel={`${t('gifts.addGift')}: ${list.owner_name ?? list.external_name}`}
               onClick={() => setAddingFor(list)}
-              aria-label={t('gifts.addGiftAria')}
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
-            >
-              <svg
-                className="h-3.5 w-3.5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-            </button>
+            />
           </div>
 
           {list.items.length === 0 ? (
@@ -196,13 +186,7 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
         </form>
       ) : (
         lists.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setAddingPerson(true)}
-            className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
-          >
-            {t('gifts.addExternalPerson')}
-          </button>
+          <SectionAdd label={t('gifts.addExternalPerson')} onClick={() => setAddingPerson(true)} />
         )
       )}
 

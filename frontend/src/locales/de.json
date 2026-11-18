@@ -187,7 +187,12 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Erreicht",
     "foreignExcluded_one": "Die Summen lassen {{count}} Geldfluss in anderer Währung aus.",
-    "foreignExcluded_other": "Die Summen lassen {{count}} Geldflüsse in anderen Währungen aus."
+    "foreignExcluded_other": "Die Summen lassen {{count}} Geldflüsse in anderen Währungen aus.",
+    "addChooserTitle": "Was möchtest du hinzufügen?",
+    "addHintIncome": "Geld, das reinkommt, z. B. Gehalt",
+    "addHintExpense": "Eine Rechnung oder regelmäßige Kosten",
+    "addHintSavings": "Ein fester Betrag, den du zurücklegst",
+    "addHintContribution": "Einmalig Geld in einen Topf legen"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -304,7 +309,8 @@
     "linkPlaceholder": "Produktlink einfügen…",
     "linkFetching": "Seitentitel wird geladen…",
     "deleteItem": "Löschen",
-    "deleteGift": "Löschen"
+    "deleteGift": "Löschen",
+    "typeFromStream": "Vom Geldfluss festgelegt"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",
@@ -439,7 +445,6 @@
     "newGift": "Neues Geschenk",
     "editGift": "Geschenk bearbeiten",
     "addGift": "Geschenk hinzufügen",
-    "addGiftAria": "Geschenk hinzufügen",
     "titlePlaceholder": "z. B. Plattenspieler",
     "errTitle": "Gib dem Geschenk einen Namen.",
     "errSave": "Geschenk konnte nicht gespeichert werden.",

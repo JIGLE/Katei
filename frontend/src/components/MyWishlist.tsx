@@ -8,6 +8,7 @@ import { EmptyState } from './EmptyState';
 import { GiftForm } from './GiftForm';
 import { DomainChip } from './LinkField';
 import { ShareGiftList } from './ShareGiftList';
+import { SectionAdd } from './SectionAdd';
 
 interface MyWishlistProps {
   list: GiftListSummary;
@@ -43,22 +44,7 @@ export function MyWishlist({ list, refetch }: MyWishlistProps) {
           </p>
           <p className="mt-0.5 truncate text-xs text-zinc-500">{t('gifts.myWishlistHint')}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          aria-label={t('gifts.addGiftAria')}
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
-        >
-          <svg
-            className="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
+        <SectionAdd label={t('gifts.addGift')} onClick={() => setShowForm(true)} />
       </div>
 
       {list.items.length === 0 && (

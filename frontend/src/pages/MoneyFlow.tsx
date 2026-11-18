@@ -11,7 +11,7 @@ import type {
   SavingsPot,
 } from '../lib/types';
 import { Modal } from '../components/Modal';
-import { useFabVisible, fabVisibilityCls } from '../components/Fab';
+import { Fab } from '../components/Fab';
 import { StreamForm } from '../components/StreamForm';
 import { SavingsEntryForm } from '../components/SavingsEntryForm';
 import { GoalForm } from '../components/GoalForm';
@@ -24,6 +24,7 @@ import { useAuth } from '../lib/auth';
 import { assignedIds } from '../lib/assignments';
 import { formatMoney, formatMonthShort } from '../lib/format';
 import { useCountUp } from '../lib/useCountUp';
+import { SectionAdd } from '../components/SectionAdd';
 
 const freqKey: Record<string, string> = {
   monthly: 'freq.monthly',
@@ -97,9 +98,6 @@ export default function MoneyFlow() {
   const [showForm, setShowForm] = useState(false);
   const [newType, setNewType] = useState<StreamType>('expense');
   const [addMenuOpen, setAddMenuOpen] = useState(false);
-  // An open chooser pins the button in place; otherwise it steps aside while
-  // scrolling down, like every other page's add button.
-  const fabVisible = useFabVisible(addMenuOpen);
   const [showSavingsForm, setShowSavingsForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<SavingsEntry | null>(null);
   const [editingPot, setEditingPot] = useState<SavingsPot | null>(null);
@@ -277,13 +275,7 @@ export default function MoneyFlow() {
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
               {t('money.savingsBalance')}
             </p>
-            <button
-              type="button"
-              onClick={() => setShowSavingsForm(true)}
-              className="text-xs text-teal-400 underline-offset-2 transition-colors hover:text-teal-300"
-            >
-              ＋ {t('money.addToSavings')}
-            </button>
+            <SectionAdd label={t('money.addToSavings')} onClick={() => setShowSavingsForm(true)} />
           </div>
 
           <p className="text-2xl font-light tabular-nums text-teal-300">{fmt(animatedBalance)}</p>
@@ -349,13 +341,7 @@ export default function MoneyFlow() {
               );
             })}
             <li>
-              <button
-                type="button"
-                onClick={() => setShowNewPot(true)}
-                className="text-xs text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300"
-              >
-                ＋ {t('money.newPot')}
-              </button>
+              <SectionAdd label={t('money.newPot')} onClick={() => setShowNewPot(true)} />
             </li>
           </ul>
 
@@ -599,52 +585,64 @@ export default function MoneyFlow() {
           );
         })}
 
-      {/* Contextual Add menu */}
-      {addMenuOpen && (
-        <button
-          aria-label={t('common.close')}
-          onClick={() => setAddMenuOpen(false)}
-          className="fixed inset-0 z-40 bg-black/40"
-        />
-      )}
-      <div
-        className={`fixed bottom-fab right-4 z-50 flex flex-col items-end gap-2 ${fabVisibilityCls(fabVisible)}`}
+      {/* One add button, like every tab. Money has several kinds of thing to
+          add, so it opens a chooser sheet first (BRAND.md §7). The chooser
+          comes before the form sheets so its focus hand-back runs first and
+          the form returns focus to the add button when it closes. */}
+      <Fab label={t('money.addStreamAria')} onClick={() => setAddMenuOpen(true)} />
+      <Modal
+        open={addMenuOpen}
+        title={t('money.addChooserTitle')}
+        onClose={() => setAddMenuOpen(false)}
       >
-        {addMenuOpen && (
-          <div className="flex flex-col items-end gap-2">
-            {(
-              [
-                ['income', 'money.income', 'border-emerald-500/40 text-emerald-400'],
-                ['expense', 'money.expense', 'border-zinc-700 text-zinc-200'],
-                ['savings', 'money.savings', 'border-teal-500/40 text-teal-300'],
-              ] as [StreamType, string, string][]
-            ).map(([type, key, cls]) => (
+        <ul className="-mx-2 divide-y divide-zinc-800/60">
+          {(
+            [
+              ['income', 'money.income', 'money.addHintIncome', 'bg-emerald-500'],
+              ['expense', 'money.expense', 'money.addHintExpense', 'bg-zinc-500'],
+              ['savings', 'money.savings', 'money.addHintSavings', 'bg-teal-400'],
+              ['contribution', 'money.addToSavings', 'money.addHintContribution', 'bg-teal-400'],
+            ] as const
+          ).map(([kind, label, hint, dot]) => (
+            <li key={kind}>
               <button
-                key={type}
-                onClick={() => openAdd(type)}
-                className={`rounded-full border bg-zinc-900 px-4 py-2 text-sm font-medium shadow-lg ${cls}`}
+                type="button"
+                aria-label={t(label)}
+                aria-describedby={`add-hint-${kind}`}
+                onClick={() => {
+                  if (kind === 'contribution') {
+                    setAddMenuOpen(false);
+                    setShowSavingsForm(true);
+                  } else openAdd(kind);
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-zinc-800/60"
               >
-                {t(key)}
+                <span aria-hidden className={`h-2 w-2 flex-shrink-0 rounded-full ${dot}`} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm text-zinc-100">{t(label)}</span>
+                  <span id={`add-hint-${kind}`} className="block text-xs text-zinc-500">
+                    {t(hint)}
+                  </span>
+                </span>
+                <svg
+                  aria-hidden
+                  className="h-4 w-4 flex-shrink-0 text-zinc-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                  />
+                </svg>
               </button>
-            ))}
-          </div>
-        )}
-        <button
-          onClick={() => setAddMenuOpen((v) => !v)}
-          aria-label={t('money.addStreamAria')}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-900 shadow-2xl transition-transform hover:scale-105 active:scale-95"
-        >
-          <svg
-            className={`h-6 w-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
-      </div>
+            </li>
+          ))}
+        </ul>
+      </Modal>
 
       <Modal open={showForm} title={t('money.newStream')} onClose={() => setShowForm(false)}>
         <StreamForm

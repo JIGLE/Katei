@@ -187,7 +187,12 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Atteint",
     "foreignExcluded_one": "Les totaux excluent {{count}} flux dans une autre devise.",
-    "foreignExcluded_other": "Les totaux excluent {{count}} flux dans d'autres devises."
+    "foreignExcluded_other": "Les totaux excluent {{count}} flux dans d'autres devises.",
+    "addChooserTitle": "Que voulez-vous ajouter ?",
+    "addHintIncome": "De l’argent qui rentre, comme un salaire",
+    "addHintExpense": "Une facture ou un coût régulier",
+    "addHintSavings": "Un montant régulier mis de côté",
+    "addHintContribution": "Verser une fois dans une cagnotte"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -304,7 +309,8 @@
     "linkPlaceholder": "Collez un lien produit…",
     "linkFetching": "Récupération du titre…",
     "deleteItem": "Supprimer",
-    "deleteGift": "Supprimer"
+    "deleteGift": "Supprimer",
+    "typeFromStream": "Défini par son flux d’argent"
   },
   "settings": {
     "notificationsTitle": "Notifications",
@@ -439,7 +445,6 @@
     "newGift": "Nouveau cadeau",
     "editGift": "Modifier le cadeau",
     "addGift": "Ajouter un cadeau",
-    "addGiftAria": "Ajouter un cadeau",
     "titlePlaceholder": "p. ex. Platine vinyle",
     "errTitle": "Donnez un nom au cadeau.",
     "errSave": "Impossible d'enregistrer le cadeau.",

@@ -11,6 +11,7 @@ import { daysToBirthday } from '../lib/format';
 import { usePreferences } from '../lib/preferences';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
+import { SectionAdd } from '../components/SectionAdd';
 
 function initials(name: string): string {
   return name
@@ -249,12 +250,7 @@ export default function Household() {
           )}
         </div>
         {users.length > 0 && (
-          <button
-            onClick={() => setShowAssignForm(true)}
-            className="flex-shrink-0 text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
-          >
-            + {t('household.assign')}
-          </button>
+          <SectionAdd label={t('household.assign')} onClick={() => setShowAssignForm(true)} />
         )}
       </header>
 
@@ -311,14 +307,11 @@ export default function Household() {
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
               {t('household.invites')}
             </p>
-            <button
-              type="button"
+            <SectionAdd
+              label={creatingInvite ? t('common.pleaseWait') : t('household.createInvite')}
               onClick={createInvite}
               disabled={creatingInvite}
-              className="text-xs text-emerald-500 underline-offset-2 transition-colors hover:text-emerald-400 disabled:opacity-50"
-            >
-              {creatingInvite ? t('common.pleaseWait') : t('household.createInvite')}
-            </button>
+            />
           </div>
 
           {inviteLink && (
