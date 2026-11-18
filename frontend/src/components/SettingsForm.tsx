@@ -4,7 +4,13 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { usePreferences, applyTheme, type Theme } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
-import { currencyLabel, formatName, formatSample, timezoneCity } from '../lib/region';
+import {
+  currencyLabel,
+  currencySymbol,
+  formatName,
+  formatSample,
+  timezoneCity,
+} from '../lib/region';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
 import { isPushSupported, isSubscribed, enablePush, disablePush } from '../lib/push';
 
@@ -342,9 +348,15 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
                   </select>
                 </div>
                 {!regionOpen ? (
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm text-zinc-300" data-region-summary>
-                      {currencyLabel(currency, i18n.language)}
+                  // The country sits right above, so the currency needs only its
+                  // symbol here; that keeps the line to one row on a phone.
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p
+                      className="min-w-0 text-sm text-zinc-300"
+                      data-region-summary
+                      title={currencyLabel(currency, i18n.language)}
+                    >
+                      {currencySymbol(currency, i18n.language)}
                       <span aria-hidden className="text-zinc-500">
                         {' · '}
                       </span>

@@ -27,6 +27,10 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 
 ### Changed
 
+- The Timeline add button steps aside while it would cover a row's date or
+  amount, once you have scrolled.
+- The region line in Settings fits on one line on a phone.
+- Date fields show dates in the household's format, not the browser's.
 - Every button and link now answers a tap of at least 44×44 px, without
   changing how it looks.
 - Gift status, assignment roles, the Pets heading, the Person/Pet picker and

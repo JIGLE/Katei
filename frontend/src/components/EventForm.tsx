@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import type { HouseholdEvent, MoneyStream } from '../lib/types';
+import DateField from './DateField';
 
 interface EventFormProps {
   initial?: HouseholdEvent;
@@ -167,13 +168,7 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
         <label htmlFor="target_date" className={labelCls}>
           {t('form.date')}
         </label>
-        <input
-          id="target_date"
-          type="date"
-          value={targetDate}
-          onChange={(e) => setTargetDate(e.target.value)}
-          className={`${fieldCls}`}
-        />
+        <DateField id="target_date" value={targetDate} onChange={setTargetDate} />
       </div>
 
       {money_enabled && streams.length > 0 && (

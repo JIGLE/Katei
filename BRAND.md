@@ -173,7 +173,11 @@ reinvent.
   - **The add button** (`Fab.tsx`) is a tab's one primary create action,
     bottom-right above the nav, and it always opens a bottom sheet. Timeline,
     Money and Household have one; Overview has none. It steps aside while you
-    scroll down and comes back on scroll up.
+    scroll down and comes back on scroll up. Once you have scrolled, it also
+    steps aside while it would cover anything marked `data-fab-avoid` (a date
+    pill, an amount, a row's own button) and returns when that row moves on.
+    At the top of a page it always shows, so in a long list of dated rows
+    it shows at the top and past the last row, and stays aside in between.
   - **More than one kind of thing to add** (Money: income, expense, a savings
     plan, a one-off contribution) opens a **chooser sheet** first: one row per
     kind, with a dot in its meaning colour and a one-line hint. Never a
@@ -278,10 +282,15 @@ reinvent.
   and sign-out, so it never outlives the person it belongs to.
 - **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
   `Europe/Berlin`). Picking a country sets currency, date and number format
-  and timezone together, shown as one line ("Euro (€) · German (Germany) ·
-  Berlin time") with a "Change" link that unfolds the individual fields,
+  and timezone together, shown as one line that fits a phone ("€ · German
+  (Germany) · Berlin time"; the country sits right above, so the symbol is
+  enough, and the full currency name is its tooltip) with a "Change" link that unfolds the individual fields,
   whose options are written out too. Names come from `Intl` in the UI
   language (`frontend/src/lib/region.ts`), so they need no translation.
+- **Dates in the household's format** — a date field (`DateField.tsx`) shows
+  the picked day the way the household writes dates ("Do., 3. Dezember 2026"
+  for German), not the browser's own format. The native date input sits on
+  top, invisible, so a tap still opens the phone's picker.
 - **Avatar** — circle with initials on a `zinc-800` ground (`rounded-full`),
   used for household members. Falls back to initials when no `avatar_url`.
 

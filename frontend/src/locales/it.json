@@ -315,7 +315,8 @@
     "linkFetching": "Recupero del titolo…",
     "deleteItem": "Elimina",
     "deleteGift": "Elimina",
-    "typeFromStream": "Stabilito dal suo flusso di denaro"
+    "typeFromStream": "Stabilito dal suo flusso di denaro",
+    "pickDate": "Scegli una data"
   },
   "settings": {
     "notificationsTitle": "Notifiche",

@@ -315,7 +315,8 @@
     "linkFetching": "Paginatitel ophalen…",
     "deleteItem": "Verwijderen",
     "deleteGift": "Verwijderen",
-    "typeFromStream": "Bepaald door de geldstroom"
+    "typeFromStream": "Bepaald door de geldstroom",
+    "pickDate": "Kies een datum"
   },
   "settings": {
     "notificationsTitle": "Notificaties",
