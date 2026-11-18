@@ -266,6 +266,16 @@ reinvent.
   nav always opens Summary. A new stream opens the view it landed in. Each
   view stays under two phone screens; the spending chart is hidden until a
   month has spending, and a view only grows a search field at 15 streams.
+- **Loading and errors** (`LoadState.tsx`) — a list that's loading shows
+  placeholder rows in its own shape (`SkeletonRows`), never a "Loading…"
+  line, and they appear only on the first load or a retry; a refetch after a
+  save keeps what's on screen. A load that fails shows one `ErrorRow`: a
+  plain rose sentence ("Couldn't load this right now.") and "Try again",
+  never the raw server message.
+- **Offline** — the service worker answers API reads network-first and keeps
+  the last good copy, so offline every tab opens on what it last showed and
+  one quiet line under the header says so. That copy is dropped on sign-in
+  and sign-out, so it never outlives the person it belongs to.
 - **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
   `Europe/Berlin`). Picking a country sets currency, date and number format
   and timezone together, shown as one line ("Euro (€) · German (Germany) ·

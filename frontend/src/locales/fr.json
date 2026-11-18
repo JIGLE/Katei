@@ -12,7 +12,10 @@
     "choose": "Choisir…",
     "signOut": "Se déconnecter",
     "settings": "Paramètres",
-    "confirm": "confirmer"
+    "confirm": "confirmer",
+    "loadFailed": "Impossible de charger pour le moment.",
+    "tryAgain": "Réessayer",
+    "offline": "Vous êtes hors ligne. Affichage des dernières données chargées."
   },
   "nav": {
     "overview": "Aperçu",
@@ -218,8 +221,6 @@
     "addMemberAria": "Ajouter un membre",
     "addFirstMember": "Ajouter votre premier membre",
     "assignmentsLabel": "Attributions",
-    "assignmentCount_one": "{{count}} attribution",
-    "assignmentCount_other": "{{count}} attributions",
     "admin": "Admin",
     "invites": "Invitations",
     "createInvite": "Créer une invitation",

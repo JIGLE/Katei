@@ -11,7 +11,10 @@
     "choose": "Choose…",
     "signOut": "Sign out",
     "settings": "Settings",
-    "confirm": "confirm"
+    "confirm": "confirm",
+    "loadFailed": "Couldn't load this right now.",
+    "tryAgain": "Try again",
+    "offline": "You're offline. Showing what was last loaded."
   },
   "nav": {
     "overview": "Overview",
@@ -217,8 +220,6 @@
     "addMemberAria": "Add member",
     "addFirstMember": "Add your first member",
     "assignmentsLabel": "Assignments",
-    "assignmentCount_one": "{{count}} assignment",
-    "assignmentCount_other": "{{count}} assignments",
     "admin": "Admin",
     "invites": "Invites",
     "createInvite": "Create invite",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type {
@@ -135,12 +136,16 @@ export default function MoneyFlow() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  // Refetches after a save keep the page on screen; only the first load and
+  // a retry show placeholders.
   const fetchStreams = () => {
-    setLoading(true);
     api
       .get<MoneyStream[]>('/money-streams')
       .then(setStreams)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        console.error(e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -306,8 +311,17 @@ export default function MoneyFlow() {
         </div>
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
-      {error && <p className="text-sm text-rose-400">{error}</p>}
+      {loading && <SkeletonRows />}
+      {error && (
+        <ErrorRow
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            fetchStreams();
+            fetchSavings();
+          }}
+        />
+      )}
 
       {view === 'summary' && (
         <div className="animate-fade-slide-in space-y-6">
@@ -565,7 +579,7 @@ export default function MoneyFlow() {
             deposit to "Trip" moves that pot without touching the rest. */}
           {!loading && savingsData && (
             <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-5">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                 <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
                   {t('money.savingsBalance')}
                 </p>
