@@ -316,7 +316,7 @@
     "preferences": "Preferences",
     "country": "Country",
     "currency": "Currency",
-    "locale": "Locale",
+    "locale": "Date and number format",
     "timezone": "Timezone",
     "savePreferences": "Save preferences",
     "preferencesSaved": "Preferences saved.",
@@ -369,7 +369,9 @@
     "themeDeviceHint": "This device remembers your theme choice.",
     "moneyEnabled": "Money tracking",
     "moneyEnabledOn": "On — the Money tab, bills, and payment amounts are visible.",
-    "moneyEnabledOff": "Off — Money is hidden everywhere in the app."
+    "moneyEnabledOff": "Off — Money is hidden everywhere in the app.",
+    "timeIn": "{{city}} time",
+    "regionChange": "Change"
   },
   "account": {
     "title": "My account",

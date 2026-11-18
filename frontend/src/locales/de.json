@@ -317,7 +317,7 @@
     "preferences": "Einstellungen",
     "country": "Land",
     "currency": "Währung",
-    "locale": "Gebietsschema",
+    "locale": "Datums- und Zahlenformat",
     "timezone": "Zeitzone",
     "savePreferences": "Einstellungen speichern",
     "preferencesSaved": "Einstellungen gespeichert.",
@@ -370,7 +370,9 @@
     "themeDeviceHint": "Dieses Gerät merkt sich deine Themenauswahl.",
     "moneyEnabled": "Geldverwaltung",
     "moneyEnabledOn": "An — der Geld-Tab, Rechnungen und Zahlungsbeträge sind sichtbar.",
-    "moneyEnabledOff": "Aus — Geld ist überall in der App ausgeblendet."
+    "moneyEnabledOff": "Aus — Geld ist überall in der App ausgeblendet.",
+    "timeIn": "Zeit in {{city}}",
+    "regionChange": "Ändern"
   },
   "account": {
     "title": "Mein Konto",
