@@ -108,12 +108,12 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.getByRole('button', { name: 'Add a friend or family member' }).click();
     await page.locator('input[placeholder="Their name"]').fill('Lisa');
     await page.getByRole('button', { name: 'Add', exact: true }).click();
-    await expect(page.getByText('For Lisa')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Lisa/ })).toBeVisible();
   });
 
   await test.step('share my wishlist and reach it as an anonymous visitor', async () => {
     const mine = page.locator('section', { hasText: 'My wishlist' });
-    await mine.getByText('Share list').click();
+    await mine.getByRole('button', { name: 'Share list' }).click();
     await mine.getByText('Enable link').click();
     const url = (await mine.locator('p.break-all').textContent())?.trim();
     expect(url).toMatch(/\/gift\//);

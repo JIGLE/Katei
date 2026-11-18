@@ -7,7 +7,7 @@ import { Modal } from './Modal';
 import { EmptyState } from './EmptyState';
 import { GiftForm } from './GiftForm';
 import { DomainChip } from './LinkField';
-import { ShareGiftList } from './ShareGiftList';
+import { ShareButton, ShareGiftPanel } from './ShareGiftList';
 import { SectionAdd } from './SectionAdd';
 
 interface MyWishlistProps {
@@ -24,6 +24,7 @@ export function MyWishlist({ list, refetch }: MyWishlistProps) {
   const { locale } = usePreferences();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<GiftItem | null>(null);
+  const [sharing, setSharing] = useState(false);
 
   const handleSaved = () => {
     setShowForm(false);
@@ -37,15 +38,23 @@ export function MyWishlist({ list, refetch }: MyWishlistProps) {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('gifts.myWishlist')}
           </p>
-          <p className="mt-0.5 truncate text-xs text-zinc-500">{t('gifts.myWishlistHint')}</p>
+          <p className="mt-0.5 text-xs text-zinc-500">{t('gifts.myWishlistHint')}</p>
         </div>
-        <SectionAdd label={t('gifts.addGift')} onClick={() => setShowForm(true)} />
+        <div className="flex flex-shrink-0 items-center gap-3">
+          <ShareButton
+            open={sharing}
+            onClick={() => setSharing((v) => !v)}
+            controls={`share-${list.id}`}
+          />
+          <SectionAdd label={t('gifts.addGift')} onClick={() => setShowForm(true)} />
+        </div>
       </div>
+      {sharing && <ShareGiftPanel listId={list.id} id={`share-${list.id}`} />}
 
       {list.items.length === 0 && (
         <EmptyState
@@ -81,8 +90,6 @@ export function MyWishlist({ list, refetch }: MyWishlistProps) {
           ))}
         </div>
       )}
-
-      <ShareGiftList listId={list.id} />
 
       <Modal open={showForm} title={t('gifts.newGift')} onClose={() => setShowForm(false)}>
         <GiftForm

@@ -38,5 +38,10 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
   others) share one neutral look; the round + buttons on gift lists are gone.
 - Editing an event offers the same three types as adding one; an income or
   savings event shows its type as fixed.
+- Other people's gift lists fold to one summary row each and open on a tap;
+  sharing is an icon in the list's header and "Add person" sits beside the
+  Family & friends heading. The wishlist hint wraps instead of being cut off.
+- Around the house no longer shows your own actions, hides in a one-person
+  household, and shows each item as written ("Finished · Fix bicycle brakes").
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.

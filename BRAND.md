@@ -242,6 +242,16 @@ reinvent.
   Don't add `overflow-hidden` to a control, since it clips that hit area.
   `e2e/tests/touch-targets.spec.ts` measures every control on every tab and
   in an open sheet.
+- **Folding lists** — a group of per-person lists (other people's gift lists)
+  folds each one to a single row: name over a neutral summary ("3 gifts ·
+  1 reserved") and a chevron. Tapping opens it in place; a lone list is
+  simply open. Per-list actions (share, add) appear only when it's open, and
+  share is an icon in the row, not a loose text link.
+- **Activity glance** (Overview, "Around the house") — only what other people
+  did, never who did it, and never your own actions; hidden in a one-person
+  household. Each row is a quiet verb, a dot, then the item as written
+  ("Finished · Fix bicycle brakes"), so an item never gets glued into a
+  sentence with the wrong casing.
 - **Avatar** — circle with initials on a `zinc-800` ground (`rounded-full`),
   used for household members. Falls back to initials when no `avatar_url`.
 

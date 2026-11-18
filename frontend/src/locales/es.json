@@ -404,11 +404,11 @@
     "savings_added_self": "Has apartado {{item}}",
     "shopping_added": "{{actor}} puso {{item}} en la lista de la compra",
     "shopping_added_self": "Has puesto {{item}} en la lista de la compra",
-    "stream_added_plain": "Añadido {{item}}",
-    "event_added_plain": "Añadido {{item}}",
-    "event_done_plain": "Completado {{item}}",
-    "payment_paid_plain": "Pagado {{item}}",
-    "savings_added_plain": "Apartado {{item}}"
+    "stream_added_plain": "Añadido",
+    "event_added_plain": "Añadido",
+    "event_done_plain": "Completado",
+    "payment_paid_plain": "Pagado",
+    "savings_added_plain": "Apartado"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -437,7 +437,6 @@
     "reorderAria": "Arrastrar para reordenar"
   },
   "gifts": {
-    "forName": "Para {{name}}",
     "status": "Estado",
     "status_idea": "Idea",
     "status_reserved": "Reservado",
@@ -476,6 +475,13 @@
     "someone": "Alguien",
     "publicTitle": "Lista de deseos de {{name}}",
     "publicNotFound": "Esta lista no está disponible.",
-    "publicEmpty": "Aún no hay nada en esta lista."
+    "publicEmpty": "Aún no hay nada en esta lista.",
+    "addPerson": "Añadir persona",
+    "countGifts_one": "{{count}} regalo",
+    "countGifts_other": "{{count}} regalos",
+    "countReserved_one": "{{count}} reservado",
+    "countReserved_other": "{{count}} reservados",
+    "countBought_one": "{{count}} comprado",
+    "countBought_other": "{{count}} comprados"
   }
 }
