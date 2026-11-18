@@ -124,6 +124,20 @@ export default function Timeline() {
       matchesQuery(query, e.title, e.description),
   );
 
+  // With no day picked, the open list reads in three plain groups: what's
+  // late, what's within the next seven days, and the rest.
+  const groups = [
+    { key: 'overdue', label: 'timeline.groupOverdue', rows: [] as HouseholdEvent[] },
+    { key: 'week', label: 'timeline.groupThisWeek', rows: [] as HouseholdEvent[] },
+    { key: 'later', label: 'timeline.groupLater', rows: [] as HouseholdEvent[] },
+  ];
+  if (!selectedDay) {
+    for (const e of visibleActive) {
+      const d = daysUntil(e.target_date, timezone);
+      groups[d < 0 ? 0 : d < 7 ? 1 : 2].rows.push(e);
+    }
+  }
+
   const selectedDayCaption = selectedDay
     ? new Intl.DateTimeFormat(i18n.language, {
         weekday: 'long',
@@ -266,7 +280,7 @@ export default function Timeline() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <header>
         <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
@@ -406,11 +420,30 @@ export default function Timeline() {
               />
             ))}
 
-          {visibleActive.length > 0 && (
+          {visibleActive.length > 0 && selectedDay && (
             <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
               {visibleActive.map((evt, i) => renderRow(evt, i))}
             </section>
           )}
+
+          {visibleActive.length > 0 &&
+            !selectedDay &&
+            groups.map(
+              (g) =>
+                g.rows.length > 0 && (
+                  <section key={g.key} aria-labelledby={`group-${g.key}`} className="space-y-1.5">
+                    <h2
+                      id={`group-${g.key}`}
+                      className={`px-1 text-xs ${g.key === 'overdue' ? 'text-rose-400' : 'text-zinc-500'}`}
+                    >
+                      {t(g.label)}
+                    </h2>
+                    <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+                      {g.rows.map((evt, i) => renderRow(evt, i))}
+                    </div>
+                  </section>
+                ),
+            )}
         </div>
       )}
 

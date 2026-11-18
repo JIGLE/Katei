@@ -116,7 +116,10 @@
     "today": "Aujourd'hui",
     "dayEvents_one": "{{count}} échéance",
     "dayEvents_other": "{{count}} échéances",
-    "addOnDay": "Ajouter le {{date}}"
+    "addOnDay": "Ajouter le {{date}}",
+    "groupOverdue": "En retard",
+    "groupThisWeek": "7 prochains jours",
+    "groupLater": "Plus tard"
   },
   "eventType": {
     "deadline": "Date limite",

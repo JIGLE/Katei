@@ -29,8 +29,11 @@ export const DOT: Record<HouseholdEvent['event_type'], string> = {
 const pad = (n: number) => String(n).padStart(2, '0');
 const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
 
-// A compact month grid of events. Days with events show coloured dots; tap a day
-// to list its events, tap an event to open it. Monday-first, locale-aware labels.
+// A compact month grid of events: rows are one 44px tap tall, so the whole
+// month and the list's first rows share a phone screen. Days with events show
+// coloured dots; tap a day to list its events, tap an event to open it. When
+// another month is showing, a "Today" link sits beside its name.
+// Monday-first, locale-aware labels.
 //
 // Accessibility: a real ARIA grid — one tab stop, then arrow keys move by day
 // and week, Home/End jump within the month, PageUp/PageDown change month.
@@ -92,6 +95,15 @@ export function CalendarMonth({
   const shift = (delta: number) => {
     const d = new Date(y, m + delta, 1);
     setCursor({ y: d.getFullYear(), m: d.getMonth() });
+    onSelectDay(null);
+  };
+
+  // Browsing another month offers a way straight back to today's.
+  const [ty, tm] = today.split('-').map(Number);
+  const awayFromToday = y !== ty || m !== tm - 1;
+  const goToday = () => {
+    setCursor({ y: ty, m: tm - 1 });
+    setFocusDay(Number(today.slice(8)));
     onSelectDay(null);
   };
 
@@ -157,29 +169,40 @@ export function CalendarMonth({
   cellRefs.current.clear();
 
   return (
-    <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <section className="rounded-2xl border border-zinc-800/60 bg-zinc-900 px-2 pb-2 pt-1">
+      <div className="mb-1 flex items-center justify-between">
         <button
           type="button"
           onClick={() => shift(-1)}
           aria-label={t('timeline.prevMonth')}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200"
         >
           ‹
         </button>
-        <p className="text-sm font-medium capitalize text-zinc-100">{monthLabel}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="text-sm font-medium capitalize text-zinc-100">{monthLabel}</p>
+          {awayFromToday && (
+            <button
+              type="button"
+              onClick={goToday}
+              className="rounded-full border border-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+            >
+              {t('timeline.today')}
+            </button>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => shift(1)}
           aria-label={t('timeline.nextMonth')}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200"
         >
           ›
         </button>
       </div>
 
       <div role="grid" aria-label={monthLabel} onKeyDown={onGridKey} className="text-center">
-        <div role="row" className="grid grid-cols-7 gap-1">
+        <div role="row" className="grid grid-cols-7">
           {weekdays.map((w) => (
             <div
               key={w}
@@ -191,7 +214,7 @@ export function CalendarMonth({
           ))}
         </div>
         {weeks.map((week, wi) => (
-          <div key={wi} role="row" className="grid grid-cols-7 gap-1">
+          <div key={wi} role="row" className="grid grid-cols-7">
             {week.map((day, di) => {
               if (day === null) return <div key={`b${di}`} role="gridcell" aria-hidden />;
               const dayKey = keyOf(y, m, day);
@@ -220,7 +243,7 @@ export function CalendarMonth({
                     setFocusDay(day);
                   }}
                   className={[
-                    'flex aspect-square flex-col items-center justify-center gap-1 rounded-lg text-sm transition-colors',
+                    'relative flex h-11 items-center justify-center rounded-lg text-sm transition-colors',
                     isSelected ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-300 hover:bg-zinc-800/50',
                     isToday && !isSelected ? 'ring-1 ring-inset ring-zinc-700' : '',
                   ].join(' ')}
@@ -232,7 +255,10 @@ export function CalendarMonth({
                     {day}
                   </span>
                   {dayEvents.length > 0 && (
-                    <span aria-hidden className="flex gap-0.5">
+                    <span
+                      aria-hidden
+                      className="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5"
+                    >
                       {dayEvents.slice(0, 3).map((e) => (
                         <span
                           key={e.id}
