@@ -160,7 +160,6 @@
     "savingsGoal": "Sparziel",
     "trends": "Ausgabentrend",
     "trendsHigh": "Spitze",
-    "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier.",
     "auto": "Auto",
     "private": "Privat",
     "expectedActual": "Soll vs. Ist",
@@ -195,7 +194,9 @@
     "addHintIncome": "Geld, das reinkommt, z. B. Gehalt",
     "addHintExpense": "Eine Rechnung oder regelmäßige Kosten",
     "addHintSavings": "Ein fester Betrag, den du zurücklegst",
-    "addHintContribution": "Einmalig Geld in einen Topf legen"
+    "addHintContribution": "Einmalig Geld in einen Topf legen",
+    "viewSummary": "Übersicht",
+    "viewFlow": "Ein & aus"
   },
   "freq": {
     "monthly": "Monatlich",

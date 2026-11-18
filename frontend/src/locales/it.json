@@ -160,7 +160,6 @@
     "savingsGoal": "Obiettivo di risparmio",
     "trends": "Andamento spese",
     "trendsHigh": "Max",
-    "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui.",
     "auto": "Auto",
     "private": "Privato",
     "expectedActual": "Previsto vs reale",
@@ -195,7 +194,9 @@
     "addHintIncome": "Soldi in entrata, come uno stipendio",
     "addHintExpense": "Una bolletta o una spesa fissa",
     "addHintSavings": "Una somma fissa che metti da parte",
-    "addHintContribution": "Versare una volta in un salvadanaio"
+    "addHintContribution": "Versare una volta in un salvadanaio",
+    "viewSummary": "Riepilogo",
+    "viewFlow": "Entrate/uscite"
   },
   "freq": {
     "monthly": "Mensile",

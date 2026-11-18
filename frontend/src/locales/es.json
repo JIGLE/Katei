@@ -160,7 +160,6 @@
     "savingsGoal": "Meta de ahorro",
     "trends": "Tendencia de gastos",
     "trendsHigh": "Máx.",
-    "trendsEmpty": "Aún no hay pagos completados — tus gastos mensuales se mostrarán aquí.",
     "auto": "Auto",
     "private": "Privado",
     "expectedActual": "Previsto vs real",
@@ -195,7 +194,9 @@
     "addHintIncome": "Dinero que entra, como un sueldo",
     "addHintExpense": "Una factura o un gasto fijo",
     "addHintSavings": "Una cantidad fija que apartas",
-    "addHintContribution": "Meter dinero en un bote una vez"
+    "addHintContribution": "Meter dinero en un bote una vez",
+    "viewSummary": "Resumen",
+    "viewFlow": "Entradas/salidas"
   },
   "freq": {
     "monthly": "Mensual",

@@ -160,7 +160,6 @@
     "savingsGoal": "Spaardoel",
     "trends": "Uitgaventrend",
     "trendsHigh": "Piek",
-    "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier.",
     "auto": "Auto",
     "private": "Privé",
     "expectedActual": "Verwacht vs werkelijk",
@@ -195,7 +194,9 @@
     "addHintIncome": "Geld dat binnenkomt, zoals salaris",
     "addHintExpense": "Een rekening of vaste kosten",
     "addHintSavings": "Een vast bedrag dat je opzijzet",
-    "addHintContribution": "Eenmalig geld in een pot stoppen"
+    "addHintContribution": "Eenmalig geld in een pot stoppen",
+    "viewSummary": "Overzicht",
+    "viewFlow": "In & uit"
   },
   "freq": {
     "monthly": "Maandelijks",
