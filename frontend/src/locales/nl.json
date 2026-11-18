@@ -187,7 +187,12 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Gehaald",
     "foreignExcluded_one": "De totalen laten {{count}} geldstroom in een andere valuta weg.",
-    "foreignExcluded_other": "De totalen laten {{count}} geldstromen in andere valuta's weg."
+    "foreignExcluded_other": "De totalen laten {{count}} geldstromen in andere valuta's weg.",
+    "addChooserTitle": "Wat wil je toevoegen?",
+    "addHintIncome": "Geld dat binnenkomt, zoals salaris",
+    "addHintExpense": "Een rekening of vaste kosten",
+    "addHintSavings": "Een vast bedrag dat je opzijzet",
+    "addHintContribution": "Eenmalig geld in een pot stoppen"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -304,7 +309,8 @@
     "linkPlaceholder": "Plak een productlink…",
     "linkFetching": "Paginatitel ophalen…",
     "deleteItem": "Verwijderen",
-    "deleteGift": "Verwijderen"
+    "deleteGift": "Verwijderen",
+    "typeFromStream": "Bepaald door de geldstroom"
   },
   "settings": {
     "notificationsTitle": "Notificaties",
@@ -439,7 +445,6 @@
     "newGift": "Nieuw cadeau",
     "editGift": "Cadeau bewerken",
     "addGift": "Cadeau toevoegen",
-    "addGiftAria": "Cadeau toevoegen",
     "titlePlaceholder": "bijv. Platenspeler",
     "errTitle": "Geef het cadeau een naam.",
     "errSave": "Cadeau kon niet worden opgeslagen.",

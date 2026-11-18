@@ -97,7 +97,7 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.getByRole('button', { name: 'Gifts', exact: true }).click();
     await expect(page.getByText('My wishlist')).toBeVisible();
     const mine = page.locator('section', { hasText: 'My wishlist' });
-    await mine.getByRole('button', { name: 'Add gift' }).click();
+    await mine.getByRole('button', { name: 'Add a gift' }).first().click();
     await page.locator('#gift_title').fill('Espresso grinder');
     await page.locator('form').getByRole('button', { name: 'Add a gift' }).click();
     await expect(page.getByText('Espresso grinder')).toBeVisible();

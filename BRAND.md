@@ -169,8 +169,25 @@ reinvent.
   Escape. Forms never navigate to a new page.
 - **Segmented control** — for small mutually-exclusive choices (event type,
   frequency). Selected segment fills with the relevant accent.
-- **FAB** — a single floating action button (bottom-right, above the nav) for the
-  primary "add" action on a tab.
+- **Adding things** — one pattern, everywhere:
+  - **The add button** (`Fab.tsx`) is a tab's one primary create action,
+    bottom-right above the nav, and it always opens a bottom sheet. Timeline,
+    Money and Household have one; Overview has none. It steps aside while you
+    scroll down and comes back on scroll up.
+  - **More than one kind of thing to add** (Money: income, expense, a savings
+    plan, a one-off contribution) opens a **chooser sheet** first: one row per
+    kind, with a dot in its meaning colour and a one-line hint. Never a
+    speed-dial of floating pills.
+  - **Secondary adds inside a section** (`SectionAdd.tsx`) are a neutral
+    `+ Label` text action at the right of the section header ("+ Add to
+    savings", "+ New pot", "+ Add a gift"), and they open a sheet too.
+  - **The one exception is Shopping**, where adding is typing a word: a field
+    docked on top of the nav, Enter to add, no button and no sheet.
+  - **Editing uses the same sheet and the same choices as adding.** A choice
+    that can't change (an income event's type, set by its money stream) is
+    shown as a fixed label, not as an extra option.
+    `e2e/tests/add-pattern.spec.ts` checks the add buttons, the Money chooser and
+    that new and edit offer the same event types.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
   **Edge-to-edge, not a floating pill.** The pill version measured 381.9px and

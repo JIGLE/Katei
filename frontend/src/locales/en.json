@@ -186,7 +186,12 @@
     "potTargetPlaceholder": "0.00",
     "goalReached": "Reached",
     "foreignExcluded_one": "Totals leave out {{count}} stream in another currency.",
-    "foreignExcluded_other": "Totals leave out {{count}} streams in other currencies."
+    "foreignExcluded_other": "Totals leave out {{count}} streams in other currencies.",
+    "addChooserTitle": "What are you adding?",
+    "addHintIncome": "Money coming in, like a salary",
+    "addHintExpense": "A bill or a regular cost",
+    "addHintSavings": "A regular amount you set aside",
+    "addHintContribution": "Put money into a pot once"
   },
   "freq": {
     "monthly": "Monthly",
@@ -303,7 +308,8 @@
     "linkPlaceholder": "Paste a product link…",
     "linkFetching": "Fetching the page title…",
     "deleteItem": "Delete",
-    "deleteGift": "Delete"
+    "deleteGift": "Delete",
+    "typeFromStream": "Set by its money stream"
   },
   "settings": {
     "notificationsTitle": "Notifications",
@@ -438,7 +444,6 @@
     "newGift": "New gift",
     "editGift": "Edit gift",
     "addGift": "Add a gift",
-    "addGiftAria": "Add gift",
     "titlePlaceholder": "e.g. Record player",
     "errTitle": "Give the gift a name.",
     "errSave": "Could not save the gift.",

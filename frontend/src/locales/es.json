@@ -187,7 +187,12 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Conseguido",
     "foreignExcluded_one": "Los totales excluyen {{count}} flujo en otra moneda.",
-    "foreignExcluded_other": "Los totales excluyen {{count}} flujos en otras monedas."
+    "foreignExcluded_other": "Los totales excluyen {{count}} flujos en otras monedas.",
+    "addChooserTitle": "¿Qué quieres añadir?",
+    "addHintIncome": "Dinero que entra, como un sueldo",
+    "addHintExpense": "Una factura o un gasto fijo",
+    "addHintSavings": "Una cantidad fija que apartas",
+    "addHintContribution": "Meter dinero en un bote una vez"
   },
   "freq": {
     "monthly": "Mensual",
@@ -304,7 +309,8 @@
     "linkPlaceholder": "Pega un enlace de producto…",
     "linkFetching": "Obteniendo el título…",
     "deleteItem": "Eliminar",
-    "deleteGift": "Eliminar"
+    "deleteGift": "Eliminar",
+    "typeFromStream": "Lo fija su flujo de dinero"
   },
   "settings": {
     "notificationsTitle": "Notificaciones",
@@ -439,7 +445,6 @@
     "newGift": "Nuevo regalo",
     "editGift": "Editar regalo",
     "addGift": "Añadir un regalo",
-    "addGiftAria": "Añadir regalo",
     "titlePlaceholder": "p. ej. Tocadiscos",
     "errTitle": "Ponle nombre al regalo.",
     "errSave": "No se pudo guardar el regalo.",

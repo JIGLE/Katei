@@ -31,12 +31,14 @@ const typeOptions: { value: EventType; labelKey: string; active: string }[] = [
     labelKey: 'eventType.appointment',
     active: 'bg-amber-500/15 text-amber-400 border-amber-500/40',
   },
-  {
-    value: 'income',
-    labelKey: 'eventType.income',
-    active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40',
-  },
 ];
+
+// Income and savings events come from a money stream, so they are never
+// picked here; editing one shows its type instead of a fourth option.
+const streamTypes: Partial<Record<EventType, { labelKey: string; cls: string }>> = {
+  income: { labelKey: 'eventType.income', cls: 'border-emerald-500/40 text-emerald-400' },
+  savings: { labelKey: 'eventType.savings', cls: 'border-teal-500/40 text-teal-300' },
+};
 
 const labelCls = 'mb-1.5 block text-xs font-medium uppercase tracking-widest text-zinc-500';
 const fieldCls =
@@ -52,9 +54,8 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
   const [targetDate, setTargetDate] = useState(
     initial?.target_date?.slice(0, 10) ?? initialDate ?? '',
   );
-  // Manually created events are deadlines, payments, or appointments —
-  // income is a stream-generated concept, offered only when editing one.
-  const visibleTypes = typeOptions.filter((o) => o.value !== 'income' || isEdit);
+  // New and edit show the same three choices; a stream-made type is fixed.
+  const fixedType = streamTypes[eventType];
   const [description, setDescription] = useState(initial?.description ?? '');
   const [moneyStreamId, setMoneyStreamId] = useState<string>(
     initial?.money_stream_id ? String(initial.money_stream_id) : '',
@@ -133,23 +134,33 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
 
       <div>
         <span className={labelCls}>{t('form.type')}</span>
-        <div className="grid grid-cols-3 gap-2">
-          {visibleTypes.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setEventType(opt.value)}
-              className={[
-                'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
-                eventType === opt.value
-                  ? opt.active
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
-              ].join(' ')}
-            >
-              {t(opt.labelKey)}
-            </button>
-          ))}
-        </div>
+        {fixedType ? (
+          <p className="flex items-center gap-2 text-xs text-zinc-500">
+            <span className={`rounded-xl border px-3 py-2 font-medium ${fixedType.cls}`}>
+              {t(fixedType.labelKey)}
+            </span>
+            {t('form.typeFromStream')}
+          </p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {typeOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={eventType === opt.value}
+                onClick={() => setEventType(opt.value)}
+                className={[
+                  'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
+                  eventType === opt.value
+                    ? opt.active
+                    : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
+                ].join(' ')}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>

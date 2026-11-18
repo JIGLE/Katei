@@ -32,5 +32,11 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 - Gift status, assignment roles, the Pets heading, the Person/Pet picker and
   the Lists tab are now neutral, so amber still only means time and teal only
   savings.
+- Money's add button opens a "What are you adding?" sheet instead of floating
+  pills, and includes a one-off contribution to savings.
+- Section add actions ("+ Add to savings", "+ New pot", "+ Add a gift" and
+  others) share one neutral look; the round + buttons on gift lists are gone.
+- Editing an event offers the same three types as adding one; an income or
+  savings event shows its type as fixed.
 - The Docker image now runs on Node.js 22, matching CI.
 - End-to-end tests run on Playwright 1.64 and the current Ubuntu runner.
