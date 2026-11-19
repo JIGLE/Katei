@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { SkeletonRows, ErrorRow } from './LoadState';
 import { api } from '../lib/api';
 import type { GiftListsResponse } from '../lib/types';
 import { MyWishlist } from './MyWishlist';
@@ -8,7 +8,6 @@ import { FamilyGiftLists } from './FamilyGiftLists';
 // The gifts half of the Lists tab: the viewer's own wishlist (always shown
 // untouched) and everyone else's — household, pets, and people outside it.
 export function GiftsPane() {
-  const { t } = useTranslation();
   const [data, setData] = useState<GiftListsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,15 +16,27 @@ export function GiftsPane() {
     api
       .get<GiftListsResponse>('/gift-lists')
       .then(setData)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        console.error(e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(() => {
     fetchLists();
   }, []);
 
-  if (loading) return <p className="text-sm text-zinc-500">{t('common.loading')}</p>;
-  if (error) return <p className="text-sm text-rose-400">{error}</p>;
+  if (loading) return <SkeletonRows />;
+  if (error)
+    return (
+      <ErrorRow
+        onRetry={() => {
+          setError(null);
+          setLoading(true);
+          fetchLists();
+        }}
+      />
+    );
   if (!data) return null;
 
   return (

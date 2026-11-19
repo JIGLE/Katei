@@ -4,6 +4,13 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { usePreferences, applyTheme, type Theme } from '../lib/preferences';
 import { COUNTRIES, CURRENCIES, LOCALES, TIMEZONES, countryByCode } from '../lib/countries';
+import {
+  currencyLabel,
+  currencySymbol,
+  formatName,
+  formatSample,
+  timezoneCity,
+} from '../lib/region';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from '../lib/i18n';
 import { isPushSupported, isSubscribed, enablePush, disablePush } from '../lib/push';
 
@@ -32,7 +39,7 @@ const fieldCls =
   'placeholder:text-zinc-500 focus:border-zinc-600';
 
 export function SettingsForm({ onClose }: { onClose: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Household-wide config and infrastructure (backups, calendar token, reminder
   // window) are admin-only on the server; hide those controls from members so
   // they never hit a 403. Members keep appearance + their own device's push.
@@ -58,6 +65,18 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
   const [currency, setCurrency] = useState(prefs.currency);
   const [locale, setLocale] = useState(prefs.locale);
   const [timezone, setTimezone] = useState(prefs.timezone);
+  // The country sets currency, format and timezone; they show as one plain
+  // line until someone wants to change one. A household that already differs
+  // from its country's defaults opens with the fields showing.
+  const [regionOpen, setRegionOpen] = useState(() => {
+    const c = countryByCode(prefs.country);
+    return (
+      !c ||
+      c.currency !== prefs.currency ||
+      c.locale !== prefs.locale ||
+      c.timezone !== prefs.timezone
+    );
+  });
   const [language, setLanguage] = useState(prefs.language);
   const [savingsOpening, setSavingsOpening] = useState(String(prefs.savings_opening || ''));
   const [theme, setTheme] = useState<Theme>(prefs.theme);
@@ -328,59 +347,88 @@ export function SettingsForm({ onClose }: { onClose: () => void }) {
                     ))}
                   </select>
                 </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label htmlFor="pref_currency" className={gLabelCls}>
-                      {t('settings.currency')}
-                    </label>
-                    <select
-                      id="pref_currency"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                      className={`${fieldCls}`}
+                {!regionOpen ? (
+                  // The country sits right above, so the currency needs only its
+                  // symbol here; that keeps the line to one row on a phone.
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p
+                      className="min-w-0 text-sm text-zinc-300"
+                      data-region-summary
+                      title={currencyLabel(currency, i18n.language)}
                     >
-                      {CURRENCIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor="pref_locale" className={gLabelCls}>
-                      {t('settings.locale')}
-                    </label>
-                    <select
-                      id="pref_locale"
-                      value={locale}
-                      onChange={(e) => setLocale(e.target.value)}
-                      className={`${fieldCls}`}
+                      {currencySymbol(currency, i18n.language)}
+                      <span aria-hidden className="text-zinc-500">
+                        {' · '}
+                      </span>
+                      {formatName(locale, i18n.language)}
+                      <span aria-hidden className="text-zinc-500">
+                        {' · '}
+                      </span>
+                      {t('settings.timeIn', { city: timezoneCity(timezone) })}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setRegionOpen(true)}
+                      className="flex-shrink-0 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
                     >
-                      {LOCALES.map((l) => (
-                        <option key={l} value={l}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
+                      {t('settings.regionChange')}
+                    </button>
                   </div>
-                </div>
-                <div>
-                  <label htmlFor="pref_tz" className={gLabelCls}>
-                    {t('settings.timezone')}
-                  </label>
-                  <select
-                    id="pref_tz"
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                    className={`${fieldCls}`}
-                  >
-                    {TIMEZONES.map((tz) => (
-                      <option key={tz} value={tz}>
-                        {tz}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <label htmlFor="pref_currency" className={gLabelCls}>
+                        {t('settings.currency')}
+                      </label>
+                      <select
+                        id="pref_currency"
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className={`${fieldCls}`}
+                      >
+                        {CURRENCIES.map((c) => (
+                          <option key={c} value={c}>
+                            {currencyLabel(c, i18n.language)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="pref_locale" className={gLabelCls}>
+                        {t('settings.locale')}
+                      </label>
+                      <select
+                        id="pref_locale"
+                        value={locale}
+                        onChange={(e) => setLocale(e.target.value)}
+                        className={`${fieldCls}`}
+                      >
+                        {LOCALES.map((l) => (
+                          <option key={l} value={l}>
+                            {formatName(l, i18n.language)} · {formatSample(l)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="pref_tz" className={gLabelCls}>
+                        {t('settings.timezone')}
+                      </label>
+                      <select
+                        id="pref_tz"
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        className={`${fieldCls}`}
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz} value={tz}>
+                            {tz.replace(/_/g, ' ')}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
                 <div>
                   <label htmlFor="pref_language" className={gLabelCls}>
                     {t('settings.language')}

@@ -117,6 +117,62 @@ test('the add button steps aside while scrolling down and returns on scroll up',
   await page.locator('main').hover();
   await page.mouse.wheel(0, 400);
   await expect.poll(opacity).toBe('0');
-  await page.mouse.wheel(0, -200);
+  // Mid-list every row's date pill passes under it, so it comes back at the
+  // top (and at the end, past the last row).
+  await page.mouse.wheel(0, -2000);
   await expect.poll(opacity).toBe('1');
+});
+
+test('the add button never rests on a date pill, and shows at the top and the end', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page);
+  for (let i = 1; i <= 14; i++) {
+    await page.request.post('/api/events', {
+      data: {
+        title: `Fab spec ${i}`,
+        event_type: 'appointment',
+        target_date: `2030-01-${String(i).padStart(2, '0')}`,
+      },
+    });
+  }
+  await page.goto('/timeline');
+  const fab = page.locator('[data-fab]');
+  // On arrival the main action shows, whatever sits beneath it.
+  await expect(fab).not.toHaveAttribute('data-fab-hidden');
+
+  // Does the button's resting box overlap a pill or amount?
+  const covers = () =>
+    fab.evaluate((f: HTMLElement) => {
+      const l = f.offsetLeft - 4;
+      const t = f.offsetTop - 4;
+      const r = l + f.offsetWidth + 8;
+      const b = t + f.offsetHeight + 8;
+      return [...document.querySelectorAll('main [data-fab-avoid]')].some((el) => {
+        const x = el.getBoundingClientRect();
+        return x.width > 0 && x.right > l && x.left < r && x.bottom > t && x.top < b;
+      });
+    });
+
+  // Walk back up the list in small steps (a scroll up never hides it on its
+  // own), checking it is hidden exactly when it would cover something.
+  const max = await page.evaluate(() => {
+    const m = document.querySelector('main')!;
+    return m.scrollHeight - m.clientHeight;
+  });
+  await scrollMain(page, max);
+  // At the end, <main>'s end padding clears the last row, so it shows.
+  await expect(fab).not.toHaveAttribute('data-fab-hidden');
+  let hid = 0;
+  for (let y = max - 40; y > 120; y -= 23) {
+    await scrollMain(page, y);
+    await page.waitForTimeout(60);
+    const hidden = (await fab.getAttribute('data-fab-hidden')) !== null;
+    expect(hidden).toBe(await covers());
+    if (hidden) hid++;
+  }
+  expect(hid).toBeGreaterThan(0);
+  await scrollMain(page, 0);
+  await expect(fab).not.toHaveAttribute('data-fab-hidden');
 });

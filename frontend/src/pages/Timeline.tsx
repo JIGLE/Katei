@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AssignmentDetail, HouseholdEvent, MoneyStream } from '../lib/types';
@@ -14,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { formatMoney, formatRelativeDay, daysUntil } from '../lib/format';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -59,12 +61,16 @@ export default function Timeline() {
   const [paying, setPaying] = useState<HouseholdEvent | null>(null);
   const [payAmount, setPayAmount] = useState('');
 
+  // Refetches after a save keep the list on screen; only the first load and
+  // a retry show placeholders.
   const fetchEvents = () => {
-    setLoading(true);
     api
       .get<HouseholdEvent[]>('/events')
       .then(setEvents)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        console.error(e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -123,6 +129,20 @@ export default function Timeline() {
       (typeFilter === 'all' || e.event_type === typeFilter) &&
       matchesQuery(query, e.title, e.description),
   );
+
+  // With no day picked, the open list reads in three plain groups: what's
+  // late, what's within the next seven days, and the rest.
+  const groups = [
+    { key: 'overdue', label: 'timeline.groupOverdue', rows: [] as HouseholdEvent[] },
+    { key: 'week', label: 'timeline.groupThisWeek', rows: [] as HouseholdEvent[] },
+    { key: 'later', label: 'timeline.groupLater', rows: [] as HouseholdEvent[] },
+  ];
+  if (!selectedDay) {
+    for (const e of visibleActive) {
+      const d = daysUntil(e.target_date, timezone);
+      groups[d < 0 ? 0 : d < 7 ? 1 : 2].rows.push(e);
+    }
+  }
 
   const selectedDayCaption = selectedDay
     ? new Intl.DateTimeFormat(i18n.language, {
@@ -242,7 +262,9 @@ export default function Timeline() {
         </button>
 
         {amount && (
-          <span className="flex-shrink-0 text-xs tabular-nums text-zinc-400">{amount}</span>
+          <span data-fab-avoid className="flex-shrink-0 text-xs tabular-nums text-zinc-400">
+            {amount}
+          </span>
         )}
 
         <AssigneeStack members={membersByEvent.get(evt.id) ?? []} size="xs" />
@@ -253,6 +275,7 @@ export default function Timeline() {
           />
         ) : (
           <span
+            data-fab-avoid
             className={[
               'flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               overdue ? 'bg-rose-500/15 text-rose-400' : 'bg-zinc-800 text-zinc-400',
@@ -266,7 +289,7 @@ export default function Timeline() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <header>
         <p className="text-xs uppercase tracking-widest text-zinc-500">{t('timeline.eyebrow')}</p>
         <h1 className="mt-1 text-2xl font-light text-zinc-100">{t('timeline.title')}</h1>
@@ -284,8 +307,16 @@ export default function Timeline() {
         />
       )}
 
-      {error && <p className="text-sm text-rose-400">{error}</p>}
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
+      {error && (
+        <ErrorRow
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            fetchEvents();
+          }}
+        />
+      )}
+      {loading && <SkeletonRows />}
 
       {!loading && !error && (
         <div className="space-y-3">
@@ -406,11 +437,30 @@ export default function Timeline() {
               />
             ))}
 
-          {visibleActive.length > 0 && (
+          {visibleActive.length > 0 && selectedDay && (
             <section className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
               {visibleActive.map((evt, i) => renderRow(evt, i))}
             </section>
           )}
+
+          {visibleActive.length > 0 &&
+            !selectedDay &&
+            groups.map(
+              (g) =>
+                g.rows.length > 0 && (
+                  <section key={g.key} aria-labelledby={`group-${g.key}`} className="space-y-1.5">
+                    <h2
+                      id={`group-${g.key}`}
+                      className={`px-1 text-xs ${g.key === 'overdue' ? 'text-rose-400' : 'text-zinc-500'}`}
+                    >
+                      {t(g.label)}
+                    </h2>
+                    <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900">
+                      {g.rows.map((evt, i) => renderRow(evt, i))}
+                    </div>
+                  </section>
+                ),
+            )}
         </div>
       )}
 
@@ -446,7 +496,7 @@ export default function Timeline() {
                 value={payAmount}
                 onChange={(e) => setPayAmount(e.target.value)}
                 placeholder="0.00"
-                autoFocus
+                autoFocus={canAutoFocusField()}
                 className={fieldCls}
               />
               <span className="flex-shrink-0 text-sm text-zinc-500">{payCurrency}</span>

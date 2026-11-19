@@ -105,6 +105,15 @@ Accent usage patterns:
   dropped the light theme's deep-rose text to 4.4:1 against its own fill)
 - **De-emphasized** ("later"/done): drop to `zinc` (`bg-zinc-800 text-zinc-500`)
 
+States that mean none of the above stay **neutral**, however tempting a hue
+is. Gift status (idea, reserved, bought), assignment roles, the Pets heading,
+the Person/Pet picker and the Lists tab carry no accent: reserved reads
+strongest (`bg-zinc-700/60 text-zinc-200`), bought steps back
+(`bg-zinc-800 text-zinc-400`), and a selected segment fills with
+`bg-zinc-700/40 text-zinc-100` unless the choice itself is a meaning (event
+type). `e2e/tests/colour-meaning.spec.ts` keeps amber and teal off those
+screens.
+
 Text hierarchy: primary `text-zinc-100`, secondary `text-zinc-400`, tertiary /
 captions `text-zinc-500`, and `zinc-600` for **non-text only** (icons, drag
 grips, focus borders) or genuinely disabled controls.
@@ -155,12 +164,34 @@ reinvent.
 - **Stat card** — small card: caption (`text-xs text-zinc-500`) over a
   `text-xl font-light` figure in a semantic accent.
 - **Bottom-sheet modal** (`Modal.tsx`) — all create/edit/settings flows slide up
-  from the bottom with a drag-handle visual, backdrop dismiss, and Escape to
-  close. Forms never navigate to a new page.
+  from the bottom. Three ways out: pull the handle or header down (past 96px,
+  or a quick flick, closes; less springs back), tap the backdrop, or press
+  Escape. Forms never navigate to a new page.
 - **Segmented control** — for small mutually-exclusive choices (event type,
   frequency). Selected segment fills with the relevant accent.
-- **FAB** — a single floating action button (bottom-right, above the nav) for the
-  primary "add" action on a tab.
+- **Adding things** — one pattern, everywhere:
+  - **The add button** (`Fab.tsx`) is a tab's one primary create action,
+    bottom-right above the nav, and it always opens a bottom sheet. Timeline,
+    Money and Household have one; Overview has none. It steps aside while you
+    scroll down and comes back on scroll up. Once you have scrolled, it also
+    steps aside while it would cover anything marked `data-fab-avoid` (a date
+    pill, an amount, a row's own button) and returns when that row moves on.
+    At the top of a page it always shows, so in a long list of dated rows
+    it shows at the top and past the last row, and stays aside in between.
+  - **More than one kind of thing to add** (Money: income, expense, a savings
+    plan, a one-off contribution) opens a **chooser sheet** first: one row per
+    kind, with a dot in its meaning colour and a one-line hint. Never a
+    speed-dial of floating pills.
+  - **Secondary adds inside a section** (`SectionAdd.tsx`) are a neutral
+    `+ Label` text action at the right of the section header ("+ Add to
+    savings", "+ New pot", "+ Add a gift"), and they open a sheet too.
+  - **The one exception is Shopping**, where adding is typing a word: a field
+    docked on top of the nav, Enter to add, no button and no sheet.
+  - **Editing uses the same sheet and the same choices as adding.** A choice
+    that can't change (an income event's type, set by its money stream) is
+    shown as a fixed label, not as an extra option.
+    `e2e/tests/add-pattern.spec.ts` checks the add buttons, the Money chooser and
+    that new and edit offer the same event types.
 - **Bottom nav** (`BottomNav.tsx`) — five destinations: Overview · Timeline ·
   Money Flow (hidden when a household turns Money off) · Lists · Household.
   **Edge-to-edge, not a floating pill.** The pill version measured 381.9px and
@@ -208,6 +239,58 @@ reinvent.
   - Primary: `bg-zinc-100 text-zinc-900 rounded-xl py-2.5 text-sm font-medium`
   - Secondary: `border border-zinc-800 text-zinc-300 rounded-xl hover:border-zinc-700`
   - Destructive: rose text, **two-tap confirm** (tap once to arm, again to commit).
+- **Touch targets** — every button and link answers a tap of at least 44×44,
+  however small it looks. `index.css` gives each one an invisible hit area
+  centred on it that never shrinks below 44px, so a 20px check circle or a
+  `text-xs` link keeps its look; text fields get a real 44px minimum height.
+  Don't add `overflow-hidden` to a control, since it clips that hit area.
+  `e2e/tests/touch-targets.spec.ts` measures every control on every tab and
+  in an open sheet.
+- **Folding lists** — a group of per-person lists (other people's gift lists)
+  folds each one to a single row: name over a neutral summary ("3 gifts ·
+  1 reserved") and a chevron. Tapping opens it in place; a lone list is
+  simply open. Per-list actions (share, add) appear only when it's open, and
+  share is an icon in the row, not a loose text link.
+- **Activity glance** (Overview, "Around the house") — only what other people
+  did, never who did it, and never your own actions; hidden in a one-person
+  household. Each row is a quiet verb, a dot, then the item as written
+  ("Finished · Fix bicycle brakes"), so an item never gets glued into a
+  sentence with the wrong casing.
+- **Timeline** — the month grid stays on top but compact: each week is one
+  44px row, so at 390×844 the first list rows show without scrolling. A
+  "Today" link appears beside the month name only while another month is
+  showing. With no day picked, open events read in three groups, Overdue
+  (its label in rose), Next 7 days and Later; a picked day lists just that
+  day.
+- **Money views** — Money is three views behind the same segmented switch as
+  Lists: **Summary** (net, the three totals, expected vs actual, spending
+  trends, where it goes), **In & out** (expense and income streams) and
+  **Savings** (balance, pots, contributions and the planned monthly savings
+  streams). The view lives in `?view=` so reload and back keep it; the bottom
+  nav always opens Summary. A new stream opens the view it landed in. Each
+  view stays under two phone screens; the spending chart is hidden until a
+  month has spending, and a view only grows a search field at 15 streams.
+- **Loading and errors** (`LoadState.tsx`) — a list that's loading shows
+  placeholder rows in its own shape (`SkeletonRows`), never a "Loading…"
+  line, and they appear only on the first load or a retry; a refetch after a
+  save keeps what's on screen. A load that fails shows one `ErrorRow`: a
+  plain rose sentence ("Couldn't load this right now.") and "Try again",
+  never the raw server message.
+- **Offline** — the service worker answers API reads network-first and keeps
+  the last good copy, so offline every tab opens on what it last showed and
+  one quiet line under the header says so. That copy is dropped on sign-in
+  and sign-out, so it never outlives the person it belongs to.
+- **Settings in plain words** — never show a raw code (`EUR`, `de-DE`,
+  `Europe/Berlin`). Picking a country sets currency, date and number format
+  and timezone together, shown as one line that fits a phone ("€ · German
+  (Germany) · Berlin time"; the country sits right above, so the symbol is
+  enough, and the full currency name is its tooltip) with a "Change" link that unfolds the individual fields,
+  whose options are written out too. Names come from `Intl` in the UI
+  language (`frontend/src/lib/region.ts`), so they need no translation.
+- **Dates in the household's format** — a date field (`DateField.tsx`) shows
+  the picked day the way the household writes dates ("Do., 3. Dezember 2026"
+  for German), not the browser's own format. The native date input sits on
+  top, invisible, so a tap still opens the phone's picker.
 - **Avatar** — circle with initials on a `zinc-800` ground (`rounded-full`),
   used for household members. Falls back to initials when no `avatar_url`.
 

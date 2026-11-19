@@ -169,11 +169,7 @@ export function GiftForm({
                 className={[
                   'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
                   status === s
-                    ? s === 'bought'
-                      ? 'border-teal-500/40 bg-teal-500/15 text-teal-300'
-                      : s === 'reserved'
-                        ? 'border-amber-500/40 bg-amber-500/15 text-amber-300'
-                        : 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
+                    ? 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
                     : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
                 ].join(' ')}
               >

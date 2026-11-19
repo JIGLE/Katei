@@ -11,6 +11,7 @@ import { Logo } from './components/Logo';
 import { AccountMenu } from './components/AccountMenu';
 import { useAuth } from './lib/auth';
 import { usePreferences } from './lib/preferences';
+import { useOnline } from './lib/useOnline';
 import Overview from './pages/Overview';
 import Timeline from './pages/Timeline';
 import Lists from './pages/Lists';
@@ -26,6 +27,7 @@ export default function App() {
   const { loading: prefsLoading, money_enabled } = usePreferences();
   const { t } = useTranslation();
   const location = useLocation();
+  const online = useOnline();
   const [showSettings, setShowSettings] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
 
@@ -76,6 +78,17 @@ export default function App() {
           onOpenSettings={() => setShowSettings(true)}
         />
       </header>
+
+      {/* Offline, the service worker serves what each screen last loaded; one
+          quiet line says so, rather than every list failing on its own. */}
+      {!online && (
+        <p
+          role="status"
+          className="border-b border-zinc-800/60 px-4 py-1.5 text-center text-xs text-zinc-400"
+        >
+          {t('common.offline')}
+        </p>
+      )}
 
       {/* Scrollable content area — padded above the fixed bottom nav plus
           the floating add button's envelope, so the last row's right edge

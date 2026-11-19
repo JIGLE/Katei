@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface ModalProps {
   open: boolean;
@@ -12,6 +13,11 @@ interface ModalProps {
 // Keep in sync with the CSS duration below (var(--dur-slow) = 320ms; a touch
 // less here is fine — unmounting slightly after motion settles is invisible).
 const EXIT_MS = 300;
+
+// Drag-down-to-close: past this distance, or flicked faster than this, the
+// sheet closes on release; otherwise it springs back.
+const DRAG_CLOSE_PX = 96;
+const DRAG_CLOSE_VELOCITY = 0.5; // px per ms
 
 // What can hold focus inside the sheet, for initial focus and the Tab trap.
 const FOCUSABLE =
@@ -72,10 +78,42 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   const restoreRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const { inset, maxHeight } = useKeyboardInset(open);
+  // Live offset while the sheet's top is dragged down. It is kept after a
+  // closing release so the exit slides on from where the finger let go.
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{ id: number; y0: number; t: number; y: number } | null>(null);
+
+  const onDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button, a, input')) return;
+    dragRef.current = { id: e.pointerId, y0: e.clientY, t: e.timeStamp, y: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragging(true);
+  };
+  const onDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d || d.id !== e.pointerId) return;
+    setDragY(Math.max(0, e.clientY - d.y0));
+    d.t = e.timeStamp;
+    d.y = e.clientY;
+  };
+  const onDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d || d.id !== e.pointerId) return;
+    dragRef.current = null;
+    setDragging(false);
+    const dy = Math.max(0, e.clientY - d.y0);
+    // Speed over the last move only, so a slow drag ending in a flick counts.
+    const dt = Math.max(1, e.timeStamp - d.t);
+    const v = (e.clientY - d.y) / dt;
+    if (dy > DRAG_CLOSE_PX || (dy > 16 && v > DRAG_CLOSE_VELOCITY)) onClose();
+    else setDragY(0);
+  };
 
   useEffect(() => {
     if (open) {
       setMounted(true);
+      setDragY(0);
       const raf = requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
       return () => cancelAnimationFrame(raf);
     }
@@ -86,13 +124,16 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
 
   // Move focus into the dialog on open and back to the trigger on close.
   // A child that focuses itself (autoFocus fields) wins over the default.
+  // On touch screens the sheet itself takes focus, so the keyboard stays
+  // down until the person taps a field.
   useEffect(() => {
     if (open) {
       restoreRef.current = document.activeElement as HTMLElement | null;
       const raf = requestAnimationFrame(() => {
         const sheet = sheetRef.current;
         if (!sheet || sheet.contains(document.activeElement)) return;
-        (sheet.querySelector<HTMLElement>(FOCUSABLE) ?? sheet).focus();
+        const first = canAutoFocusField() ? sheet.querySelector<HTMLElement>(FOCUSABLE) : null;
+        (first ?? sheet).focus();
       });
       return () => cancelAnimationFrame(raf);
     }
@@ -174,11 +215,23 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        style={{ maxHeight }}
+        style={{
+          maxHeight,
+          transform: entered && dragY > 0 ? `translateY(${dragY}px)` : undefined,
+          transition: dragging ? 'none' : undefined,
+        }}
         className={`relative flex max-h-[90dvh] w-full max-w-lg flex-col rounded-t-3xl border border-zinc-800/60 bg-zinc-900 shadow-2xl outline-none transition-[transform,max-height] duration-[var(--dur-slow)] ease-[var(--ease-drawer)] motion-reduce:transition-none ${entered ? 'translate-y-0' : 'translate-y-full'}`}
       >
-        <div className="flex-shrink-0 px-5 pt-5">
-          <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-zinc-700" />
+        {/* The handle and header are the drag area: pull down to dismiss. */}
+        <div
+          onPointerDown={onDragStart}
+          onPointerMove={onDragMove}
+          onPointerUp={onDragEnd}
+          onPointerCancel={onDragEnd}
+          data-sheet-handle
+          className="flex-shrink-0 touch-none select-none px-5 pt-5"
+        >
+          <div aria-hidden className="mx-auto mb-5 h-1 w-10 rounded-full bg-zinc-700" />
 
           <header className="flex items-center justify-between">
             <h2 id={titleId} className="text-lg font-light text-zinc-100">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -11,6 +12,7 @@ import { daysToBirthday } from '../lib/format';
 import { usePreferences } from '../lib/preferences';
 import { EmptyState } from '../components/EmptyState';
 import { SearchInput, matchesQuery } from '../components/SearchInput';
+import { SectionAdd } from '../components/SectionAdd';
 
 function initials(name: string): string {
   return name
@@ -19,16 +21,6 @@ function initials(name: string): string {
     .join('')
     .slice(0, 2)
     .toUpperCase();
-}
-
-const roleColors: Record<string, string> = {
-  admin: 'text-amber-500',
-  owner: 'text-emerald-500',
-  member: 'text-zinc-400',
-};
-
-function roleColor(role: string): string {
-  return roleColors[role.toLowerCase()] ?? 'text-zinc-400';
 }
 
 export default function Household() {
@@ -53,8 +45,9 @@ export default function Household() {
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
 
+  // Refetches after a save keep the list on screen; only the first load and
+  // a retry show placeholders.
   const fetchAll = () => {
-    setLoading(true);
     Promise.all([
       api.get<User[]>('/users'),
       api.get<AssignmentDetail[]>('/assignments'),
@@ -67,7 +60,10 @@ export default function Household() {
         setEvents(e);
         setStreams(s);
       })
-      .catch((err: Error) => setError(err.message))
+      .catch((err: Error) => {
+        console.error(err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -199,15 +195,13 @@ export default function Household() {
                 </span>
               )}
             </p>
-            {/* Pets don't do chores — their caption is the birthday nudge or
-                nothing, never "0 assignments". */}
-            {(nearBirthday || u.kind !== 'pet') && (
-              <p className={`mt-0.5 text-xs ${nearBirthday ? 'text-teal-300' : 'text-zinc-500'}`}>
-                {nearBirthday
-                  ? days === 0
-                    ? `🎂 ${t('household.birthdayToday')}`
-                    : `🎂 ${t('household.birthdayIn', { count: days })}`
-                  : t('household.assignmentCount', { count: userAssignments.length })}
+            {/* The assignments are listed right below, so the caption is only
+                ever the birthday nudge; counting them here said it twice. */}
+            {nearBirthday && (
+              <p className="mt-0.5 text-xs text-zinc-300">
+                {days === 0
+                  ? `🎂 ${t('household.birthdayToday')}`
+                  : `🎂 ${t('household.birthdayIn', { count: days })}`}
               </p>
             )}
           </div>
@@ -222,10 +216,9 @@ export default function Household() {
                 {a.money_stream_id != null && money_enabled && (
                   <span>{streamName(a.money_stream_id)}</span>
                 )}
-                <span className={`ml-auto font-medium capitalize ${roleColor(a.role)}`}>
-                  {a.role}
-                </span>
+                <span className="ml-auto font-medium capitalize text-zinc-500">{a.role}</span>
                 <button
+                  data-fab-avoid
                   type="button"
                   onClick={() =>
                     confirmRemove === a.id ? removeAssignment(a.id) : setConfirmRemove(a.id)
@@ -261,17 +254,20 @@ export default function Household() {
           )}
         </div>
         {users.length > 0 && (
-          <button
-            onClick={() => setShowAssignForm(true)}
-            className="flex-shrink-0 text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300"
-          >
-            + {t('household.assign')}
-          </button>
+          <SectionAdd label={t('household.assign')} onClick={() => setShowAssignForm(true)} />
         )}
       </header>
 
-      {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
-      {error && <p className="text-sm text-rose-400">{error}</p>}
+      {loading && <SkeletonRows />}
+      {error && (
+        <ErrorRow
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            fetchAll();
+          }}
+        />
+      )}
 
       {!loading && !error && users.length === 0 && (
         <EmptyState
@@ -309,7 +305,7 @@ export default function Household() {
       {/* Pets — the rest of the household */}
       {!loading && !error && visiblePets.length > 0 && (
         <section className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-teal-300/70">
+          <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
             {t('household.pets')}
           </p>
           {visiblePets.map((u, i) => renderMember(u, i))}
@@ -323,14 +319,11 @@ export default function Household() {
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
               {t('household.invites')}
             </p>
-            <button
-              type="button"
+            <SectionAdd
+              label={creatingInvite ? t('common.pleaseWait') : t('household.createInvite')}
               onClick={createInvite}
               disabled={creatingInvite}
-              className="text-xs text-emerald-500 underline-offset-2 transition-colors hover:text-emerald-400 disabled:opacity-50"
-            >
-              {creatingInvite ? t('common.pleaseWait') : t('household.createInvite')}
-            </button>
+            />
           </div>
 
           {inviteLink && (

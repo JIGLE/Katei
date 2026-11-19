@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { SkeletonRows, ErrorRow } from '../components/LoadState';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -158,7 +159,10 @@ export default function Lists() {
     api
       .get<ShoppingItem[]>('/shopping')
       .then(setItems)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        console.error(e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(() => {
@@ -334,8 +338,16 @@ export default function Lists() {
             <SearchInput value={query} onChange={setQuery} label={t('search.shopping')} />
           )}
 
-          {loading && <p className="text-sm text-zinc-500">{t('common.loading')}</p>}
-          {error && <p className="text-sm text-rose-400">{error}</p>}
+          {loading && <SkeletonRows />}
+          {error && (
+            <ErrorRow
+              onRetry={() => {
+                setError(null);
+                setLoading(true);
+                fetchItems();
+              }}
+            />
+          )}
 
           {!loading && !error && items.length === 0 && (
             <EmptyState icon="🧺" title={t('shopping.empty')} hint={t('shopping.emptyHint')} />

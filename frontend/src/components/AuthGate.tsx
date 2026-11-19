@@ -173,7 +173,7 @@ export function AuthGate() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode !== 'signin' ? t('auth.passwordSetupPlaceholder') : '••••••••'}
+                  placeholder={mode !== 'signin' ? t('auth.passwordSetupPlaceholder') : undefined}
                   autoComplete={mode !== 'signin' ? 'new-password' : 'current-password'}
                   className={fieldCls}
                 />
