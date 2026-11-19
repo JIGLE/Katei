@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../lib/preferences';
 import { useAuth } from '../lib/auth';
 import { formatMoney, formatRelativeDay, daysUntil } from '../lib/format';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -495,7 +496,7 @@ export default function Timeline() {
                 value={payAmount}
                 onChange={(e) => setPayAmount(e.target.value)}
                 placeholder="0.00"
-                autoFocus
+                autoFocus={canAutoFocusField()}
                 className={fieldCls}
               />
               <span className="flex-shrink-0 text-sm text-zinc-500">{payCurrency}</span>

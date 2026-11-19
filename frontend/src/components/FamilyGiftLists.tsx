@@ -12,6 +12,7 @@ import { DomainChip } from './LinkField';
 import { ShareButton, ShareGiftPanel } from './ShareGiftList';
 import { Avatar } from './Avatar';
 import { SectionAdd } from './SectionAdd';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 const fieldCls =
   'w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 ' +
@@ -112,7 +113,7 @@ export function FamilyGiftLists({ lists, refetch }: FamilyGiftListsProps) {
             onChange={(e) => setPersonName(e.target.value)}
             placeholder={t('gifts.externalNamePlaceholder')}
             maxLength={120}
-            autoFocus
+            autoFocus={canAutoFocusField()}
             className={fieldCls}
           />
           <button

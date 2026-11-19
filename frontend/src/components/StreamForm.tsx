@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import { CURRENCIES } from '../lib/countries';
 import type { MoneyStream, StreamType, DueShift } from '../lib/types';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface StreamFormProps {
   initial?: MoneyStream;
@@ -150,7 +151,7 @@ export function StreamForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('form.streamNamePlaceholder')}
-          autoFocus
+          autoFocus={canAutoFocusField()}
           className={fieldCls}
         />
       </div>

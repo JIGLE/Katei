@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { AvatarPicker } from './AvatarPicker';
 import type { User, MemberKind } from '../lib/types';
 import DateField from './DateField';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface MemberFormProps {
   initial?: User;
@@ -102,7 +103,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           placeholder={
             kind === 'pet' ? t('form.petNamePlaceholder') : t('form.memberNamePlaceholder')
           }
-          autoFocus
+          autoFocus={canAutoFocusField()}
           className={fieldCls}
         />
       </div>

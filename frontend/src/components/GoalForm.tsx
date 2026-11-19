@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import type { SavingsSummary, SavingsPot, LinkPreview } from '../lib/types';
 import { LinkField } from './LinkField';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface GoalFormProps {
   initial?: SavingsPot;
@@ -88,7 +89,7 @@ export function GoalForm({ initial, onSaved, onCancel, onDeleted }: GoalFormProp
             onChange={(e) => setName(e.target.value)}
             placeholder={t('money.potNamePlaceholder')}
             maxLength={80}
-            autoFocus
+            autoFocus={canAutoFocusField()}
             className={fieldCls}
           />
         </div>
