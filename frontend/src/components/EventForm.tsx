@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { usePreferences } from '../lib/preferences';
 import type { HouseholdEvent, MoneyStream } from '../lib/types';
 import DateField from './DateField';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface EventFormProps {
   initial?: HouseholdEvent;
@@ -128,7 +129,7 @@ export function EventForm({ initial, initialDate, onSaved, onCancel, onDeleted }
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('form.titlePlaceholder')}
-          autoFocus
+          autoFocus={canAutoFocusField()}
           className={fieldCls}
         />
       </div>

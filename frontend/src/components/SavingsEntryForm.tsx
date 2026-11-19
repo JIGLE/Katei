@@ -5,6 +5,7 @@ import { usePreferences } from '../lib/preferences';
 import { todayInTimezone } from '../lib/format';
 import type { SavingsSummary, SavingsEntry, SavingsPot } from '../lib/types';
 import DateField from './DateField';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface SavingsEntryFormProps {
   initial?: SavingsEntry;
@@ -97,7 +98,7 @@ export function SavingsEntryForm({
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0.00"
-          autoFocus
+          autoFocus={canAutoFocusField()}
           className={fieldCls}
         />
       </div>
