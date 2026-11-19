@@ -97,7 +97,7 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.getByRole('button', { name: 'Gifts', exact: true }).click();
     await expect(page.getByText('My wishlist')).toBeVisible();
     const mine = page.locator('section', { hasText: 'My wishlist' });
-    await mine.getByRole('button', { name: 'Add gift' }).click();
+    await mine.getByRole('button', { name: 'Add a gift' }).first().click();
     await page.locator('#gift_title').fill('Espresso grinder');
     await page.locator('form').getByRole('button', { name: 'Add a gift' }).click();
     await expect(page.getByText('Espresso grinder')).toBeVisible();
@@ -108,12 +108,12 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.getByRole('button', { name: 'Add a friend or family member' }).click();
     await page.locator('input[placeholder="Their name"]').fill('Lisa');
     await page.getByRole('button', { name: 'Add', exact: true }).click();
-    await expect(page.getByText('For Lisa')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Lisa/ })).toBeVisible();
   });
 
   await test.step('share my wishlist and reach it as an anonymous visitor', async () => {
     const mine = page.locator('section', { hasText: 'My wishlist' });
-    await mine.getByText('Share list').click();
+    await mine.getByRole('button', { name: 'Share list' }).click();
     await mine.getByText('Enable link').click();
     const url = (await mine.locator('p.break-all').textContent())?.trim();
     expect(url).toMatch(/\/gift\//);
@@ -134,6 +134,8 @@ test('first-run household journey: register, event, money stream, persistence', 
     await page.locator('nav a[href="/timeline"]').click();
     await expect(page.getByText('Dentist appointment')).toBeVisible();
     await page.locator('nav a[href="/money"]').click();
+    // Streams live in the In & out view; Money opens on its summary.
+    await page.getByRole('button', { name: 'In & out', exact: true }).click();
     await expect(page.getByText('Rent', { exact: true })).toBeVisible();
     await page.locator('nav a[href="/lists"]').click();
     await expect(page.getByText('Milk', { exact: true })).toBeVisible();

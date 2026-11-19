@@ -12,7 +12,10 @@
     "choose": "Kiezen…",
     "signOut": "Afmelden",
     "settings": "Instellingen",
-    "confirm": "bevestigen"
+    "confirm": "bevestigen",
+    "loadFailed": "Kon dit nu niet laden.",
+    "tryAgain": "Opnieuw proberen",
+    "offline": "Je bent offline. Je ziet wat het laatst is geladen."
   },
   "nav": {
     "overview": "Overzicht",
@@ -116,7 +119,10 @@
     "today": "Vandaag",
     "dayEvents_one": "{{count}} gebeurtenis",
     "dayEvents_other": "{{count}} gebeurtenissen",
-    "addOnDay": "Toevoegen op {{date}}"
+    "addOnDay": "Toevoegen op {{date}}",
+    "groupOverdue": "Te laat",
+    "groupThisWeek": "Komende 7 dagen",
+    "groupLater": "Later"
   },
   "eventType": {
     "deadline": "Deadline",
@@ -157,7 +163,6 @@
     "savingsGoal": "Spaardoel",
     "trends": "Uitgaventrend",
     "trendsHigh": "Piek",
-    "trendsEmpty": "Nog geen voltooide betalingen — je maandelijkse uitgaven verschijnen hier.",
     "auto": "Auto",
     "private": "Privé",
     "expectedActual": "Verwacht vs werkelijk",
@@ -187,7 +192,14 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Gehaald",
     "foreignExcluded_one": "De totalen laten {{count}} geldstroom in een andere valuta weg.",
-    "foreignExcluded_other": "De totalen laten {{count}} geldstromen in andere valuta's weg."
+    "foreignExcluded_other": "De totalen laten {{count}} geldstromen in andere valuta's weg.",
+    "addChooserTitle": "Wat wil je toevoegen?",
+    "addHintIncome": "Geld dat binnenkomt, zoals salaris",
+    "addHintExpense": "Een rekening of vaste kosten",
+    "addHintSavings": "Een vast bedrag dat je opzijzet",
+    "addHintContribution": "Eenmalig geld in een pot stoppen",
+    "viewSummary": "Overzicht",
+    "viewFlow": "In & uit"
   },
   "freq": {
     "monthly": "Maandelijks",
@@ -209,8 +221,6 @@
     "addMemberAria": "Lid toevoegen",
     "addFirstMember": "Voeg je eerste lid toe",
     "assignmentsLabel": "Toewijzingen",
-    "assignmentCount_one": "{{count}} toewijzing",
-    "assignmentCount_other": "{{count}} toewijzingen",
     "admin": "Admin",
     "invites": "Uitnodigingen",
     "createInvite": "Uitnodiging maken",
@@ -304,14 +314,16 @@
     "linkPlaceholder": "Plak een productlink…",
     "linkFetching": "Paginatitel ophalen…",
     "deleteItem": "Verwijderen",
-    "deleteGift": "Verwijderen"
+    "deleteGift": "Verwijderen",
+    "typeFromStream": "Bepaald door de geldstroom",
+    "pickDate": "Kies een datum"
   },
   "settings": {
     "notificationsTitle": "Notificaties",
     "preferences": "Voorkeuren",
     "country": "Land",
     "currency": "Valuta",
-    "locale": "Regio",
+    "locale": "Datum- en getalnotatie",
     "timezone": "Tijdzone",
     "savePreferences": "Voorkeuren opslaan",
     "preferencesSaved": "Voorkeuren opgeslagen.",
@@ -364,7 +376,9 @@
     "themeDeviceHint": "Dit apparaat onthoudt je themakeuze.",
     "moneyEnabled": "Geldbeheer",
     "moneyEnabledOn": "Aan — het tabblad Geld, rekeningen en betaalbedragen zijn zichtbaar.",
-    "moneyEnabledOff": "Uit — Geld is overal in de app verborgen."
+    "moneyEnabledOff": "Uit — Geld is overal in de app verborgen.",
+    "timeIn": "Tijd in {{city}}",
+    "regionChange": "Wijzigen"
   },
   "account": {
     "title": "Mijn account",
@@ -398,11 +412,11 @@
     "savings_added_self": "Je hebt {{item}} opzijgezet",
     "shopping_added": "{{actor}} heeft {{item}} op het boodschappenlijstje gezet",
     "shopping_added_self": "Je hebt {{item}} op het boodschappenlijstje gezet",
-    "stream_added_plain": "{{item}} toegevoegd",
-    "event_added_plain": "{{item}} toegevoegd",
-    "event_done_plain": "{{item}} afgerond",
-    "payment_paid_plain": "{{item}} betaald",
-    "savings_added_plain": "{{item}} opzijgezet"
+    "stream_added_plain": "Toegevoegd",
+    "event_added_plain": "Toegevoegd",
+    "event_done_plain": "Afgerond",
+    "payment_paid_plain": "Betaald",
+    "savings_added_plain": "Opzijgezet"
   },
   "notifications": {
     "title": "Meldingen",
@@ -431,7 +445,6 @@
     "reorderAria": "Sleep om te herschikken"
   },
   "gifts": {
-    "forName": "Voor {{name}}",
     "status": "Status",
     "status_idea": "Idee",
     "status_reserved": "Gereserveerd",
@@ -439,7 +452,6 @@
     "newGift": "Nieuw cadeau",
     "editGift": "Cadeau bewerken",
     "addGift": "Cadeau toevoegen",
-    "addGiftAria": "Cadeau toevoegen",
     "titlePlaceholder": "bijv. Platenspeler",
     "errTitle": "Geef het cadeau een naam.",
     "errSave": "Cadeau kon niet worden opgeslagen.",
@@ -471,6 +483,13 @@
     "someone": "Iemand",
     "publicTitle": "Verlanglijst van {{name}}",
     "publicNotFound": "Deze lijst is niet beschikbaar.",
-    "publicEmpty": "Nog niets op deze lijst."
+    "publicEmpty": "Nog niets op deze lijst.",
+    "addPerson": "Persoon toevoegen",
+    "countGifts_one": "{{count}} cadeau",
+    "countGifts_other": "{{count}} cadeaus",
+    "countReserved_one": "{{count}} gereserveerd",
+    "countReserved_other": "{{count}} gereserveerd",
+    "countBought_one": "{{count}} gekocht",
+    "countBought_other": "{{count}} gekocht"
   }
 }

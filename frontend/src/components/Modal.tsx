@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface ModalProps {
   open: boolean;
@@ -123,13 +124,16 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
 
   // Move focus into the dialog on open and back to the trigger on close.
   // A child that focuses itself (autoFocus fields) wins over the default.
+  // On touch screens the sheet itself takes focus, so the keyboard stays
+  // down until the person taps a field.
   useEffect(() => {
     if (open) {
       restoreRef.current = document.activeElement as HTMLElement | null;
       const raf = requestAnimationFrame(() => {
         const sheet = sheetRef.current;
         if (!sheet || sheet.contains(document.activeElement)) return;
-        (sheet.querySelector<HTMLElement>(FOCUSABLE) ?? sheet).focus();
+        const first = canAutoFocusField() ? sheet.querySelector<HTMLElement>(FOCUSABLE) : null;
+        (first ?? sheet).focus();
       });
       return () => cancelAnimationFrame(raf);
     }

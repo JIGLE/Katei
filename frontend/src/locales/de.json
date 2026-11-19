@@ -12,7 +12,10 @@
     "choose": "Auswählen…",
     "signOut": "Abmelden",
     "settings": "Einstellungen",
-    "confirm": "bestätigen"
+    "confirm": "bestätigen",
+    "loadFailed": "Konnte gerade nicht geladen werden.",
+    "tryAgain": "Erneut versuchen",
+    "offline": "Du bist offline. Angezeigt wird der zuletzt geladene Stand."
   },
   "nav": {
     "overview": "Übersicht",
@@ -116,7 +119,10 @@
     "today": "Heute",
     "dayEvents_one": "{{count}} Termin",
     "dayEvents_other": "{{count}} Termine",
-    "addOnDay": "Am {{date}} hinzufügen"
+    "addOnDay": "Am {{date}} hinzufügen",
+    "groupOverdue": "Überfällig",
+    "groupThisWeek": "Nächste 7 Tage",
+    "groupLater": "Später"
   },
   "eventType": {
     "deadline": "Frist",
@@ -157,14 +163,13 @@
     "savingsGoal": "Sparziel",
     "trends": "Ausgabentrend",
     "trendsHigh": "Spitze",
-    "trendsEmpty": "Noch keine abgeschlossenen Zahlungen — deine monatlichen Ausgaben erscheinen hier.",
     "auto": "Auto",
     "private": "Privat",
     "expectedActual": "Soll vs. Ist",
     "expected": "Erwartet",
     "actual": "Tatsächlich",
     "savingsBalance": "Sparguthaben",
-    "addToSavings": "Zu Ersparnissen hinzufügen",
+    "addToSavings": "Einzahlen",
     "addToSavingsHint": "Erfasse zurückgelegtes Geld. Es wird sofort deinem Sparguthaben hinzugefügt.",
     "ofGoal": "von {{goal}}",
     "plannedMonthly": "Monatlich geplant",
@@ -187,7 +192,14 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Erreicht",
     "foreignExcluded_one": "Die Summen lassen {{count}} Geldfluss in anderer Währung aus.",
-    "foreignExcluded_other": "Die Summen lassen {{count}} Geldflüsse in anderen Währungen aus."
+    "foreignExcluded_other": "Die Summen lassen {{count}} Geldflüsse in anderen Währungen aus.",
+    "addChooserTitle": "Was möchtest du hinzufügen?",
+    "addHintIncome": "Geld, das reinkommt, z. B. Gehalt",
+    "addHintExpense": "Eine Rechnung oder regelmäßige Kosten",
+    "addHintSavings": "Ein fester Betrag, den du zurücklegst",
+    "addHintContribution": "Einmalig Geld in einen Topf legen",
+    "viewSummary": "Übersicht",
+    "viewFlow": "Ein & aus"
   },
   "freq": {
     "monthly": "Monatlich",
@@ -209,8 +221,6 @@
     "addMemberAria": "Mitglied hinzufügen",
     "addFirstMember": "Erstes Mitglied hinzufügen",
     "assignmentsLabel": "Zuweisungen",
-    "assignmentCount_one": "{{count}} Zuweisung",
-    "assignmentCount_other": "{{count}} Zuweisungen",
     "admin": "Admin",
     "invites": "Einladungen",
     "createInvite": "Einladung erstellen",
@@ -304,14 +314,16 @@
     "linkPlaceholder": "Produktlink einfügen…",
     "linkFetching": "Seitentitel wird geladen…",
     "deleteItem": "Löschen",
-    "deleteGift": "Löschen"
+    "deleteGift": "Löschen",
+    "typeFromStream": "Vom Geldfluss festgelegt",
+    "pickDate": "Datum wählen"
   },
   "settings": {
     "notificationsTitle": "Benachrichtigungen",
     "preferences": "Einstellungen",
     "country": "Land",
     "currency": "Währung",
-    "locale": "Gebietsschema",
+    "locale": "Datums- und Zahlenformat",
     "timezone": "Zeitzone",
     "savePreferences": "Einstellungen speichern",
     "preferencesSaved": "Einstellungen gespeichert.",
@@ -364,7 +376,9 @@
     "themeDeviceHint": "Dieses Gerät merkt sich deine Themenauswahl.",
     "moneyEnabled": "Geldverwaltung",
     "moneyEnabledOn": "An — der Geld-Tab, Rechnungen und Zahlungsbeträge sind sichtbar.",
-    "moneyEnabledOff": "Aus — Geld ist überall in der App ausgeblendet."
+    "moneyEnabledOff": "Aus — Geld ist überall in der App ausgeblendet.",
+    "timeIn": "Zeit in {{city}}",
+    "regionChange": "Ändern"
   },
   "account": {
     "title": "Mein Konto",
@@ -398,11 +412,11 @@
     "savings_added_self": "Du hast {{item}} zurückgelegt",
     "shopping_added": "{{actor}} hat {{item}} auf die Einkaufsliste gesetzt",
     "shopping_added_self": "Du hast {{item}} auf die Einkaufsliste gesetzt",
-    "stream_added_plain": "{{item}} hinzugefügt",
-    "event_added_plain": "{{item}} hinzugefügt",
-    "event_done_plain": "{{item}} erledigt",
-    "payment_paid_plain": "{{item}} bezahlt",
-    "savings_added_plain": "{{item}} zurückgelegt"
+    "stream_added_plain": "Hinzugefügt",
+    "event_added_plain": "Hinzugefügt",
+    "event_done_plain": "Erledigt",
+    "payment_paid_plain": "Bezahlt",
+    "savings_added_plain": "Zurückgelegt"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -431,7 +445,6 @@
     "reorderAria": "Zum Sortieren ziehen"
   },
   "gifts": {
-    "forName": "Für {{name}}",
     "status": "Status",
     "status_idea": "Idee",
     "status_reserved": "Reserviert",
@@ -439,7 +452,6 @@
     "newGift": "Neues Geschenk",
     "editGift": "Geschenk bearbeiten",
     "addGift": "Geschenk hinzufügen",
-    "addGiftAria": "Geschenk hinzufügen",
     "titlePlaceholder": "z. B. Plattenspieler",
     "errTitle": "Gib dem Geschenk einen Namen.",
     "errSave": "Geschenk konnte nicht gespeichert werden.",
@@ -471,6 +483,13 @@
     "someone": "Jemand",
     "publicTitle": "Wunschzettel von {{name}}",
     "publicNotFound": "Diese Liste ist nicht verfügbar.",
-    "publicEmpty": "Noch nichts auf dieser Liste."
+    "publicEmpty": "Noch nichts auf dieser Liste.",
+    "addPerson": "Person hinzufügen",
+    "countGifts_one": "{{count}} Geschenk",
+    "countGifts_other": "{{count}} Geschenke",
+    "countReserved_one": "{{count}} reserviert",
+    "countReserved_other": "{{count}} reserviert",
+    "countBought_one": "{{count}} gekauft",
+    "countBought_other": "{{count}} gekauft"
   }
 }

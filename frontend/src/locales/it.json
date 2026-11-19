@@ -12,7 +12,10 @@
     "choose": "Scegli…",
     "signOut": "Esci",
     "settings": "Impostazioni",
-    "confirm": "conferma"
+    "confirm": "conferma",
+    "loadFailed": "Impossibile caricare in questo momento.",
+    "tryAgain": "Riprova",
+    "offline": "Sei offline. Vedi quanto caricato l'ultima volta."
   },
   "nav": {
     "overview": "Panoramica",
@@ -116,7 +119,10 @@
     "today": "Oggi",
     "dayEvents_one": "{{count}} evento",
     "dayEvents_other": "{{count}} eventi",
-    "addOnDay": "Aggiungi il {{date}}"
+    "addOnDay": "Aggiungi il {{date}}",
+    "groupOverdue": "In ritardo",
+    "groupThisWeek": "Prossimi 7 giorni",
+    "groupLater": "Più avanti"
   },
   "eventType": {
     "deadline": "Scadenza",
@@ -157,7 +163,6 @@
     "savingsGoal": "Obiettivo di risparmio",
     "trends": "Andamento spese",
     "trendsHigh": "Max",
-    "trendsEmpty": "Ancora nessun pagamento completato — le spese mensili appariranno qui.",
     "auto": "Auto",
     "private": "Privato",
     "expectedActual": "Previsto vs reale",
@@ -187,7 +192,14 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Raggiunto",
     "foreignExcluded_one": "I totali escludono {{count}} flusso in un'altra valuta.",
-    "foreignExcluded_other": "I totali escludono {{count}} flussi in altre valute."
+    "foreignExcluded_other": "I totali escludono {{count}} flussi in altre valute.",
+    "addChooserTitle": "Cosa vuoi aggiungere?",
+    "addHintIncome": "Soldi in entrata, come uno stipendio",
+    "addHintExpense": "Una bolletta o una spesa fissa",
+    "addHintSavings": "Una somma fissa che metti da parte",
+    "addHintContribution": "Versare una volta in un salvadanaio",
+    "viewSummary": "Riepilogo",
+    "viewFlow": "Entrate/uscite"
   },
   "freq": {
     "monthly": "Mensile",
@@ -209,8 +221,6 @@
     "addMemberAria": "Aggiungi membro",
     "addFirstMember": "Aggiungi il tuo primo membro",
     "assignmentsLabel": "Assegnazioni",
-    "assignmentCount_one": "{{count}} assegnazione",
-    "assignmentCount_other": "{{count}} assegnazioni",
     "admin": "Admin",
     "invites": "Inviti",
     "createInvite": "Crea invito",
@@ -304,14 +314,16 @@
     "linkPlaceholder": "Incolla un link prodotto…",
     "linkFetching": "Recupero del titolo…",
     "deleteItem": "Elimina",
-    "deleteGift": "Elimina"
+    "deleteGift": "Elimina",
+    "typeFromStream": "Stabilito dal suo flusso di denaro",
+    "pickDate": "Scegli una data"
   },
   "settings": {
     "notificationsTitle": "Notifiche",
     "preferences": "Preferenze",
     "country": "Paese",
     "currency": "Valuta",
-    "locale": "Lingua/Regione",
+    "locale": "Formato di date e numeri",
     "timezone": "Fuso orario",
     "savePreferences": "Salva preferenze",
     "preferencesSaved": "Preferenze salvate.",
@@ -364,7 +376,9 @@
     "themeDeviceHint": "Questo dispositivo ricorda la tua scelta del tema.",
     "moneyEnabled": "Gestione del denaro",
     "moneyEnabledOn": "Attivo — la scheda Denaro, le bollette e gli importi dei pagamenti sono visibili.",
-    "moneyEnabledOff": "Disattivato — il denaro è nascosto in tutta l'app."
+    "moneyEnabledOff": "Disattivato — il denaro è nascosto in tutta l'app.",
+    "timeIn": "Ora di {{city}}",
+    "regionChange": "Modifica"
   },
   "account": {
     "title": "Il mio account",
@@ -398,11 +412,11 @@
     "savings_added_self": "Hai messo da parte {{item}}",
     "shopping_added": "{{actor}} ha messo {{item}} nella lista della spesa",
     "shopping_added_self": "Hai messo {{item}} nella lista della spesa",
-    "stream_added_plain": "{{item}} aggiunto",
-    "event_added_plain": "{{item}} aggiunto",
-    "event_done_plain": "{{item}} completato",
-    "payment_paid_plain": "{{item}} pagato",
-    "savings_added_plain": "{{item}} messo da parte"
+    "stream_added_plain": "Aggiunto",
+    "event_added_plain": "Aggiunto",
+    "event_done_plain": "Completato",
+    "payment_paid_plain": "Pagato",
+    "savings_added_plain": "Messo da parte"
   },
   "notifications": {
     "title": "Notifiche",
@@ -431,7 +445,6 @@
     "reorderAria": "Trascina per riordinare"
   },
   "gifts": {
-    "forName": "Per {{name}}",
     "status": "Stato",
     "status_idea": "Idea",
     "status_reserved": "Riservato",
@@ -439,7 +452,6 @@
     "newGift": "Nuovo regalo",
     "editGift": "Modifica regalo",
     "addGift": "Aggiungi un regalo",
-    "addGiftAria": "Aggiungi regalo",
     "titlePlaceholder": "es. Giradischi",
     "errTitle": "Dai un nome al regalo.",
     "errSave": "Impossibile salvare il regalo.",
@@ -471,6 +483,13 @@
     "someone": "Qualcuno",
     "publicTitle": "Lista dei desideri di {{name}}",
     "publicNotFound": "Questa lista non è disponibile.",
-    "publicEmpty": "Ancora niente in questa lista."
+    "publicEmpty": "Ancora niente in questa lista.",
+    "addPerson": "Aggiungi persona",
+    "countGifts_one": "{{count}} regalo",
+    "countGifts_other": "{{count}} regali",
+    "countReserved_one": "{{count}} prenotato",
+    "countReserved_other": "{{count}} prenotati",
+    "countBought_one": "{{count}} comprato",
+    "countBought_other": "{{count}} comprati"
   }
 }

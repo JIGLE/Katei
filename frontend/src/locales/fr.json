@@ -12,7 +12,10 @@
     "choose": "Choisir…",
     "signOut": "Se déconnecter",
     "settings": "Paramètres",
-    "confirm": "confirmer"
+    "confirm": "confirmer",
+    "loadFailed": "Impossible de charger pour le moment.",
+    "tryAgain": "Réessayer",
+    "offline": "Vous êtes hors ligne. Affichage des dernières données chargées."
   },
   "nav": {
     "overview": "Aperçu",
@@ -116,7 +119,10 @@
     "today": "Aujourd'hui",
     "dayEvents_one": "{{count}} échéance",
     "dayEvents_other": "{{count}} échéances",
-    "addOnDay": "Ajouter le {{date}}"
+    "addOnDay": "Ajouter le {{date}}",
+    "groupOverdue": "En retard",
+    "groupThisWeek": "7 prochains jours",
+    "groupLater": "Plus tard"
   },
   "eventType": {
     "deadline": "Date limite",
@@ -157,7 +163,6 @@
     "savingsGoal": "Objectif d'épargne",
     "trends": "Tendances des dépenses",
     "trendsHigh": "Max",
-    "trendsEmpty": "Aucun paiement effectué pour l'instant — vos dépenses mensuelles s'afficheront ici.",
     "auto": "Auto",
     "private": "Privé",
     "expectedActual": "Prévu vs réel",
@@ -187,7 +192,14 @@
     "potTargetPlaceholder": "0,00",
     "goalReached": "Atteint",
     "foreignExcluded_one": "Les totaux excluent {{count}} flux dans une autre devise.",
-    "foreignExcluded_other": "Les totaux excluent {{count}} flux dans d'autres devises."
+    "foreignExcluded_other": "Les totaux excluent {{count}} flux dans d'autres devises.",
+    "addChooserTitle": "Que voulez-vous ajouter ?",
+    "addHintIncome": "De l’argent qui rentre, comme un salaire",
+    "addHintExpense": "Une facture ou un coût régulier",
+    "addHintSavings": "Un montant régulier mis de côté",
+    "addHintContribution": "Verser une fois dans une cagnotte",
+    "viewSummary": "Résumé",
+    "viewFlow": "Entrées/sorties"
   },
   "freq": {
     "monthly": "Mensuel",
@@ -209,8 +221,6 @@
     "addMemberAria": "Ajouter un membre",
     "addFirstMember": "Ajouter votre premier membre",
     "assignmentsLabel": "Attributions",
-    "assignmentCount_one": "{{count}} attribution",
-    "assignmentCount_other": "{{count}} attributions",
     "admin": "Admin",
     "invites": "Invitations",
     "createInvite": "Créer une invitation",
@@ -304,14 +314,16 @@
     "linkPlaceholder": "Collez un lien produit…",
     "linkFetching": "Récupération du titre…",
     "deleteItem": "Supprimer",
-    "deleteGift": "Supprimer"
+    "deleteGift": "Supprimer",
+    "typeFromStream": "Défini par son flux d’argent",
+    "pickDate": "Choisir une date"
   },
   "settings": {
     "notificationsTitle": "Notifications",
     "preferences": "Préférences",
     "country": "Pays",
     "currency": "Devise",
-    "locale": "Région",
+    "locale": "Format des dates et des nombres",
     "timezone": "Fuseau horaire",
     "savePreferences": "Enregistrer les préférences",
     "preferencesSaved": "Préférences enregistrées.",
@@ -364,7 +376,9 @@
     "themeDeviceHint": "Cet appareil mémorise votre choix de thème.",
     "moneyEnabled": "Suivi de l'argent",
     "moneyEnabledOn": "Activé — l'onglet Argent, les factures et les montants des paiements sont visibles.",
-    "moneyEnabledOff": "Désactivé — l'argent est masqué partout dans l'application."
+    "moneyEnabledOff": "Désactivé — l'argent est masqué partout dans l'application.",
+    "timeIn": "Heure de {{city}}",
+    "regionChange": "Modifier"
   },
   "account": {
     "title": "Mon compte",
@@ -398,11 +412,11 @@
     "savings_added_self": "Vous avez mis {{item}} de côté",
     "shopping_added": "{{actor}} a mis {{item}} sur la liste de courses",
     "shopping_added_self": "Vous avez mis {{item}} sur la liste de courses",
-    "stream_added_plain": "{{item}} ajouté",
-    "event_added_plain": "{{item}} ajouté",
-    "event_done_plain": "{{item}} terminé",
-    "payment_paid_plain": "{{item}} payé",
-    "savings_added_plain": "{{item}} mis de côté"
+    "stream_added_plain": "Ajouté",
+    "event_added_plain": "Ajouté",
+    "event_done_plain": "Terminé",
+    "payment_paid_plain": "Payé",
+    "savings_added_plain": "Mis de côté"
   },
   "notifications": {
     "title": "Notifications",
@@ -431,7 +445,6 @@
     "reorderAria": "Glisser pour réorganiser"
   },
   "gifts": {
-    "forName": "Pour {{name}}",
     "status": "Statut",
     "status_idea": "Idée",
     "status_reserved": "Réservé",
@@ -439,7 +452,6 @@
     "newGift": "Nouveau cadeau",
     "editGift": "Modifier le cadeau",
     "addGift": "Ajouter un cadeau",
-    "addGiftAria": "Ajouter un cadeau",
     "titlePlaceholder": "p. ex. Platine vinyle",
     "errTitle": "Donnez un nom au cadeau.",
     "errSave": "Impossible d'enregistrer le cadeau.",
@@ -471,6 +483,13 @@
     "someone": "Quelqu'un",
     "publicTitle": "Liste de souhaits de {{name}}",
     "publicNotFound": "Cette liste n'est pas disponible.",
-    "publicEmpty": "Rien sur cette liste pour l'instant."
+    "publicEmpty": "Rien sur cette liste pour l'instant.",
+    "addPerson": "Ajouter une personne",
+    "countGifts_one": "{{count}} cadeau",
+    "countGifts_other": "{{count}} cadeaux",
+    "countReserved_one": "{{count}} réservé",
+    "countReserved_other": "{{count}} réservés",
+    "countBought_one": "{{count}} acheté",
+    "countBought_other": "{{count}} achetés"
   }
 }

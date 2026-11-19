@@ -6,6 +6,9 @@
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { clientsClaim } from 'workbox-core';
+import { NetworkFirst } from 'workbox-strategies';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { ExpirationPlugin } from 'workbox-expiration';
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
@@ -18,6 +21,24 @@ clientsClaim();
 // (but never for API requests).
 precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/^\/api/] }));
+
+// Reads from the API: always ask the network first, so the app never shows
+// stale data while online, and keep the last good answer for when it's not.
+// Offline, every tab still opens on what it last showed (the app says it's
+// offline). Only successful responses are kept, and the cache is dropped on
+// sign-out (lib/auth.tsx) so the next person on this device can't read it.
+// The cache name is shared with lib/auth.tsx.
+registerRoute(
+  ({ url, request, sameOrigin }) =>
+    sameOrigin && request.method === 'GET' && url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'katei-api',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 14 * 24 * 60 * 60 }),
+    ],
+  }),
+);
 
 // A reminder arrived — show it on the lock screen.
 self.addEventListener('push', (event: PushEvent) => {

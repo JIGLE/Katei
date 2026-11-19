@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { AvatarPicker } from './AvatarPicker';
 import type { User, MemberKind } from '../lib/types';
+import DateField from './DateField';
+import { canAutoFocusField } from '../lib/autoFocus';
 
 interface MemberFormProps {
   initial?: User;
@@ -79,7 +81,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
               className={[
                 'rounded-xl border px-2 py-2 text-xs font-medium transition-colors',
                 kind === k
-                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-400'
+                  ? 'border-zinc-500/40 bg-zinc-700/40 text-zinc-100'
                   : 'border-zinc-800 text-zinc-500 hover:text-zinc-300',
               ].join(' ')}
             >
@@ -101,7 +103,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
           placeholder={
             kind === 'pet' ? t('form.petNamePlaceholder') : t('form.memberNamePlaceholder')
           }
-          autoFocus
+          autoFocus={canAutoFocusField()}
           className={fieldCls}
         />
       </div>
@@ -110,13 +112,7 @@ export function MemberForm({ initial, onSaved, onCancel, onDeleted }: MemberForm
         <label htmlFor="birthday" className={labelCls}>
           {t('form.birthday')}
         </label>
-        <input
-          id="birthday"
-          type="date"
-          value={birthday}
-          onChange={(e) => setBirthday(e.target.value)}
-          className={`${fieldCls} [color-scheme:dark]`}
-        />
+        <DateField id="birthday" value={birthday} onChange={setBirthday} />
       </div>
 
       <div>

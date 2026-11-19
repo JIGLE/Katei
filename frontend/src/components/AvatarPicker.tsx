@@ -25,14 +25,13 @@ export function AvatarPicker({ name, url, file, onPick }: AvatarPickerProps) {
     return () => URL.revokeObjectURL(obj);
   }, [file, url]);
 
-  const initials =
-    name
-      .trim()
-      .split(/\s+/)
-      .map((w) => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || '·';
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="flex items-center gap-4">
@@ -40,7 +39,23 @@ export function AvatarPicker({ name, url, file, onPick }: AvatarPickerProps) {
         <img src={preview} alt="" className="h-14 w-14 flex-shrink-0 rounded-full object-cover" />
       ) : (
         <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-sm font-medium text-zinc-300">
-          {initials}
+          {initials || (
+            // No name typed yet: a plain person shape, not a stray dot.
+            <svg
+              aria-hidden
+              className="h-6 w-6 text-zinc-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.5-1.632z"
+              />
+            </svg>
+          )}
         </div>
       )}
       <div>
