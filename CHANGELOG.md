@@ -27,6 +27,8 @@ images and a GitHub Release (see [CONTRIBUTING.md](CONTRIBUTING.md#releasing)).
 
 ### Changed
 
+- On phones, opening a form no longer pops up the keyboard; it appears when you
+  tap a field. Desktop still focuses the first field.
 - The Timeline add button steps aside while it would cover a row's date or
   amount, once you have scrolled.
 - The region line in Settings fits on one line on a phone.
